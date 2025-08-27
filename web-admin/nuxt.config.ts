@@ -19,6 +19,7 @@ export default defineNuxtConfig({
     "@nuxt/icon", 
     "@nuxtjs/i18n", 
     "@pinia/nuxt",
+    "@nuxtjs/color-mode",
     '@nuxt/eslint',
     '@nuxt/content',
     '@nuxt/image',
@@ -32,6 +33,18 @@ export default defineNuxtConfig({
   // UI configuration
   ui: {
     fonts: false
+  },
+  
+  // Color mode configuration
+  colorMode: {
+    preference: 'system', // default value of $colorMode.preference
+    fallback: 'light', // fallback value if not system preference found
+    hid: 'nuxt-color-mode-script',
+    globalName: '__NUXT_COLOR_MODE__',
+    componentName: 'ColorScheme',
+    classPrefix: '',
+    classSuffix: '',
+    storageKey: 'nuxt-color-mode'
   },
   
   // Base path for PowerX plugin integration

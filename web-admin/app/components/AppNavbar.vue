@@ -35,7 +35,7 @@
         <!-- 通知 -->
         <UButton
           variant="ghost"
-          color="gray"
+          color="neutral"
           size="sm"
           square
           @click="toggleNotifications"
