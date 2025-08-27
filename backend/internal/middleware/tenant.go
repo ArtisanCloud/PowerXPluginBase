@@ -1,8 +1,6 @@
 package middleware
-package middleware
 
 import (
-	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"crypto/subtle"
@@ -11,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -22,28 +19,28 @@ import (
 
 // TenantContext 租户上下文
 type TenantContext struct {
-	TenantID int64  `json:"tenant_id"`
-	UserID   int64  `json:"user_id,omitempty"`
-	Roles    []string `json:"roles,omitempty"`
-	Permissions []string `json:"permissions,omitempty"`
-	IssuedAt time.Time `json:"iat,omitempty"`
-	ExpiresAt time.Time `json:"exp,omitempty"`
+	TenantID    int64     `json:"tenant_id"`
+	UserID      int64     `json:"user_id,omitempty"`
+	Roles       []string  `json:"roles,omitempty"`
+	Permissions []string  `json:"permissions,omitempty"`
+	IssuedAt    time.Time `json:"iat,omitempty"`
+	ExpiresAt   time.Time `json:"exp,omitempty"`
 }
 
 // PowerXContext PowerX 上下文头部信息
 type PowerXContext struct {
-	TenantID int64  `json:"tenant_id"`
-	UserID   int64  `json:"user_id,omitempty"`
-	Roles    []string `json:"roles,omitempty"`
+	TenantID    int64    `json:"tenant_id"`
+	UserID      int64    `json:"user_id,omitempty"`
+	Roles       []string `json:"roles,omitempty"`
 	Permissions []string `json:"permissions,omitempty"`
-	Timestamp int64  `json:"timestamp"`
+	Timestamp   int64    `json:"timestamp"`
 }
 
 const (
 	// HTTP 头部常量
 	HeaderPowerXContext = "X-PowerX-CTX"
 	HeaderPowerXJWT     = "X-PowerX-CTX-JWT"
-	
+
 	// 上下文键
 	ContextKeyTenant = "tenant"
 	ContextKeyUser   = "user"
@@ -77,7 +74,7 @@ func TenantMiddleware(cfg *config.Config) gin.HandlerFunc {
 		if err != nil {
 			logger.AuthMiddleware().WithError(err).Warn("Authentication failed")
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Invalid authentication",
+				"error":  "Invalid authentication",
 				"detail": err.Error(),
 			})
 			c.Abort()
@@ -94,9 +91,9 @@ func TenantMiddleware(cfg *config.Config) gin.HandlerFunc {
 
 		// 将租户上下文存储到 Gin 上下文
 		c.Set(ContextKeyTenant, tenantCtx)
-		
+
 		// 记录请求日志
-		logger.AuthMiddleware().WithFields(logger.Logger.Fields{
+		logger.AuthMiddleware().WithFields(logger.Fields{
 			"tenant_id": tenantCtx.TenantID,
 			"user_id":   tenantCtx.UserID,
 			"path":      c.Request.URL.Path,
@@ -125,14 +122,14 @@ func handleDevMode(c *gin.Context) {
 	}
 
 	tenantCtx := &TenantContext{
-		TenantID: tenantID,
-		UserID:   1, // 默认用户 ID
-		Roles:    []string{"admin"},
+		TenantID:    tenantID,
+		UserID:      1, // 默认用户 ID
+		Roles:       []string{"admin"},
 		Permissions: []string{"*"},
 	}
 
 	c.Set(ContextKeyTenant, tenantCtx)
-	
+
 	logger.AuthMiddleware().WithField("tenant_id", tenantID).Debug("Dev mode: using mock tenant context")
 	c.Next()
 }
@@ -162,15 +159,15 @@ func validateJWT(c *gin.Context, cfg *config.Config) (*TenantContext, error) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		tenantCtx := &TenantContext{}
-		
+
 		if tid, ok := claims["tenant_id"].(float64); ok {
 			tenantCtx.TenantID = int64(tid)
 		}
-		
+
 		if uid, ok := claims["user_id"].(float64); ok {
 			tenantCtx.UserID = int64(uid)
 		}
-		
+
 		if roles, ok := claims["roles"].([]interface{}); ok {
 			for _, role := range roles {
 				if roleStr, ok := role.(string); ok {
@@ -178,7 +175,7 @@ func validateJWT(c *gin.Context, cfg *config.Config) (*TenantContext, error) {
 				}
 			}
 		}
-		
+
 		return tenantCtx, nil
 	}
 
@@ -211,11 +208,10 @@ func validateHMAC(c *gin.Context, cfg *config.Config) (*TenantContext, error) {
 	}
 
 	// 生成预期的签名
-	expectedSignature := generateHMACSignature(contextData, cfg.Context.HMACSecret)
-	
+
 	// 从头部获取实际签名（简化实现，实际可能在单独头部）
 	// TODO: 实现完整的 HMAC 签名验证逻辑
-	
+
 	return &TenantContext{
 		TenantID:    pxCtx.TenantID,
 		UserID:      pxCtx.UserID,

@@ -1,5 +1,4 @@
 package domain
-package domain
 
 import (
 	"context"
@@ -23,16 +22,16 @@ func NewTaskRepository() TaskRepository {
 // Create 创建任务
 func (r *taskRepository) Create(ctx context.Context, tdb *db.TenantDB, task *Task) error {
 	log := logger.RepoLogger("task").WithContext(ctx)
-	
+
 	if err := task.Validate(); err != nil {
 		return fmt.Errorf("validation failed: %w", err)
 	}
-	
+
 	if err := tdb.WithContext(ctx).Create(task).Error; err != nil {
 		log.WithError(err).Error("Failed to create task")
 		return fmt.Errorf("failed to create task: %w", err)
 	}
-	
+
 	log.WithField("task_id", task.ID).Info("Task created successfully")
 	return nil
 }
@@ -40,7 +39,7 @@ func (r *taskRepository) Create(ctx context.Context, tdb *db.TenantDB, task *Tas
 // GetByID 根据 ID 获取任务
 func (r *taskRepository) GetByID(ctx context.Context, tdb *db.TenantDB, id uint) (*Task, error) {
 	log := logger.RepoLogger("task").WithContext(ctx)
-	
+
 	var task Task
 	err := tdb.WithContext(ctx).First(&task, id).Error
 	if err != nil {
@@ -50,23 +49,23 @@ func (r *taskRepository) GetByID(ctx context.Context, tdb *db.TenantDB, id uint)
 		log.WithError(err).WithField("task_id", id).Error("Failed to get task")
 		return nil, fmt.Errorf("failed to get task: %w", err)
 	}
-	
+
 	return &task, nil
 }
 
 // Update 更新任务
 func (r *taskRepository) Update(ctx context.Context, tdb *db.TenantDB, task *Task) error {
 	log := logger.RepoLogger("task").WithContext(ctx)
-	
+
 	if err := task.Validate(); err != nil {
 		return fmt.Errorf("validation failed: %w", err)
 	}
-	
+
 	if err := tdb.WithContext(ctx).Save(task).Error; err != nil {
 		log.WithError(err).WithField("task_id", task.ID).Error("Failed to update task")
 		return fmt.Errorf("failed to update task: %w", err)
 	}
-	
+
 	log.WithField("task_id", task.ID).Info("Task updated successfully")
 	return nil
 }
@@ -74,17 +73,17 @@ func (r *taskRepository) Update(ctx context.Context, tdb *db.TenantDB, task *Tas
 // Delete 删除任务
 func (r *taskRepository) Delete(ctx context.Context, tdb *db.TenantDB, id uint) error {
 	log := logger.RepoLogger("task").WithContext(ctx)
-	
+
 	result := tdb.WithContext(ctx).Delete(&Task{}, id)
 	if result.Error != nil {
 		log.WithError(result.Error).WithField("task_id", id).Error("Failed to delete task")
 		return fmt.Errorf("failed to delete task: %w", result.Error)
 	}
-	
+
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("task not found")
 	}
-	
+
 	log.WithField("task_id", id).Info("Task deleted successfully")
 	return nil
 }
@@ -92,35 +91,35 @@ func (r *taskRepository) Delete(ctx context.Context, tdb *db.TenantDB, id uint) 
 // List 获取任务列表
 func (r *taskRepository) List(ctx context.Context, tdb *db.TenantDB, opts *TaskListOptions) ([]*Task, int64, error) {
 	log := logger.RepoLogger("task").WithContext(ctx)
-	
+
 	if opts == nil {
 		opts = &TaskListOptions{Page: 1, Limit: 20}
 	}
-	
+
 	// 构建查询
 	query := tdb.WithContext(ctx).Model(&Task{})
-	
+
 	// 应用过滤条件
 	r.applyTaskFilters(query, opts)
-	
+
 	// 计算总数
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
 		log.WithError(err).Error("Failed to count tasks")
 		return nil, 0, fmt.Errorf("failed to count tasks: %w", err)
 	}
-	
+
 	// 应用排序和分页
 	r.applyTaskSorting(query, opts)
 	r.applyPagination(query, opts.Page, opts.Limit)
-	
+
 	// 执行查询
 	var tasks []*Task
 	if err := query.Find(&tasks).Error; err != nil {
 		log.WithError(err).Error("Failed to list tasks")
 		return nil, 0, fmt.Errorf("failed to list tasks: %w", err)
 	}
-	
+
 	log.WithField("count", len(tasks)).Info("Tasks listed successfully")
 	return tasks, total, nil
 }
@@ -130,35 +129,35 @@ func (r *taskRepository) applyTaskFilters(query *gorm.DB, opts *TaskListOptions)
 	if opts.Status != nil {
 		query.Where("status = ?", *opts.Status)
 	}
-	
+
 	if opts.Priority != nil {
 		query.Where("priority = ?", *opts.Priority)
 	}
-	
+
 	if opts.Assignee != nil {
 		query.Where("assignee = ?", *opts.Assignee)
 	}
-	
+
 	if opts.SprintID != nil {
 		query.Where("sprint_id = ?", *opts.SprintID)
 	}
-	
+
 	if len(opts.Labels) > 0 {
 		// 使用 PostgreSQL 的 JSON 操作符
 		for _, label := range opts.Labels {
 			query.Where("labels ? ?", label)
 		}
 	}
-	
+
 	if opts.Search != "" {
 		search := "%" + strings.ToLower(opts.Search) + "%"
 		query.Where("LOWER(title) LIKE ? OR LOWER(description) LIKE ?", search, search)
 	}
-	
+
 	if opts.DueBefore != nil {
 		query.Where("due_date <= ?", *opts.DueBefore)
 	}
-	
+
 	if opts.DueAfter != nil {
 		query.Where("due_date >= ?", *opts.DueAfter)
 	}
@@ -170,12 +169,12 @@ func (r *taskRepository) applyTaskSorting(query *gorm.DB, opts *TaskListOptions)
 	if sortBy == "" {
 		sortBy = "created_at"
 	}
-	
+
 	sortOrder := strings.ToUpper(opts.SortOrder)
 	if sortOrder != "ASC" && sortOrder != "DESC" {
 		sortOrder = "DESC"
 	}
-	
+
 	// 验证排序字段
 	validSortFields := map[string]bool{
 		"created_at": true,
@@ -185,7 +184,7 @@ func (r *taskRepository) applyTaskSorting(query *gorm.DB, opts *TaskListOptions)
 		"due_date":   true,
 		"status":     true,
 	}
-	
+
 	if validSortFields[sortBy] {
 		query.Order(fmt.Sprintf("%s %s", sortBy, sortOrder))
 	} else {
@@ -204,7 +203,7 @@ func (r *taskRepository) applyPagination(query *gorm.DB, page, limit int) {
 	if limit > 100 {
 		limit = 100
 	}
-	
+
 	offset := (page - 1) * limit
 	query.Offset(offset).Limit(limit)
 }
@@ -286,7 +285,7 @@ func (r *taskRepository) BatchUpdateStatus(ctx context.Context, tdb *db.TenantDB
 	if len(ids) == 0 {
 		return nil
 	}
-	
+
 	err := tdb.WithContext(ctx).Model(&Task{}).Where("id IN ?", ids).Update("status", status).Error
 	if err != nil {
 		return fmt.Errorf("failed to batch update status: %w", err)
@@ -299,7 +298,7 @@ func (r *taskRepository) BatchDelete(ctx context.Context, tdb *db.TenantDB, ids 
 	if len(ids) == 0 {
 		return nil
 	}
-	
+
 	err := tdb.WithContext(ctx).Delete(&Task{}, ids).Error
 	if err != nil {
 		return fmt.Errorf("failed to batch delete tasks: %w", err)

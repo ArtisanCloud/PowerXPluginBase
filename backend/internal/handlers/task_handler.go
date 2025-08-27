@@ -59,7 +59,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 		Status:      domain.TaskStatus(req.Status),
 		Priority:    domain.Priority(req.Priority),
 		Assignee:    req.Assignee,
-		SprintID:    req.SprintID,
+		SprintID:    convertInt64PtrToUintPtr(req.SprintID),
 		Labels:      req.Labels,
 		DueDate:     req.DueDate,
 		Estimate:    req.Estimate,
@@ -197,7 +197,7 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 		Title:       req.Title,
 		Description: req.Description,
 		Assignee:    req.Assignee,
-		SprintID:    req.SprintID,
+		SprintID:    convertInt64PtrToUintPtr(req.SprintID),
 		Labels:      req.Labels,
 		DueDate:     req.DueDate,
 		Estimate:    req.Estimate,
@@ -367,7 +367,7 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 	}
 
 	if req.SprintID != nil {
-		opts.SprintID = req.SprintID
+		opts.SprintID = convertInt64PtrToUintPtr(req.SprintID)
 	}
 
 	// 获取任务列表
@@ -495,7 +495,7 @@ func (h *TaskHandler) taskToResponse(task *domain.Task) *contracts.TaskResponse 
 		Status:      string(task.Status),
 		Priority:    string(task.Priority),
 		Assignee:    task.Assignee,
-		SprintID:    task.SprintID,
+		SprintID:    convertUintPtrToInt64Ptr(task.SprintID),
 		Labels:      []string(task.Labels),
 		DueDate:     task.DueDate,
 		Estimate:    task.Estimate,
@@ -503,4 +503,22 @@ func (h *TaskHandler) taskToResponse(task *domain.Task) *contracts.TaskResponse 
 		CreatedAt:   task.CreatedAt,
 		UpdatedAt:   task.UpdatedAt,
 	}
+}
+
+// convertInt64PtrToUintPtr 将 *int64 转换为 *uint
+func convertInt64PtrToUintPtr(i64Ptr *int64) *uint {
+	if i64Ptr == nil {
+		return nil
+	}
+	val := uint(*i64Ptr)
+	return &val
+}
+
+// convertUintPtrToInt64Ptr 将 *uint 转换为 *int64
+func convertUintPtrToInt64Ptr(uintPtr *uint) *int64 {
+	if uintPtr == nil {
+		return nil
+	}
+	val := int64(*uintPtr)
+	return &val
 }

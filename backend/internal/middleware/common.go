@@ -1,5 +1,4 @@
 package middleware
-package middleware
 
 import (
 	"fmt"
@@ -15,7 +14,7 @@ import (
 func CORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-		
+
 		// 在生产环境中应该配置具体的允许域名
 		c.Header("Access-Control-Allow-Origin", origin)
 		c.Header("Access-Control-Allow-Credentials", "true")
@@ -54,7 +53,7 @@ func RequestLogger() gin.HandlerFunc {
 		}
 
 		// 构建日志字段
-		fields := logger.Logger.Fields{
+		fields := logger.Fields{
 			"status":     c.Writer.Status(),
 			"method":     c.Request.Method,
 			"path":       path,
@@ -73,7 +72,7 @@ func RequestLogger() gin.HandlerFunc {
 
 		// 根据状态码选择日志级别
 		entry := logger.HTTPMiddleware().WithFields(fields)
-		
+
 		if c.Writer.Status() >= 500 {
 			entry.Error("HTTP request completed with server error")
 		} else if c.Writer.Status() >= 400 {
@@ -91,20 +90,20 @@ func Recovery() gin.HandlerFunc {
 			if err := recover(); err != nil {
 				// 记录错误堆栈
 				stack := string(debug.Stack())
-				
-				logger.HTTPMiddleware().WithFields(logger.Logger.Fields{
-					"error": err,
-					"stack": stack,
-					"path":  c.Request.URL.Path,
+
+				logger.HTTPMiddleware().WithFields(logger.Fields{
+					"error":  err,
+					"stack":  stack,
+					"path":   c.Request.URL.Path,
 					"method": c.Request.Method,
 				}).Error("Panic recovered")
 
 				// 返回错误响应
 				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": "Internal server error",
+					"error":   "Internal server error",
 					"message": "An unexpected error occurred",
 				})
-				
+
 				c.Abort()
 			}
 		}()
@@ -148,11 +147,11 @@ func Timeout(timeout time.Duration) gin.HandlerFunc {
 func RateLimiter(maxRequests int, window time.Duration) gin.HandlerFunc {
 	// 简单的内存存储，生产环境建议使用 Redis
 	clientRequests := make(map[string][]time.Time)
-	
+
 	return func(c *gin.Context) {
 		clientIP := c.ClientIP()
 		now := time.Now()
-		
+
 		// 清理过期记录
 		if requests, exists := clientRequests[clientIP]; exists {
 			var validRequests []time.Time
@@ -163,20 +162,20 @@ func RateLimiter(maxRequests int, window time.Duration) gin.HandlerFunc {
 			}
 			clientRequests[clientIP] = validRequests
 		}
-		
+
 		// 检查请求数量
 		if len(clientRequests[clientIP]) >= maxRequests {
 			c.JSON(http.StatusTooManyRequests, gin.H{
-				"error": "Rate limit exceeded",
+				"error":   "Rate limit exceeded",
 				"message": fmt.Sprintf("Maximum %d requests per %v allowed", maxRequests, window),
 			})
 			c.Abort()
 			return
 		}
-		
+
 		// 记录当前请求
 		clientRequests[clientIP] = append(clientRequests[clientIP], now)
-		
+
 		c.Next()
 	}
 }
@@ -186,19 +185,19 @@ func SecurityHeaders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 防止点击劫持
 		c.Header("X-Frame-Options", "DENY")
-		
+
 		// 防止 MIME 类型嗅探
 		c.Header("X-Content-Type-Options", "nosniff")
-		
+
 		// XSS 保护
 		c.Header("X-XSS-Protection", "1; mode=block")
-		
+
 		// 引用策略
 		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
-		
+
 		// 内容安全策略（根据实际需求调整）
 		c.Header("Content-Security-Policy", "default-src 'self'")
-		
+
 		c.Next()
 	}
 }
@@ -227,10 +226,10 @@ func RequestID() gin.HandlerFunc {
 			// 生成简单的请求 ID
 			requestID = fmt.Sprintf("%d", time.Now().UnixNano())
 		}
-		
+
 		c.Header("X-Request-ID", requestID)
 		c.Set("request_id", requestID)
-		
+
 		c.Next()
 	}
 }

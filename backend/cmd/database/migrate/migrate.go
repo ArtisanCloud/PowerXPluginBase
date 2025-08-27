@@ -73,7 +73,7 @@ func resetDatabase(cfg *config.Config) error {
 // runMigrations 运行数据库迁移
 func runMigrations(cfg *config.Config) error {
 	logger.Info("Creating schema if not exists...")
-	
+
 	// 创建 schema
 	sql := fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", cfg.DBSchema)
 	if err := db.DB.Exec(sql).Error; err != nil {
@@ -129,13 +129,13 @@ func createIndexes(cfg *config.Config) error {
 		fmt.Sprintf("CREATE INDEX IF NOT EXISTS idx_%s_task_due_date ON %s.task(due_date)", cfg.DBSchema, cfg.DBSchema),
 		fmt.Sprintf("CREATE INDEX IF NOT EXISTS idx_%s_task_created_at ON %s.task(created_at)", cfg.DBSchema, cfg.DBSchema),
 		fmt.Sprintf("CREATE INDEX IF NOT EXISTS idx_%s_task_labels ON %s.task USING GIN(labels)", cfg.DBSchema, cfg.DBSchema),
-		
+
 		// Sprint 表索引
 		fmt.Sprintf("CREATE INDEX IF NOT EXISTS idx_%s_sprint_tenant_id ON %s.sprint(tenant_id)", cfg.DBSchema, cfg.DBSchema),
 		fmt.Sprintf("CREATE INDEX IF NOT EXISTS idx_%s_sprint_status ON %s.sprint(status)", cfg.DBSchema, cfg.DBSchema),
 		fmt.Sprintf("CREATE INDEX IF NOT EXISTS idx_%s_sprint_start_date ON %s.sprint(start_date)", cfg.DBSchema, cfg.DBSchema),
 		fmt.Sprintf("CREATE INDEX IF NOT EXISTS idx_%s_sprint_end_date ON %s.sprint(end_date)", cfg.DBSchema, cfg.DBSchema),
-		
+
 		// 复合索引
 		fmt.Sprintf("CREATE INDEX IF NOT EXISTS idx_%s_task_tenant_status ON %s.task(tenant_id, status)", cfg.DBSchema, cfg.DBSchema),
 		fmt.Sprintf("CREATE INDEX IF NOT EXISTS idx_%s_task_tenant_assignee ON %s.task(tenant_id, assignee)", cfg.DBSchema, cfg.DBSchema),
@@ -158,7 +158,7 @@ func enableRLS(cfg *config.Config) error {
 	for _, table := range tables {
 		fullTableName := fmt.Sprintf("%s.%s", cfg.DBSchema, table)
 		sql := fmt.Sprintf("ALTER TABLE %s ENABLE ROW LEVEL SECURITY", fullTableName)
-		
+
 		if err := db.DB.Exec(sql).Error; err != nil {
 			logger.WithError(err).WithField("table", table).Warn("Failed to enable RLS (may already be enabled)")
 		} else {
@@ -196,12 +196,12 @@ func createRLSPolicies(cfg *config.Config) error {
 
 	for _, policy := range policies {
 		if err := db.DB.Exec(policy.sql).Error; err != nil {
-			logger.WithError(err).WithFields(logger.Logger.Fields{
+			logger.WithError(err).WithFields(logger.Fields{
 				"table":  policy.table,
 				"policy": policy.policy,
 			}).Warn("Failed to create RLS policy (may already exist)")
 		} else {
-			logger.WithFields(logger.Logger.Fields{
+			logger.WithFields(logger.Fields{
 				"table":  policy.table,
 				"policy": policy.policy,
 			}).Info("RLS policy created")

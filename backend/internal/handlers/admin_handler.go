@@ -1,5 +1,4 @@
 package handlers
-package handlers
 
 import (
 	"net/http"
@@ -21,7 +20,7 @@ func NewAdminHandler() *AdminHandler {
 // GetManifest 获取插件清单
 func (h *AdminHandler) GetManifest(c *gin.Context) {
 	log := logger.HandlerLogger("admin").WithContext(c.Request.Context())
-	
+
 	manifest := &contracts.PluginManifest{
 		ID:          "com.powerx.plugins.scrum",
 		Name:        "Scrum Task Plugin",
@@ -32,13 +31,13 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 		Repository:  "https://github.com/powerx-plugins/scrum.git",
 		License:     "MIT",
 		Tags:        []string{"scrum", "agile", "task-management", "project-management"},
-		
+
 		Backend: contracts.BackendConfig{
 			Entry:  "backend/bin/plugin",
 			Port:   8091,
 			Health: "/healthz",
 		},
-		
+
 		Frontend: &contracts.FrontendConfig{
 			Entry: "web-admin/.output",
 			Routes: map[string]string{
@@ -46,7 +45,7 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 			},
 			PublicPath: "/_p/com.powerx.plugins.scrum/admin/",
 		},
-		
+
 		Menus: []contracts.MenuConfig{
 			{
 				ID:    "scrum",
@@ -87,7 +86,7 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 				RequiredPermissions: []string{"scrum:task:read"},
 			},
 		},
-		
+
 		Permissions: []contracts.PermissionConfig{
 			{
 				Resource:    "scrum:task",
@@ -105,7 +104,7 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 				Description: "Scrum reports access",
 			},
 		},
-		
+
 		Agents: []contracts.AgentConfig{
 			{
 				ID:           "scrum.assistant",
@@ -125,16 +124,16 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 				RequiredPermissions: []string{"scrum:task:read", "scrum:sprint:read"},
 			},
 		},
-		
+
 		Tools: []contracts.ToolConfig{
 			{
-				ID:          "scrum.task.create",
-				PluginID:    "com.powerx.plugins.scrum",
-				Name:        "创建任务",
-				Description: "创建一个新的 Scrum 任务",
-				Transport:   "http",
-				Endpoint:    "/api/v1/tasks",
-				Method:      "POST",
+				ID:           "scrum.task.create",
+				PluginID:     "com.powerx.plugins.scrum",
+				Name:         "创建任务",
+				Description:  "创建一个新的 Scrum 任务",
+				Transport:    "http",
+				Endpoint:     "/api/v1/tasks",
+				Method:       "POST",
 				RBACResource: "scrum:task",
 				InputSchema: &contracts.JSONSchema{
 					Type: "object",
@@ -186,13 +185,13 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 				Timeout: 30,
 			},
 			{
-				ID:          "scrum.task.query",
-				PluginID:    "com.powerx.plugins.scrum",
-				Name:        "查询任务",
-				Description: "查询 Scrum 任务列表",
-				Transport:   "http",
-				Endpoint:    "/api/v1/tasks",
-				Method:      "GET",
+				ID:           "scrum.task.query",
+				PluginID:     "com.powerx.plugins.scrum",
+				Name:         "查询任务",
+				Description:  "查询 Scrum 任务列表",
+				Transport:    "http",
+				Endpoint:     "/api/v1/tasks",
+				Method:       "GET",
 				RBACResource: "scrum:task",
 				InputSchema: &contracts.JSONSchema{
 					Type: "object",
@@ -224,13 +223,13 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 				Timeout: 30,
 			},
 			{
-				ID:          "scrum.sprint.create",
-				PluginID:    "com.powerx.plugins.scrum",
-				Name:        "创建 Sprint",
-				Description: "创建一个新的 Sprint",
-				Transport:   "http",
-				Endpoint:    "/api/v1/sprints",
-				Method:      "POST",
+				ID:           "scrum.sprint.create",
+				PluginID:     "com.powerx.plugins.scrum",
+				Name:         "创建 Sprint",
+				Description:  "创建一个新的 Sprint",
+				Transport:    "http",
+				Endpoint:     "/api/v1/sprints",
+				Method:       "POST",
 				RBACResource: "scrum:sprint",
 				InputSchema: &contracts.JSONSchema{
 					Type: "object",
@@ -264,7 +263,7 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 				Timeout: 30,
 			},
 		},
-		
+
 		Workflows: []contracts.WorkflowConfig{
 			{
 				ID:          "scrum.plan.generate",
@@ -297,7 +296,7 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 				RequiredPermissions: []string{"scrum:task:read", "scrum:sprint:create"},
 			},
 		},
-		
+
 		Dependencies: []contracts.DependencyConfig{
 			{
 				Name:    "postgresql",
@@ -305,7 +304,7 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 				Type:    "database",
 			},
 		},
-		
+
 		ConfigSchema: &contracts.ConfigSchema{
 			Type: "object",
 			Properties: map[string]*contracts.JSONSchemaProperty{
@@ -328,13 +327,13 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 				},
 			},
 		},
-		
+
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	
+
 	log.Info("Plugin manifest requested")
-	
+
 	c.JSON(http.StatusOK, contracts.APIResponse{
 		Success:   true,
 		Data:      manifest,
@@ -345,7 +344,7 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 // GetRBACInfo 获取 RBAC 信息
 func (h *AdminHandler) GetRBACInfo(c *gin.Context) {
 	log := logger.HandlerLogger("admin").WithContext(c.Request.Context())
-	
+
 	rbacInfo := &contracts.RBACInfo{
 		Resources: []contracts.Resource{
 			{
@@ -419,9 +418,9 @@ func (h *AdminHandler) GetRBACInfo(c *gin.Context) {
 			{Resource: "scrum:report", Action: "read"},
 		},
 	}
-	
+
 	log.Info("RBAC info requested")
-	
+
 	c.JSON(http.StatusOK, contracts.APIResponse{
 		Success:   true,
 		Data:      rbacInfo,

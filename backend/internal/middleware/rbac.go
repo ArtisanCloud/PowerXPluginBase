@@ -71,7 +71,7 @@ func RBACMiddleware(config *RBACConfig) gin.HandlerFunc {
 
 		// 检查超级管理员权限
 		if hasAnyRole(tenantCtx.Roles, config.SuperAdminRoles) {
-			logger.AuthMiddleware().WithFields(logger.Logger.Fields{
+			logger.AuthMiddleware().WithFields(logger.Fields{
 				"tenant_id": tenantCtx.TenantID,
 				"user_id":   tenantCtx.UserID,
 				"roles":     tenantCtx.Roles,
@@ -84,7 +84,7 @@ func RBACMiddleware(config *RBACConfig) gin.HandlerFunc {
 		requiredPerm := getRequiredPermission(c, config)
 		if requiredPerm == nil {
 			if config.DefaultDeny {
-				logger.AuthMiddleware().WithFields(logger.Logger.Fields{
+				logger.AuthMiddleware().WithFields(logger.Fields{
 					"tenant_id": tenantCtx.TenantID,
 					"user_id":   tenantCtx.UserID,
 					"path":      c.Request.URL.Path,
@@ -104,7 +104,7 @@ func RBACMiddleware(config *RBACConfig) gin.HandlerFunc {
 
 		// 检查权限
 		if !hasPermission(tenantCtx.Permissions, *requiredPerm) {
-			logger.AuthMiddleware().WithFields(logger.Logger.Fields{
+			logger.AuthMiddleware().WithFields(logger.Fields{
 				"tenant_id":         tenantCtx.TenantID,
 				"user_id":           tenantCtx.UserID,
 				"required_resource": requiredPerm.Resource,
@@ -121,7 +121,8 @@ func RBACMiddleware(config *RBACConfig) gin.HandlerFunc {
 			return
 		}
 
-		logger.AuthMiddleware().WithFields(logger.Logger.Fields{
+		// 记录请求日志
+		logger.AuthMiddleware().WithFields(logger.Fields{
 			"tenant_id": tenantCtx.TenantID,
 			"user_id":   tenantCtx.UserID,
 			"resource":  requiredPerm.Resource,

@@ -1,5 +1,4 @@
 package domain
-package domain
 
 import (
 	"database/sql/driver"
@@ -264,22 +263,22 @@ func (t *Task) Validate() error {
 	if t.Title == "" {
 		return fmt.Errorf("title is required")
 	}
-	
+
 	if len(t.Title) > 200 {
 		return fmt.Errorf("title too long (max 200 characters)")
 	}
-	
+
 	if !t.Status.IsValid() {
 		return fmt.Errorf("invalid status: %s", t.Status)
 	}
-	
+
 	if !t.Priority.IsValid() {
 		return fmt.Errorf("invalid priority: %s", t.Priority)
 	}
-	
+
 	if t.Estimate != nil && *t.Estimate < 0 {
 		return fmt.Errorf("estimate cannot be negative")
 	}
-	
+
 	return nil
 }

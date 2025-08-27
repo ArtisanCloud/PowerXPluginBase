@@ -1,5 +1,4 @@
 package handlers
-package handlers
 
 import (
 	"net/http"
@@ -21,7 +20,7 @@ func NewHealthHandler() *HealthHandler {
 // HealthCheck 健康检查端点
 func (h *HealthHandler) HealthCheck(c *gin.Context) {
 	checks := make(map[string]string)
-	
+
 	// 检查数据库连接
 	if err := db.Health(); err != nil {
 		checks["database"] = "unhealthy: " + err.Error()
@@ -35,7 +34,7 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 		return
 	}
 	checks["database"] = "healthy"
-	
+
 	// 所有检查通过
 	c.JSON(http.StatusOK, contracts.HealthResponse{
 		Status:    "healthy",

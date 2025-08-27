@@ -40,6 +40,13 @@ vendor/
 .env.test
 .env.production
 
+# YAML 配置文件（实际配置）
+backend/etc/config.yaml
+config.yaml
+
+# 保留示例配置文件
+!backend/etc/config.example.yaml
+
 # 打包文件
 *.zip
 *.tar.gz

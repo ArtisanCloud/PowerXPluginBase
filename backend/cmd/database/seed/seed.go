@@ -51,7 +51,7 @@ func runSeeds() error {
 
 	for _, tenantID := range tenants {
 		logger.WithField("tenant_id", tenantID).Info("Seeding data for tenant")
-		
+
 		if err := seedTenantData(ctx, tenantID); err != nil {
 			return fmt.Errorf("failed to seed data for tenant %d: %w", tenantID, err)
 		}
@@ -92,7 +92,7 @@ func seedTenantData(ctx context.Context, tenantID int64) error {
 // createSampleSprints 创建示例 Sprint
 func createSampleSprints(ctx context.Context, tdb *db.TenantDB, tenantID int64) ([]*domain.Sprint, error) {
 	now := time.Now()
-	
+
 	sprints := []*domain.Sprint{
 		{
 			BaseModel: db.BaseModel{TenantID: tenantID},
@@ -107,7 +107,7 @@ func createSampleSprints(ctx context.Context, tdb *db.TenantDB, tenantID int64) 
 			BaseModel: db.BaseModel{TenantID: tenantID},
 			Name:      "Sprint 2 - 高级功能",
 			Goal:      "实现 Sprint 管理和报告功能",
-			StartDate: now,                    // 现在开始
+			StartDate: now,                   // 现在开始
 			EndDate:   now.AddDate(0, 0, 14), // 2周后结束
 			Capacity:  func() *int { v := 45; return &v }(),
 			Status:    domain.SprintStatusActive,
@@ -129,7 +129,7 @@ func createSampleSprints(ctx context.Context, tdb *db.TenantDB, tenantID int64) 
 			return nil, fmt.Errorf("failed to create sprint %s: %w", sprint.Name, err)
 		}
 		createdSprints = append(createdSprints, sprint)
-		logger.WithFields(logger.Logger.Fields{
+		logger.WithFields(logger.Fields{
 			"sprint_id":   sprint.ID,
 			"sprint_name": sprint.Name,
 			"tenant_id":   tenantID,
@@ -195,11 +195,11 @@ func createSampleTasks(ctx context.Context, tdb *db.TenantDB, tenantID int64, sp
 			if err := tdb.Create(task).Error; err != nil {
 				return fmt.Errorf("failed to create task %s: %w", task.Title, err)
 			}
-			logger.WithFields(logger.Logger.Fields{
-				"task_id":   task.ID,
+			logger.WithFields(logger.Fields{
+				"task_id":    task.ID,
 				"task_title": task.Title,
-				"sprint_id": task.SprintID,
-				"status":    task.Status,
+				"sprint_id":  task.SprintID,
+				"status":     task.Status,
 			}).Info("Task created")
 		}
 	}
@@ -219,8 +219,8 @@ func createSampleTasks(ctx context.Context, tdb *db.TenantDB, tenantID int64, sp
 				Estimate:    func() *int { v := 21; return &v }(),
 				DueDate:     func() *time.Time { t := time.Now().AddDate(0, 0, 7); return &t }(),
 				Meta: domain.Meta{
-					"difficulty": "high",
-					"category":   "backend",
+					"difficulty":      "high",
+					"category":        "backend",
 					"priority_reason": "核心功能",
 				},
 			},
@@ -274,11 +274,11 @@ func createSampleTasks(ctx context.Context, tdb *db.TenantDB, tenantID int64, sp
 			if err := tdb.Create(task).Error; err != nil {
 				return fmt.Errorf("failed to create task %s: %w", task.Title, err)
 			}
-			logger.WithFields(logger.Logger.Fields{
-				"task_id":   task.ID,
+			logger.WithFields(logger.Fields{
+				"task_id":    task.ID,
 				"task_title": task.Title,
-				"sprint_id": task.SprintID,
-				"status":    task.Status,
+				"sprint_id":  task.SprintID,
+				"status":     task.Status,
 			}).Info("Task created")
 		}
 	}
@@ -320,11 +320,11 @@ func createSampleTasks(ctx context.Context, tdb *db.TenantDB, tenantID int64, sp
 			if err := tdb.Create(task).Error; err != nil {
 				return fmt.Errorf("failed to create task %s: %w", task.Title, err)
 			}
-			logger.WithFields(logger.Logger.Fields{
-				"task_id":   task.ID,
+			logger.WithFields(logger.Fields{
+				"task_id":    task.ID,
 				"task_title": task.Title,
-				"sprint_id": task.SprintID,
-				"status":    task.Status,
+				"sprint_id":  task.SprintID,
+				"status":     task.Status,
 			}).Info("Task created")
 		}
 	}
@@ -377,10 +377,10 @@ func createSampleTasks(ctx context.Context, tdb *db.TenantDB, tenantID int64, sp
 		if err := tdb.Create(task).Error; err != nil {
 			return fmt.Errorf("failed to create backlog task %s: %w", task.Title, err)
 		}
-		logger.WithFields(logger.Logger.Fields{
-			"task_id":   task.ID,
+		logger.WithFields(logger.Fields{
+			"task_id":    task.ID,
 			"task_title": task.Title,
-			"status":    task.Status,
+			"status":     task.Status,
 		}).Info("Backlog task created")
 	}
 

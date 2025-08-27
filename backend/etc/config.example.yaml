@@ -1,0 +1,63 @@
+# PowerX Scrum Plugin Configuration - Example
+# 此文件是配置示例，请复制为 config.yaml 并根据实际环境修改
+
+# 服务配置
+server:
+  bind_addr: ":8086"          # 服务绑定地址
+  log_level: "debug"          # 开发环境建议使用 debug
+  dev_mode: true              # 开发模式
+
+# 数据库配置
+database:
+  dsn: "host=localhost user=scrum_user password=your_password dbname=powerx_dev port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+  schema: "scrum"
+
+# 运行时配置
+runtime:
+  run_migrate: true           # 开发环境可以启用自动迁移
+
+# PowerX 上下文配置
+context:
+  # 开发模式下这些可以留空，会使用模拟数据
+  hmac_secret: ""
+  key_id: ""
+  jwks_url: ""
+  issuer: ""
+  audience: ""
+  ttl: "5m"
+
+# 业务配置
+business:
+  sprint:
+    default_capacity: 40
+    max_duration_days: 30
+  task:
+    max_estimate_points: 100
+    default_priority: "medium"
+  notifications:
+    enabled: false            # 开发环境通常关闭通知
+  cache:
+    enabled: false            # 开发环境可关闭缓存
+
+# 安全配置
+security:
+  enable_cors: true
+  cors_origins:
+    - "http://localhost:3036"
+    - "http://localhost:3000"
+    - "http://127.0.0.1:3036"
+  rate_limit:
+    enabled: false            # 开发环境可关闭限流
+
+# 监控配置
+monitoring:
+  metrics:
+    enabled: true
+  health_check:
+    enabled: true
+
+# 日志配置
+logging:
+  level: "debug"
+  format: "text"              # 开发环境使用文本格式更易读
+  output: "stdout"

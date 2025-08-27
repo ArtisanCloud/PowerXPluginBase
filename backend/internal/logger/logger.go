@@ -1,5 +1,4 @@
 package logger
-package logger
 
 import (
 	"io"
@@ -11,6 +10,9 @@ import (
 
 // Logger 全局日志实例
 var Logger *logrus.Logger
+
+// Fields 日志字段类型别名
+type Fields = logrus.Fields
 
 // Init 初始化日志配置
 func Init(level string) {
