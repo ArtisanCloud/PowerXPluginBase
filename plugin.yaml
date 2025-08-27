@@ -1,0 +1,163 @@
+id: com.powerx.plugins.scrum
+name: Scrum Task Plugin
+version: 0.1.0
+description: A Scrum task management plugin for PowerX
+
+# 后端配置
+backend:
+  entry: backend/bin/plugin
+  port: 8091
+  health: /healthz
+
+# 路由配置
+routes:
+  basePath: /v1                          # 插件自身 API 前缀
+  adminManifest: /api/v1/admin/manifest  # 管理端清单接口
+  rbac: /api/v1/admin/rbac              # RBAC 信息接口
+
+# 权限定义
+permissions:
+  - resource: scrum:task
+    actions: [read, create, update, delete]
+  - resource: scrum:sprint
+    actions: [read, create, update, delete]
+
+# 菜单定义
+menus:
+  - id: "scrum"
+    title: "menu.scrum"
+    icon: "i-heroicons-clipboard-document-check"
+    path: "/plugins/scrum"
+    order: 20
+    children:
+      - id: "scrum.tasks"
+        title: "menu.scrum.tasks"
+        icon: "i-heroicons-list-bullet"
+        path: "/plugins/scrum/tasks"
+        order: 1
+      - id: "scrum.sprints"
+        title: "menu.scrum.sprints"
+        icon: "i-heroicons-calendar-days"
+        path: "/plugins/scrum/sprints"
+        order: 2
+
+# 静态资源
+assets:
+  webAdminPath: web-admin/.output   # 前端产物路径（可选）
+
+# Agent 能力注册
+agents:
+  - id: "scrum.assistant"
+    plugin_id: "com.powerx.plugins.scrum"
+    name: "Scrum 助理"
+    description: "创建/分配任务，生成 Sprint 计划"
+    default_tools: ["scrum.task.create", "scrum.task.query", "scrum.sprint.create"]
+
+# 工具注册
+tools:
+  - id: "scrum.task.create"
+    plugin_id: "com.powerx.plugins.scrum"
+    name: "创建任务"
+    description: "创建一个新的 Scrum 任务"
+    transport: "http"
+    endpoint: "/api/v1/tasks"
+    method: "POST"
+    rbac_resource: "scrum:task"
+    input_schema:
+      type: object
+      properties:
+        title:
+          type: string
+          description: "任务标题"
+        description:
+          type: string
+          description: "任务描述"
+        assignee:
+          type: integer
+          description: "分配给的用户ID"
+        status:
+          type: string
+          enum: ["todo", "in_progress", "done"]
+          description: "任务状态"
+      required: ["title"]
+    output_schema:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+  - id: "scrum.task.query"
+    plugin_id: "com.powerx.plugins.scrum"
+    name: "查询任务"
+    description: "查询 Scrum 任务列表"
+    transport: "http"
+    endpoint: "/api/v1/tasks"
+    method: "GET"
+    rbac_resource: "scrum:task"
+    input_schema:
+      type: object
+      properties:
+        status:
+          type: string
+          description: "按状态过滤"
+        assignee:
+          type: integer
+          description: "按分配人过滤"
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    output_schema:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              title:
+                type: string
+              status:
+                type: string
+              assignee:
+                type: integer
+              created_at:
+                type: string
+        pagination:
+          type: object
+
+# 工作流注册
+workflows:
+  - id: "scrum.plan.generate"
+    plugin_id: "com.powerx.plugins.scrum"
+    name: "生成 Sprint 计划"
+    description: "基于任务池和团队能力生成 Sprint 计划"
+    endpoint: "/api/v1/workflows/plan-generate"
+    input_schema:
+      type: object
+      properties:
+        sprint_duration:
+          type: integer
+          description: "Sprint 持续天数"
+        team_capacity:
+          type: integer
+          description: "团队总容量（故事点）"
+        priority_tasks:
+          type: array
+          items:
+            type: integer
+          description: "优先任务ID列表"

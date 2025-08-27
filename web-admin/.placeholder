@@ -1,0 +1,24 @@
+# 前端管理界面占位
+
+本目录用于放置插件的前端管理界面文件。
+
+前端界面将在后续单独实现。
+
+## 预期结构
+
+```
+web-admin/
+├── .output/           # 构建产物 (Next.js/Nuxt 输出)
+├── components/        # 组件
+├── pages/            # 页面
+├── styles/           # 样式
+├── utils/            # 工具
+├── package.json      # 依赖配置
+└── README.md         # 说明文档
+```
+
+## 访问方式
+
+前端界面将通过以下路径访问：
+- 开发环境: `http://localhost:3000`
+- 生产环境: `/_p/com.powerx.plugins.scrum/admin/`
