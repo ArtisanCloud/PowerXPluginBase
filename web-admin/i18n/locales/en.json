@@ -1,0 +1,75 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "reset": "Reset",
+    "close": "Close"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "tasks": "Tasks",
+    "sprints": "Sprints",
+    "backlog": "Backlog",
+    "reports": "Reports",
+    "settings": "Settings"
+  },
+  "task": {
+    "title": "Task Title",
+    "description": "Task Description",
+    "status": "Status",
+    "priority": "Priority",
+    "assignee": "Assignee",
+    "sprint": "Sprint",
+    "labels": "Labels",
+    "dueDate": "Due Date",
+    "estimate": "Estimate",
+    "createTask": "Create Task",
+    "editTask": "Edit Task",
+    "deleteTask": "Delete Task",
+    "taskDetails": "Task Details"
+  },
+  "status": {
+    "todo": "To Do",
+    "inProgress": "In Progress",
+    "done": "Done",
+    "blocked": "Blocked"
+  },
+  "priority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "sprint": {
+    "name": "Sprint Name",
+    "goal": "Sprint Goal",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "capacity": "Capacity",
+    "createSprint": "Create Sprint",
+    "editSprint": "Edit Sprint",
+    "deleteSprint": "Delete Sprint",
+    "sprintDetails": "Sprint Details",
+    "activeSprint": "Active Sprint",
+    "completedSprint": "Completed Sprint",
+    "planningSprint": "Planning Sprint"
+  },
+  "message": {
+    "saveSuccess": "Saved successfully",
+    "deleteSuccess": "Deleted successfully",
+    "error": "Operation failed, please try again",
+    "confirmDelete": "Are you sure you want to delete? This action cannot be undone.",
+    "noData": "No data available",
+    "networkError": "Network error, please check your connection"
+  }
+}

@@ -78,6 +78,11 @@ web-admin/build/
 # 测试覆盖率
 coverage/
 
+# 调试文件和目录
+__debug*
+*/__debug*
+**/__debug*
+
 # 插件特定
 plugin-data/
 uploads/

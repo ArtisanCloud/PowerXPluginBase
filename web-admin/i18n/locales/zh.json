@@ -1,0 +1,75 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "add": "添加",
+    "search": "搜索",
+    "loading": "加载中...",
+    "confirm": "确认",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "submit": "提交",
+    "reset": "重置",
+    "close": "关闭"
+  },
+  "navigation": {
+    "dashboard": "仪表板",
+    "tasks": "任务",
+    "sprints": "冲刺",
+    "backlog": "待办事项",
+    "reports": "报告",
+    "settings": "设置"
+  },
+  "task": {
+    "title": "任务标题",
+    "description": "任务描述",
+    "status": "状态",
+    "priority": "优先级",
+    "assignee": "分配给",
+    "sprint": "冲刺",
+    "labels": "标签",
+    "dueDate": "截止日期",
+    "estimate": "估算",
+    "createTask": "创建任务",
+    "editTask": "编辑任务",
+    "deleteTask": "删除任务",
+    "taskDetails": "任务详情"
+  },
+  "status": {
+    "todo": "待办",
+    "inProgress": "进行中",
+    "done": "已完成",
+    "blocked": "阻塞"
+  },
+  "priority": {
+    "low": "低",
+    "medium": "中",
+    "high": "高",
+    "urgent": "紧急"
+  },
+  "sprint": {
+    "name": "冲刺名称",
+    "goal": "冲刺目标",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "capacity": "容量",
+    "createSprint": "创建冲刺",
+    "editSprint": "编辑冲刺",
+    "deleteSprint": "删除冲刺",
+    "sprintDetails": "冲刺详情",
+    "activeSprint": "活跃冲刺",
+    "completedSprint": "已完成冲刺",
+    "planningSprint": "计划中冲刺"
+  },
+  "message": {
+    "saveSuccess": "保存成功",
+    "deleteSuccess": "删除成功",
+    "error": "操作失败，请重试",
+    "confirmDelete": "确定要删除吗？此操作不可撤销。",
+    "noData": "暂无数据",
+    "networkError": "网络错误，请检查连接"
+  }
+}
