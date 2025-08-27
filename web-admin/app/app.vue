@@ -1,9 +1,12 @@
 <template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtPage />
-  </div>
+  <UApp>
+    <NuxtLoadingIndicator :throttle="150" />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </UApp>
 </template>
+
 
 <script setup>
 // PowerX Scrum Plugin Admin Interface
