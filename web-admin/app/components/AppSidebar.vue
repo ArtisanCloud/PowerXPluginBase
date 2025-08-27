@@ -16,59 +16,46 @@
           }"
         >
           <UIcon name="i-heroicons-chart-bar" class="w-4 h-4 mr-3" />
-          {{ $t("nav.dashboard") }}
+          {{ $t("navigation.dashboard") }}
         </UButton>
       </div>
 
-      <!-- 客户运营 -->
+      <!-- Scrum 管理 -->
       <div>
         <div
           class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
         >
-          {{ $t("nav.customerOps") }}
+          {{ $t("navigation.scrumManagement") }}
         </div>
         <div class="space-y-1">
+          <!-- 产品待办列表 -->
           <UButton
-            to="/customer"
+            to="/backlog"
             variant="ghost"
             color="neutral"
             class="w-full justify-start"
             :class="{
               'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/customer',
+                $route.path === '/backlog',
             }"
           >
-            <UIcon name="i-heroicons-users" class="w-4 h-4 mr-3" />
-            {{ $t("nav.customers") }}
+            <UIcon name="i-heroicons-list-bullet" class="w-4 h-4 mr-3" />
+            {{ $t("navigation.backlog") }}
           </UButton>
 
-          <UButton
-            to="/customer/members"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/customer/members',
-            }"
-          >
-            <UIcon name="i-heroicons-user-group" class="w-4 h-4 mr-3" />
-            {{ $t("nav.members") }}
-          </UButton>
-
-          <!-- 用户分析 - 带子菜单 -->
+          <!-- 冲刺管理 -->
           <div>
             <UButton
               variant="ghost"
               color="neutral"
               class="w-full justify-start"
-              @click="toggleUserAnalytics"
+              @click="toggleSprintMenu"
             >
-              <UIcon name="i-heroicons-chart-pie" class="w-4 h-4 mr-3" />
-              {{ $t("nav.userAnalytics") }}
+              <UIcon name="i-heroicons-clock" class="w-4 h-4 mr-3" />
+              {{ $t("navigation.sprints") }}
               <UIcon
                 :name="
-                  showUserAnalytics
+                  showSprintMenu
                     ? 'i-heroicons-chevron-down'
                     : 'i-heroicons-chevron-right'
                 "
@@ -76,317 +63,217 @@
               />
             </UButton>
 
-            <div v-show="showUserAnalytics" class="ml-6 mt-1 space-y-1">
+            <div v-show="showSprintMenu" class="ml-6 mt-1 space-y-1">
               <UButton
-                to="/customer/analytics/segmentation"
+                to="/sprints/active"
                 variant="ghost"
                 color="neutral"
                 size="sm"
                 class="w-full justify-start text-sm"
                 :class="{
                   'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                    $route.path === '/customer/analytics/segmentation',
+                    $route.path === '/sprints/active',
                 }"
               >
-                <UIcon name="i-heroicons-user-group" class="w-3 h-3 mr-2" />
-                {{ $t("nav.userSegmentation") }}
+                <UIcon name="i-heroicons-play" class="w-3 h-3 mr-2" />
+                {{ $t("navigation.activeSprint") }}
               </UButton>
 
               <UButton
-                to="/customer/analytics/cohort"
+                to="/sprints/planning"
                 variant="ghost"
                 color="neutral"
                 size="sm"
                 class="w-full justify-start text-sm"
                 :class="{
                   'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                    $route.path === '/customer/analytics/cohort',
+                    $route.path === '/sprints/planning',
                 }"
               >
-                <UIcon name="i-heroicons-user-group" class="w-3 h-3 mr-2" />
-                {{ $t("nav.cohortAnalysis") }}
+                <UIcon name="i-heroicons-calendar" class="w-3 h-3 mr-2" />
+                {{ $t("navigation.sprintPlanning") }}
               </UButton>
 
               <UButton
-                to="/customer/analytics/retention"
+                to="/sprints/retrospective"
                 variant="ghost"
                 color="neutral"
                 size="sm"
                 class="w-full justify-start text-sm"
                 :class="{
                   'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                    $route.path === '/customer/analytics/retention',
+                    $route.path === '/sprints/retrospective',
                 }"
               >
-                <UIcon name="i-heroicons-arrow-path" class="w-3 h-3 mr-2" />
-                {{ $t("nav.retentionAnalysis") }}
-              </UButton>
-
-              <UButton
-                to="/customer/analytics/behavior"
-                variant="ghost"
-                color="neutral"
-                size="sm"
-                class="w-full justify-start text-sm"
-                :class="{
-                  'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                    $route.path === '/customer/analytics/behavior',
-                }"
-              >
-                <UIcon
-                  name="i-heroicons-cursor-arrow-rays"
-                  class="w-3 h-3 mr-2"
-                />
-                {{ $t("nav.behaviorAnalysis") }}
-              </UButton>
-
-              <UButton
-                to="/customer/analytics/funnel"
-                variant="ghost"
-                color="neutral"
-                size="sm"
-                class="w-full justify-start text-sm"
-                :class="{
-                  'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                    $route.path === '/customer/analytics/funnel',
-                }"
-              >
-                <UIcon name="i-heroicons-funnel" class="w-3 h-3 mr-2" />
-                {{ $t("nav.funnelAnalysis") }}
+                <UIcon name="i-heroicons-arrow-path-rounded-square" class="w-3 h-3 mr-2" />
+                {{ $t("navigation.retrospective") }}
               </UButton>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- 商品中心 -->
-      <div>
-        <div
-          class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-        >
-          {{ $t("nav.productCenter") }}
-        </div>
-        <div class="space-y-1">
+          <!-- 任务看板 -->
           <UButton
-            to="/product"
+            to="/board"
             variant="ghost"
             color="neutral"
             class="w-full justify-start"
             :class="{
               'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/product',
+                $route.path === '/board',
             }"
           >
-            <UIcon name="i-heroicons-cube" class="w-4 h-4 mr-3" />
-            {{ $t("nav.products") }}
+            <UIcon name="i-heroicons-view-columns" class="w-4 h-4 mr-3" />
+            {{ $t("navigation.taskBoard") }}
           </UButton>
 
+          <!-- 任务管理 -->
           <UButton
-            to="/product/categories"
+            to="/tasks"
             variant="ghost"
             color="neutral"
             class="w-full justify-start"
             :class="{
               'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/product/categories',
+                $route.path === '/tasks',
             }"
           >
-            <UIcon name="i-heroicons-tag" class="w-4 h-4 mr-3" />
-            {{ $t("nav.categories") }}
-          </UButton>
-
-          <UButton
-            to="/product/inventory"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/product/inventory',
-            }"
-          >
-            <UIcon name="i-heroicons-archive-box" class="w-4 h-4 mr-3" />
-            {{ $t("nav.inventory") }}
-          </UButton>
-
-          <UButton
-            to="/product/suppliers"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/product/suppliers',
-            }"
-          >
-            <UIcon name="i-heroicons-building-office" class="w-4 h-4 mr-3" />
-            {{ $t("nav.suppliers") }}
+            <UIcon name="i-heroicons-check-circle" class="w-4 h-4 mr-3" />
+            {{ $t("navigation.tasks") }}
           </UButton>
         </div>
       </div>
 
-      <!-- 定价中心 -->
+      <!-- 团队协作 -->
       <div>
         <div
           class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
         >
-          {{ $t("pricing.center") }}
+          {{ $t("navigation.teamCollaboration") }}
         </div>
         <div class="space-y-1">
+          <!-- 团队成员 -->
           <UButton
-            to="/pricing"
+            to="/team"
             variant="ghost"
             color="neutral"
             class="w-full justify-start"
             :class="{
               'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/pricing',
+                $route.path === '/team',
             }"
           >
-            <UIcon name="i-heroicons-currency-dollar" class="w-4 h-4 mr-3" />
-            {{ $t("pricing.overview") }}
+            <UIcon name="i-heroicons-users" class="w-4 h-4 mr-3" />
+            {{ $t("navigation.team") }}
           </UButton>
 
+          <!-- 每日站会 -->
           <UButton
-            to="/pricing/pricebooks"
+            to="/daily-standup"
             variant="ghost"
             color="neutral"
             class="w-full justify-start"
             :class="{
               'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/pricing/pricebooks',
+                $route.path === '/daily-standup',
             }"
           >
-            <UIcon name="i-heroicons-book-open" class="w-4 h-4 mr-3" />
-            {{ $t("pricing.pricebooks") }}
+            <UIcon name="i-heroicons-microphone" class="w-4 h-4 mr-3" />
+            {{ $t("navigation.dailyStandup") }}
           </UButton>
+        </div>
+      </div>
 
+      <!-- 报告分析 -->
+      <div>
+        <div
+          class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+        >
+          {{ $t("navigation.reportsAnalytics") }}
+        </div>
+        <div class="space-y-1">
+          <!-- 燃尽图 -->
           <UButton
-            to="/pricing/rules"
+            to="/reports/burndown"
             variant="ghost"
             color="neutral"
             class="w-full justify-start"
             :class="{
               'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/pricing/rules',
+                $route.path === '/reports/burndown',
+            }"
+          >
+            <UIcon name="i-heroicons-chart-bar" class="w-4 h-4 mr-3" />
+            {{ $t("navigation.burndownChart") }}
+          </UButton>
+
+          <!-- 速度图表 -->
+          <UButton
+            to="/reports/velocity"
+            variant="ghost"
+            color="neutral"
+            class="w-full justify-start"
+            :class="{
+              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
+                $route.path === '/reports/velocity',
+            }"
+          >
+            <UIcon name="i-heroicons-arrow-trending-up" class="w-4 h-4 mr-3" />
+            {{ $t("navigation.velocityChart") }}
+          </UButton>
+
+          <!-- 累积流图 -->
+          <UButton
+            to="/reports/cumulative-flow"
+            variant="ghost"
+            color="neutral"
+            class="w-full justify-start"
+            :class="{
+              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
+                $route.path === '/reports/cumulative-flow',
+            }"
+          >
+            <UIcon name="i-heroicons-chart-pie" class="w-4 h-4 mr-3" />
+            {{ $t("navigation.cumulativeFlow") }}
+          </UButton>
+        </div>
+      </div>
+
+      <!-- 系统设置 -->
+      <div>
+        <div
+          class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+        >
+          {{ $t("navigation.systemSettings") }}
+        </div>
+        <div class="space-y-1">
+          <!-- 项目设置 -->
+          <UButton
+            to="/settings/project"
+            variant="ghost"
+            color="neutral"
+            class="w-full justify-start"
+            :class="{
+              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
+                $route.path === '/settings/project',
             }"
           >
             <UIcon name="i-heroicons-cog-6-tooth" class="w-4 h-4 mr-3" />
-            {{ $t("pricing.rules") }}
+            {{ $t("navigation.projectSettings") }}
           </UButton>
 
+          <!-- 权限管理 -->
           <UButton
-            to="/pricing/contracts"
+            to="/settings/permissions"
             variant="ghost"
             color="neutral"
             class="w-full justify-start"
             :class="{
               'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/pricing/contracts',
+                $route.path === '/settings/permissions',
             }"
           >
-            <UIcon name="i-heroicons-document-text" class="w-4 h-4 mr-3" />
-            {{ $t("pricing.contracts") }}
-          </UButton>
-        </div>
-      </div>
-
-      <!-- 营销增长 -->
-      <div>
-        <div
-          class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-        >
-          {{ $t("nav.marketingGrowth") }}
-        </div>
-        <div class="space-y-1">
-          <UButton
-            to="/market/orders"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/market/orders',
-            }"
-          >
-            <UIcon
-              name="i-heroicons-clipboard-document-list"
-              class="w-4 h-4 mr-3"
-            />
-            {{ $t("nav.orders") }}
-          </UButton>
-
-          <UButton
-            to="/market/payment"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/market/payment',
-            }"
-          >
-            <UIcon
-              name="i-heroicons-clipboard-document-list"
-              class="w-4 h-4 mr-3"
-            />
-            {{ $t("nav.payment") }}
-          </UButton>
-
-          <UButton
-            to="/market/marketing"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/market/marketing',
-            }"
-          >
-            <UIcon name="i-heroicons-megaphone" class="w-4 h-4 mr-3" />
-            {{ $t("nav.marketing") }}
-          </UButton>
-
-          <UButton
-            to="/market/promotions"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/market/promotions',
-            }"
-          >
-            <UIcon name="i-heroicons-gift" class="w-4 h-4 mr-3" />
-            {{ $t("nav.promotions") }}
-          </UButton>
-
-          <UButton
-            to="/market/channels"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/market/channels',
-            }"
-          >
-            <UIcon name="i-heroicons-globe-alt" class="w-4 h-4 mr-3" />
-            {{ $t("nav.channels") }}
-          </UButton>
-
-          <UButton
-            to="/market/analytics"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/market/analytics',
-            }"
-          >
-            <UIcon name="i-heroicons-chart-bar-square" class="w-4 h-4 mr-3" />
-            {{ $t("nav.analytics") }}
+            <UIcon name="i-heroicons-key" class="w-4 h-4 mr-3" />
+            {{ $t("navigation.permissions") }}
           </UButton>
         </div>
       </div>
@@ -397,21 +284,21 @@
 <script setup lang="ts">
 const { t } = useI18n();
 
-// 控制用户分析子菜单的展开状态
-const showUserAnalytics = ref(false);
+// 控制冲刺管理子菜单的展开状态
+const showSprintMenu = ref(false);
 
-// 切换用户分析子菜单
-const toggleUserAnalytics = () => {
-  showUserAnalytics.value = !showUserAnalytics.value;
+// 切换冲刺管理子菜单
+const toggleSprintMenu = () => {
+  showSprintMenu.value = !showSprintMenu.value;
 };
 
-// 监听路由变化，如果当前路由在用户分析模块下，自动展开子菜单
+// 监听路由变化，如果当前路由在冲刺模块下，自动展开子菜单
 const route = useRoute();
 watch(
   () => route.path,
   (newPath) => {
-    if (newPath.startsWith("/customer/analytics/")) {
-      showUserAnalytics.value = true;
+    if (newPath.startsWith("/sprints/")) {
+      showSprintMenu.value = true;
     }
   },
   { immediate: true }
