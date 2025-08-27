@@ -327,8 +327,8 @@ func loadEnvConfig(cfg *Config) {
 		cfg.Server.LogLevel = level
 		cfg.Logging.Level = level
 	}
-	if devMode := os.Getenv("PX_DEV_MODE"); devMode == "1" || devMode == "true" {
-		cfg.Server.DevMode = true
+	if devMode := os.Getenv("PX_DEV_MODE"); devMode != "" {
+		cfg.Server.DevMode = (devMode == "1" || devMode == "true")
 	}
 
 	// 数据库配置
@@ -440,7 +440,7 @@ func (c *Config) Validate() error {
 	}
 
 	// 认证模式验证
-	if !c.Server.DevMode && !c.DevMode && !c.IsHMACMode() && !c.IsJWTMode() {
+	if !c.Server.DevMode && !c.IsHMACMode() && !c.IsJWTMode() {
 		return NewConfigError("either HMAC or JWT mode must be configured in production")
 	}
 

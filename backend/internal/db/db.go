@@ -28,17 +28,11 @@ type TenantDB struct {
 func Connect(cfg *config.Config) error {
 	var err error
 
-	// 配置 GORM 日志
-	var gormLogLevel gormLogger.LogLevel
-	switch cfg.LogLevel {
-	case "debug":
+	// 配置 GORM 日志 - 使用 Silent 模式以减少数据库日志输出
+	// 只有在明确设置 debug 模式时才显示数据库详细日志
+	gormLogLevel := gormLogger.Silent
+	if cfg.Server.DevMode && cfg.LogLevel == "debug" {
 		gormLogLevel = gormLogger.Info
-	case "warn":
-		gormLogLevel = gormLogger.Warn
-	case "error":
-		gormLogLevel = gormLogger.Error
-	default:
-		gormLogLevel = gormLogger.Silent
 	}
 
 	gormConfig := &gorm.Config{

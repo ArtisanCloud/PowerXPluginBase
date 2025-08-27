@@ -39,20 +39,8 @@ func main() {
 		}
 	}()
 
-	// 检查是否仅运行迁移
-	if cfg.RunMigrate {
-		logger.Info("Running database migrations...")
-		if err := runMigrations(); err != nil {
-			logger.WithError(err).Fatal("Failed to run migrations")
-		}
-		logger.Info("Database migrations completed successfully")
-		return
-	}
-
-	// 运行自动迁移
-	if err := runAutoMigrate(); err != nil {
-		logger.WithError(err).Fatal("Failed to run auto migrations")
-	}
+	// 注意：不再在应用启动时执行任何迁移操作
+	// 数据库迁移应该通过独立的 cmd/database/migrate 命令执行
 
 	// 初始化依赖
 	taskRepo := domain.NewTaskRepository()
@@ -71,13 +59,13 @@ func main() {
 	server := &http.Server{
 		Addr:    cfg.BindAddr,
 		Handler: engine,
-		
+
 		// 超时配置
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       120 * time.Second,
-		
+
 		// 最大头部大小
 		MaxHeaderBytes: 1 << 20, // 1MB
 	}
@@ -108,59 +96,8 @@ func main() {
 	}
 }
 
-// runMigrations 运行数据库迁移
-func runMigrations() error {
-	models := []interface{}{
-		&domain.Task{},
-		&domain.Sprint{},
-	}
-
-	// 执行 GORM 自动迁移
-	if err := db.Migrate(models...); err != nil {
-		return fmt.Errorf("auto migrate failed: %w", err)
-	}
-
-	// 启用 RLS
-	if err := enableRLS(); err != nil {
-		return fmt.Errorf("enable RLS failed: %w", err)
-	}
-
-	return nil
-}
-
-// runAutoMigrate 运行自动迁移（启动时）
-func runAutoMigrate() error {
-	logger.Info("Running auto migrations...")
-	return runMigrations()
-}
-
-// enableRLS 启用行级安全
-func enableRLS() error {
-	logger.Info("Enabling Row Level Security...")
-
-	// 为 task 表启用 RLS
-	if err := db.EnableRLS("task"); err != nil {
-		logger.WithError(err).Warn("Failed to enable RLS for task table (may already be enabled)")
-	}
-
-	// 创建 task 表的 RLS 策略
-	if err := db.CreateRLSPolicy("task", "p_tenant_isolation"); err != nil {
-		logger.WithError(err).Warn("Failed to create RLS policy for task table (may already exist)")
-	}
-
-	// 为 sprint 表启用 RLS
-	if err := db.EnableRLS("sprint"); err != nil {
-		logger.WithError(err).Warn("Failed to enable RLS for sprint table (may already be enabled)")
-	}
-
-	// 创建 sprint 表的 RLS 策略
-	if err := db.CreateRLSPolicy("sprint", "p_tenant_isolation"); err != nil {
-		logger.WithError(err).Warn("Failed to create RLS policy for sprint table (may already exist)")
-	}
-
-	logger.Info("Row Level Security setup completed")
-	return nil
-}
+// 注意：数据库迁移相关功能已移除
+// 请使用独立的迁移命令：go run cmd/database/migrate/migrate.go
 
 // NewTaskService 创建任务服务实例（简化实现）
 func NewTaskService(repo domain.TaskRepository) domain.TaskService {
