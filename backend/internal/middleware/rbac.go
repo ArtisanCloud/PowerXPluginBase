@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/powerx-plugins/scrum/internal/logger"
+	"scrum-plugin/internal/logger"
 )
 
 // Permission 权限结构

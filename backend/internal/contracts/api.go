@@ -1,6 +1,9 @@
 package contracts
 
-import "time"
+import (
+	"gorm.io/datatypes"
+	"time"
+)
 
 // APIResponse 标准 API 响应格式
 type APIResponse struct {
@@ -54,8 +57,8 @@ type CreateTaskRequest struct {
 	Description string                 `json:"description,omitempty" binding:"max=2000"`
 	Status      string                 `json:"status,omitempty" binding:"oneof=todo in_progress done"`
 	Priority    string                 `json:"priority,omitempty" binding:"oneof=low medium high urgent"`
-	Assignee    *int64                 `json:"assignee,omitempty"`
-	SprintID    *int64                 `json:"sprint_id,omitempty"`
+	Assignee    *uint64                `json:"assignee,omitempty"`
+	SprintID    *uint64                `json:"sprint_id,omitempty"`
 	Labels      []string               `json:"labels,omitempty"`
 	DueDate     *time.Time             `json:"due_date,omitempty"`
 	Estimate    *int                   `json:"estimate,omitempty"` // 故事点
@@ -68,8 +71,8 @@ type UpdateTaskRequest struct {
 	Description *string                `json:"description,omitempty" binding:"omitempty,max=2000"`
 	Status      *string                `json:"status,omitempty" binding:"omitempty,oneof=todo in_progress done"`
 	Priority    *string                `json:"priority,omitempty" binding:"omitempty,oneof=low medium high urgent"`
-	Assignee    *int64                 `json:"assignee,omitempty"`
-	SprintID    *int64                 `json:"sprint_id,omitempty"`
+	Assignee    *uint64                `json:"assignee,omitempty"`
+	SprintID    *uint64                `json:"sprint_id,omitempty"`
 	Labels      []string               `json:"labels,omitempty"`
 	DueDate     *time.Time             `json:"due_date,omitempty"`
 	Estimate    *int                   `json:"estimate,omitempty"`
@@ -78,20 +81,20 @@ type UpdateTaskRequest struct {
 
 // TaskResponse 任务响应
 type TaskResponse struct {
-	ID          uint                   `json:"id"`
-	TenantID    int64                  `json:"tenant_id"`
-	Title       string                 `json:"title"`
-	Description string                 `json:"description,omitempty"`
-	Status      string                 `json:"status"`
-	Priority    string                 `json:"priority"`
-	Assignee    *int64                 `json:"assignee,omitempty"`
-	SprintID    *int64                 `json:"sprint_id,omitempty"`
-	Labels      []string               `json:"labels,omitempty"`
-	DueDate     *time.Time             `json:"due_date,omitempty"`
-	Estimate    *int                   `json:"estimate,omitempty"`
-	Meta        map[string]interface{} `json:"meta,omitempty"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
+	ID          uint64         `json:"id"`
+	TenantID    uint64         `json:"tenant_id"`
+	Title       string         `json:"title"`
+	Description string         `json:"description,omitempty"`
+	Status      string         `json:"status"`
+	Priority    string         `json:"priority"`
+	Assignee    *uint64        `json:"assignee,omitempty"`
+	SprintID    *uint64        `json:"sprint_id,omitempty"`
+	Labels      []string       `json:"labels,omitempty"`
+	DueDate     *time.Time     `json:"due_date,omitempty"`
+	Estimate    *int           `json:"estimate,omitempty"`
+	Meta        datatypes.JSON `json:"meta,omitempty"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
 }
 
 // TaskListRequest 任务列表请求

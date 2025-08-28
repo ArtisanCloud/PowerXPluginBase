@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/powerx-plugins/scrum/internal/contracts"
-	"github.com/powerx-plugins/scrum/internal/db"
+	"scrum-plugin/internal/contracts"
+	"scrum-plugin/internal/db"
 )
 
 // HealthHandler 健康检查处理器

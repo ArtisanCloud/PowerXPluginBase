@@ -13,8 +13,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/powerx-plugins/scrum/internal/config"
-	"github.com/powerx-plugins/scrum/internal/logger"
+	"scrum-plugin/internal/config"
+	"scrum-plugin/internal/logger"
 )
 
 // TenantContext 租户上下文

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/powerx-plugins/scrum/internal/logger"
+	"scrum-plugin/internal/logger"
 )
 
 // CORS 跨域中间件

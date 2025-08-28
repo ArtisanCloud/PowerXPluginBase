@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"time"
 
+	"scrum-plugin/internal/contracts"
+	"scrum-plugin/internal/logger"
+
 	"github.com/gin-gonic/gin"
-	"github.com/powerx-plugins/scrum/internal/contracts"
-	"github.com/powerx-plugins/scrum/internal/logger"
 )
 
 // AdminHandler 管理端处理器
@@ -27,8 +28,8 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 		Version:     "0.1.0",
 		Description: "A comprehensive Scrum task management plugin for PowerX",
 		Author:      "PowerX Team",
-		Homepage:    "https://github.com/powerx-plugins/scrum",
-		Repository:  "https://github.com/powerx-plugins/scrum.git",
+		Homepage:    "https://scrum-plugin",
+		Repository:  "https://scrum-plugin.git",
 		License:     "MIT",
 		Tags:        []string{"scrum", "agile", "task-management", "project-management"},
 

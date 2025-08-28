@@ -1,26 +1,28 @@
 package handlers
 
 import (
+	"gorm.io/gorm"
 	"net/http"
+	"scrum-plugin/internal/contracts"
+	"scrum-plugin/internal/domain/models"
+	"scrum-plugin/internal/logger"
+	"scrum-plugin/internal/middleware"
+	"scrum-plugin/internal/services"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/powerx-plugins/scrum/internal/contracts"
-	"github.com/powerx-plugins/scrum/internal/domain"
-	"github.com/powerx-plugins/scrum/internal/logger"
-	"github.com/powerx-plugins/scrum/internal/middleware"
 )
 
 // TaskHandler 任务处理器
 type TaskHandler struct {
-	taskService domain.TaskService
+	taskService *services.TaskService
 }
 
 // NewTaskHandler 创建任务处理器
-func NewTaskHandler(taskService domain.TaskService) *TaskHandler {
+func NewTaskHandler(db *gorm.DB) *TaskHandler {
 	return &TaskHandler{
-		taskService: taskService,
+		taskService: services.NewTaskService(db),
 	}
 }
 
@@ -53,13 +55,13 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 	}
 
 	// 转换为领域请求
-	domainReq := &domain.CreateTaskRequest{
+	domainReq := &services.CreateTaskRequest{
 		Title:       req.Title,
-		Description: req.Description,
-		Status:      domain.TaskStatus(req.Status),
-		Priority:    domain.Priority(req.Priority),
+		Description: &req.Description,
+		Status:      req.Status,
+		Priority:    req.Priority,
 		Assignee:    req.Assignee,
-		SprintID:    convertInt64PtrToUintPtr(req.SprintID),
+		SprintID:    req.SprintID,
 		Labels:      req.Labels,
 		DueDate:     req.DueDate,
 		Estimate:    req.Estimate,
@@ -119,7 +121,7 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 	}
 
 	// 获取任务
-	task, err := h.taskService.GetTask(c.Request.Context(), tenantID, uint(id))
+	task, err := h.taskService.GetTask(c.Request.Context(), tenantID, id)
 	if err != nil {
 		log.WithError(err).WithField("task_id", id).Error("Failed to get task")
 
@@ -193,11 +195,11 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 	}
 
 	// 转换为领域请求
-	domainReq := &domain.UpdateTaskRequest{
+	domainReq := &services.UpdateTaskRequest{
 		Title:       req.Title,
 		Description: req.Description,
 		Assignee:    req.Assignee,
-		SprintID:    convertInt64PtrToUintPtr(req.SprintID),
+		SprintID:    req.SprintID,
 		Labels:      req.Labels,
 		DueDate:     req.DueDate,
 		Estimate:    req.Estimate,
@@ -205,17 +207,16 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 	}
 
 	if req.Status != nil {
-		status := domain.TaskStatus(*req.Status)
-		domainReq.Status = &status
+
+		domainReq.Status = req.Status
 	}
 
 	if req.Priority != nil {
-		priority := domain.Priority(*req.Priority)
-		domainReq.Priority = &priority
+		domainReq.Priority = req.Priority
 	}
 
 	// 更新任务
-	task, err := h.taskService.UpdateTask(c.Request.Context(), tenantID, uint(id), domainReq)
+	task, err := h.taskService.UpdateTask(c.Request.Context(), tenantID, id, domainReq)
 	if err != nil {
 		log.WithError(err).WithField("task_id", id).Error("Failed to update task")
 
@@ -277,7 +278,7 @@ func (h *TaskHandler) DeleteTask(c *gin.Context) {
 	}
 
 	// 删除任务
-	err = h.taskService.DeleteTask(c.Request.Context(), tenantID, uint(id))
+	err = h.taskService.DeleteTask(c.Request.Context(), tenantID, id)
 	if err != nil {
 		log.WithError(err).WithField("task_id", id).Error("Failed to delete task")
 
@@ -343,7 +344,7 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 	}
 
 	// 转换为领域查询选项
-	opts := &domain.TaskListOptions{
+	opts := &services.TaskListOptions{
 		Page:      req.Page,
 		Limit:     req.Limit,
 		Labels:    req.Labels,
@@ -353,13 +354,11 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 	}
 
 	if req.Status != "" {
-		status := domain.TaskStatus(req.Status)
-		opts.Status = &status
+		opts.Status = &req.Status
 	}
 
 	if req.Priority != "" {
-		priority := domain.Priority(req.Priority)
-		opts.Priority = &priority
+		opts.Priority = &req.Priority
 	}
 
 	if req.Assignee != nil {
@@ -456,7 +455,7 @@ func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
 	}
 
 	// 更新状态
-	err = h.taskService.UpdateTaskStatus(c.Request.Context(), tenantID, uint(id), domain.TaskStatus(req.Status))
+	err = h.taskService.UpdateTaskStatus(c.Request.Context(), tenantID, uint(id), req.Status)
 	if err != nil {
 		log.WithError(err).WithField("task_id", id).Error("Failed to update task status")
 
@@ -486,7 +485,7 @@ func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
 }
 
 // taskToResponse 将领域模型转换为响应
-func (h *TaskHandler) taskToResponse(task *domain.Task) *contracts.TaskResponse {
+func (h *TaskHandler) taskToResponse(task *models.Task) *contracts.TaskResponse {
 	return &contracts.TaskResponse{
 		ID:          task.ID,
 		TenantID:    task.TenantID,
@@ -494,12 +493,12 @@ func (h *TaskHandler) taskToResponse(task *domain.Task) *contracts.TaskResponse 
 		Description: task.Description,
 		Status:      string(task.Status),
 		Priority:    string(task.Priority),
-		Assignee:    task.Assignee,
+		Assignee:    task.AssigneeID,
 		SprintID:    convertUintPtrToInt64Ptr(task.SprintID),
 		Labels:      []string(task.Labels),
 		DueDate:     task.DueDate,
 		Estimate:    task.Estimate,
-		Meta:        map[string]interface{}(task.Meta),
+		Meta:        task.Meta,
 		CreatedAt:   task.CreatedAt,
 		UpdatedAt:   task.UpdatedAt,
 	}
@@ -515,10 +514,10 @@ func convertInt64PtrToUintPtr(i64Ptr *int64) *uint {
 }
 
 // convertUintPtrToInt64Ptr 将 *uint 转换为 *int64
-func convertUintPtrToInt64Ptr(uintPtr *uint) *int64 {
+func convertUintPtrToInt64Ptr(uintPtr *uint64) *uint64 {
 	if uintPtr == nil {
 		return nil
 	}
-	val := int64(*uintPtr)
+	val := *uintPtr
 	return &val
 }

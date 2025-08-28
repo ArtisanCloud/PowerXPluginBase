@@ -4,10 +4,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/powerx-plugins/scrum/internal/config"
-	"github.com/powerx-plugins/scrum/internal/handlers"
-	"github.com/powerx-plugins/scrum/internal/logger"
-	"github.com/powerx-plugins/scrum/internal/middleware"
+	"scrum-plugin/internal/config"
+	"scrum-plugin/internal/handlers"
+	"scrum-plugin/internal/logger"
+	"scrum-plugin/internal/middleware"
 )
 
 // Router 路由器结构

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/powerx-plugins/scrum/internal/config"
+	"scrum-plugin/internal/config"
 )
 
 func main() {

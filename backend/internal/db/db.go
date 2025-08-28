@@ -6,16 +6,21 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/powerx-plugins/scrum/internal/config"
-	"github.com/powerx-plugins/scrum/internal/logger"
+	"scrum-plugin/internal/config"
+	"scrum-plugin/internal/logger"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
 )
 
-// DB 全局数据库实例
-var DB *gorm.DB
+// db 私有数据库实例
+var db *gorm.DB
+
+// GetGlobalDB 获取全局数据库实例
+func GetGlobalDB() *gorm.DB {
+	return db
+}
 
 // TenantDB 租户作用域的数据库实例
 type TenantDB struct {
@@ -43,13 +48,13 @@ func Connect(cfg *config.Config) error {
 	}
 
 	// 连接数据库
-	DB, err = gorm.Open(postgres.Open(cfg.DBDSN), gormConfig)
+	db, err = gorm.Open(postgres.Open(cfg.DBDSN), gormConfig)
 	if err != nil {
 		return fmt.Errorf("failed to connect database: %w", err)
 	}
 
 	// 获取底层 SQL DB 实例
-	sqlDB, err := DB.DB()
+	sqlDB, err := db.DB()
 	if err != nil {
 		return fmt.Errorf("failed to get sql.DB instance: %w", err)
 	}
@@ -81,19 +86,19 @@ func Connect(cfg *config.Config) error {
 // createSchema 创建 schema
 func createSchema(schema string) error {
 	sql := fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", schema)
-	return DB.Exec(sql).Error
+	return db.Exec(sql).Error
 }
 
 // setDefaultSchema 设置默认 schema
 func setDefaultSchema(schema string) error {
 	sql := fmt.Sprintf("SET search_path TO %s", schema)
-	return DB.Exec(sql).Error
+	return db.Exec(sql).Error
 }
 
 // BeginTenantTx 开始租户作用域的事务
 func BeginTenantTx(ctx context.Context, tenantID int64) (*TenantDB, error) {
 	// 开始事务
-	tx := DB.Begin()
+	tx := db.Begin()
 	if tx.Error != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", tx.Error)
 	}
@@ -143,11 +148,11 @@ func (tdb *TenantDB) GetTenantID() int64 {
 
 // Close 关闭数据库连接
 func Close() error {
-	if DB == nil {
+	if db == nil {
 		return nil
 	}
 
-	sqlDB, err := DB.DB()
+	sqlDB, err := db.DB()
 	if err != nil {
 		return err
 	}
@@ -157,11 +162,11 @@ func Close() error {
 
 // Health 检查数据库健康状态
 func Health() error {
-	if DB == nil {
+	if db == nil {
 		return fmt.Errorf("database not initialized")
 	}
 
-	sqlDB, err := DB.DB()
+	sqlDB, err := db.DB()
 	if err != nil {
 		return err
 	}
@@ -174,17 +179,17 @@ func Health() error {
 
 // Migrate 执行数据库迁移
 func Migrate(models ...interface{}) error {
-	if DB == nil {
+	if db == nil {
 		return fmt.Errorf("database not initialized")
 	}
 
-	return DB.AutoMigrate(models...)
+	return db.AutoMigrate(models...)
 }
 
 // EnableRLS 为表启用行级安全
 func EnableRLS(tableName string) error {
 	sql := fmt.Sprintf("ALTER TABLE %s ENABLE ROW LEVEL SECURITY", tableName)
-	return DB.Exec(sql).Error
+	return db.Exec(sql).Error
 }
 
 // CreateRLSPolicy 创建 RLS 策略
@@ -193,18 +198,18 @@ func CreateRLSPolicy(tableName, policyName string) error {
 		CREATE POLICY IF NOT EXISTS %s ON %s
 		USING (tenant_id::text = current_setting('app.tenant_id', true))
 	`, policyName, tableName)
-	return DB.Exec(sql).Error
+	return db.Exec(sql).Error
 }
 
 // DropRLSPolicy 删除 RLS 策略
 func DropRLSPolicy(tableName, policyName string) error {
 	sql := fmt.Sprintf("DROP POLICY IF EXISTS %s ON %s", policyName, tableName)
-	return DB.Exec(sql).Error
+	return db.Exec(sql).Error
 }
 
 // WithTenant 在开发模式下模拟租户上下文
 func WithTenant(tenantID int64) *gorm.DB {
-	return DB.Session(&gorm.Session{}).Where("tenant_id = ?", tenantID)
+	return db.Session(&gorm.Session{}).Where("tenant_id = ?", tenantID)
 }
 
 // GetCurrentTenantID 从数据库会话中获取当前租户 ID

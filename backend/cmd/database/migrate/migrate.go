@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/powerx-plugins/scrum/internal/config"
-	"github.com/powerx-plugins/scrum/internal/db"
-	"github.com/powerx-plugins/scrum/internal/domain"
-	"github.com/powerx-plugins/scrum/internal/logger"
+	"scrum-plugin/internal/config"
+	"scrum-plugin/internal/db"
+	"scrum-plugin/internal/domain"
+	"scrum-plugin/internal/logger"
 )
 
 func main() {
