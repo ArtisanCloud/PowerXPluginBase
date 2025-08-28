@@ -1,31 +1,32 @@
 package router
 
 import (
+	"scrum-plugin/internal/api"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"scrum-plugin/internal/config"
+	"scrum-plugin/internal/db"
 	"scrum-plugin/internal/handlers"
 	"scrum-plugin/internal/logger"
 	"scrum-plugin/internal/middleware"
+	"scrum-plugin/internal/services"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Router 路由器结构
 type Router struct {
-	engine       *gin.Engine
-	cfg          *config.Config
-	adminHandler *handlers.AdminHandler
-	taskHandler  *handlers.TaskHandler
+	engine        *gin.Engine
+	cfg           *config.Config
+	adminHandler  *handlers.AdminHandler
+	taskHandler   *handlers.TaskHandler
 	healthHandler *handlers.HealthHandler
 }
 
 // New 创建新的路由器
-func New(cfg *config.Config, adminHandler *handlers.AdminHandler, taskHandler *handlers.TaskHandler, healthHandler *handlers.HealthHandler) *Router {
+func New(cfg *config.Config) *Router {
 	return &Router{
-		cfg:           cfg,
-		adminHandler:  adminHandler,
-		taskHandler:   taskHandler,
-		healthHandler: healthHandler,
+		cfg: cfg,
 	}
 }
 
@@ -38,6 +39,9 @@ func (r *Router) Setup() *gin.Engine {
 		gin.SetMode(gin.DebugMode)
 	}
 
+	// 初始化 handlers
+	r.initializeHandlers()
+
 	// 创建 Gin 引擎
 	r.engine = gin.New()
 
@@ -49,6 +53,22 @@ func (r *Router) Setup() *gin.Engine {
 
 	logger.Info("Router setup completed")
 	return r.engine
+}
+
+// initializeHandlers 初始化所有 handlers
+func (r *Router) initializeHandlers() {
+	// 获取数据库实例
+	gDB := db.GetGlobalDB()
+
+	// 初始化服务层
+	taskService := services.NewTaskService(gDB)
+
+	// 初始化处理器
+	r.adminHandler = handlers.NewAdminHandler()
+	r.taskHandler = handlers.NewTaskHandler(taskService)
+	r.healthHandler = handlers.NewHealthHandler()
+
+	logger.Info("All handlers initialized successfully")
 }
 
 // setupGlobalMiddleware 设置全局中间件
@@ -80,93 +100,28 @@ func (r *Router) setupGlobalMiddleware() {
 
 // setupRoutes 设置路由
 func (r *Router) setupRoutes() {
-	// 健康检查路由（无需认证）
-	r.engine.GET("/healthz", r.healthHandler.HealthCheck)
-	r.engine.GET("/ping", r.healthHandler.Ping)
-
-	// API v1 路由组
+	// 设置租户认证中间件
 	v1 := r.engine.Group("/v1")
-	{
-		// 租户认证中间件
-		v1.Use(middleware.TenantMiddleware(r.cfg))
+	v1.Use(middleware.TenantMiddleware(r.cfg))
 
-		// 管理端路由（无需 RBAC）
-		r.setupAdminRoutes(v1)
-
-		// 业务路由（需要 RBAC）
-		r.setupBusinessRoutes(v1)
-	}
-}
-
-// setupAdminRoutes 设置管理端路由
-func (r *Router) setupAdminRoutes(rg *gin.RouterGroup) {
-	admin := rg.Group("/admin")
-	{
-		// 插件清单
-		admin.GET("/manifest", r.adminHandler.GetManifest)
-		
-		// RBAC 信息
-		admin.GET("/rbac", r.adminHandler.GetRBACInfo)
-	}
-}
-
-// setupBusinessRoutes 设置业务路由
-func (r *Router) setupBusinessRoutes(rg *gin.RouterGroup) {
-	// RBAC 中间件
+	// 设置业务路由的 RBAC 中间件
+	gApi := r.engine.Group("/api/v1")
+	gApi.Use(middleware.TenantMiddleware(r.cfg))
 	rbacConfig := middleware.NewRBACConfig()
-	rg.Use(middleware.RBACMiddleware(rbacConfig))
+	gApi.Use(middleware.RBACMiddleware(rbacConfig))
 
-	// 任务路由
-	r.setupTaskRoutes(rg)
+	// 使用 API 注册器注册所有路由
+	apiRegistry := api.NewRegistry(r.engine)
+	apiRegistry.RegisterRoutes(
+		r.taskHandler,
+		r.adminHandler,
+		r.healthHandler,
+	)
 
-	// Sprint 路由
-	r.setupSprintRoutes(rg)
-
-	// Agent 工具路由
-	r.setupAgentRoutes(rg)
-
-	// 工作流路由
-	r.setupWorkflowRoutes(rg)
+	// 记录已注册的路由
+	routes := apiRegistry.GetRegisteredRoutes()
+	logger.Infof("Successfully registered %d API route groups: %v", len(routes), routes)
 }
-
-// setupTaskRoutes 设置任务路由
-func (r *Router) setupTaskRoutes(rg *gin.RouterGroup) {
-	tasks := rg.Group("/tasks")
-	{
-		// CRUD 操作
-		tasks.POST("", r.taskHandler.CreateTask)
-		tasks.GET("", r.taskHandler.ListTasks)
-		tasks.GET("/:id", r.taskHandler.GetTask)
-		tasks.PUT("/:id", r.taskHandler.UpdateTask)
-		tasks.DELETE("/:id", r.taskHandler.DeleteTask)
-
-		// 状态更新
-		tasks.PATCH("/:id/status", r.taskHandler.UpdateTaskStatus)
-
-		// TODO: 更多任务操作将在后续实现
-		// 分配操作、标签操作、批量操作、统计报告等
-	}
-}
-
-// setupSprintRoutes 设置 Sprint 路由
-func (r *Router) setupSprintRoutes(rg *gin.RouterGroup) {
-	// TODO: Sprint 路由将在后续实现
-	_ = rg
-}
-
-// setupAgentRoutes 设置 Agent 工具路由
-func (r *Router) setupAgentRoutes(rg *gin.RouterGroup) {
-	// TODO: Agent 路由将在后续实现
-	_ = rg
-}
-
-// setupWorkflowRoutes 设置工作流路由
-func (r *Router) setupWorkflowRoutes(rg *gin.RouterGroup) {
-	// TODO: 工作流路由将在后续实现
-	_ = rg
-}
-
-
 
 // GetEngine 获取 Gin 引擎
 func (r *Router) GetEngine() *gin.Engine {

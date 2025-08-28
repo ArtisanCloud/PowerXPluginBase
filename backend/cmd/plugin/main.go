@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"scrum-plugin/internal/config"
 	"scrum-plugin/internal/db"
-	"scrum-plugin/internal/handlers"
 	"scrum-plugin/internal/logger"
 	"scrum-plugin/internal/router"
 	"syscall"
@@ -36,19 +35,12 @@ func main() {
 			logger.WithError(err).Error("Failed to close database connection")
 		}
 	}()
-	gDB := db.GetGlobalDB()
 
 	// 注意：不再在应用启动时执行任何迁移操作
 	// 数据库迁移应该通过独立的 cmd/database/migrate 命令执行
 
-	// 初始化依赖
-	// 初始化处理器
-	adminHandler := handlers.NewAdminHandler()
-	taskHandler := handlers.NewTaskHandler(gDB)
-	healthHandler := handlers.NewHealthHandler()
-
 	// 设置路由
-	r := router.New(cfg, adminHandler, taskHandler, healthHandler)
+	r := router.New(cfg)
 	engine := r.Setup()
 
 	// 创建 HTTP 服务器

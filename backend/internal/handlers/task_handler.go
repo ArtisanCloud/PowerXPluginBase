@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"gorm.io/gorm"
+	"encoding/json"
+	"gorm.io/datatypes"
 	"net/http"
 	"scrum-plugin/internal/contracts"
 	"scrum-plugin/internal/domain/models"
@@ -20,9 +21,9 @@ type TaskHandler struct {
 }
 
 // NewTaskHandler 创建任务处理器
-func NewTaskHandler(db *gorm.DB) *TaskHandler {
+func NewTaskHandler(taskService *services.TaskService) *TaskHandler {
 	return &TaskHandler{
-		taskService: services.NewTaskService(db),
+		taskService: taskService,
 	}
 }
 
@@ -486,19 +487,26 @@ func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
 
 // taskToResponse 将领域模型转换为响应
 func (h *TaskHandler) taskToResponse(task *models.Task) *contracts.TaskResponse {
+	// 转换 Meta 字段
+	var meta datatypes.JSON
+	if task.Meta != nil && len(task.Meta) > 0 {
+		if err := json.Unmarshal(task.Meta, &meta); err != nil {
+			meta = nil
+		}
+	}
+
 	return &contracts.TaskResponse{
 		ID:          task.ID,
-		TenantID:    task.TenantID,
 		Title:       task.Title,
 		Description: task.Description,
 		Status:      string(task.Status),
 		Priority:    string(task.Priority),
 		Assignee:    task.AssigneeID,
-		SprintID:    convertUintPtrToInt64Ptr(task.SprintID),
-		Labels:      []string(task.Labels),
+		SprintID:    task.SprintID,
+		Labels:      task.Labels,
 		DueDate:     task.DueDate,
-		Estimate:    task.Estimate,
-		Meta:        task.Meta,
+		Estimate:    task.StoryPoints,
+		Meta:        meta,
 		CreatedAt:   task.CreatedAt,
 		UpdatedAt:   task.UpdatedAt,
 	}
@@ -514,10 +522,10 @@ func convertInt64PtrToUintPtr(i64Ptr *int64) *uint {
 }
 
 // convertUintPtrToInt64Ptr 将 *uint 转换为 *int64
-func convertUintPtrToInt64Ptr(uintPtr *uint64) *uint64 {
+func convertUintPtrToInt64Ptr(uintPtr *uint) *int64 {
 	if uintPtr == nil {
 		return nil
 	}
-	val := *uintPtr
+	val := int64(*uintPtr)
 	return &val
 }
