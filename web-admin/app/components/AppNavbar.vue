@@ -47,14 +47,14 @@
         <LanguageSelector />
         
         <!-- 用户头像和下拉菜单 -->
-        <UDropdown :items="userMenuItems" :popper="{ placement: 'bottom-end' }">
+        <UDropdownMenu :items="userMenuItems" :popper="{ placement: 'bottom-end' }">
           <UAvatar
             src="https://avatars.githubusercontent.com/u/739984?v=4"
             alt="管理员"
             size="sm"
             class="cursor-pointer"
           />
-        </UDropdown>
+        </UDropdownMenu>
       </div>
     </div>
   </div>
