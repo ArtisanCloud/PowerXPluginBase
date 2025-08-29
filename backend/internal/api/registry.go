@@ -28,6 +28,7 @@ type Registry struct {
 	adminRoutes  *admin.Routes
 	healthRoutes *health.Routes
 	sprintRoutes *sprint.Routes
+	demoRoutes   *demo.Routes // 新的 demo routes
 
 	// 新架构的 handlers
 	memberHandler *iamhandler.MemberHandler
@@ -49,6 +50,7 @@ func (r *Registry) RegisterRoutes(healthHandler *handlers.HealthHandler) {
 	r.adminRoutes = admin.NewRoutes(r.db)
 	r.healthRoutes = health.NewRoutes(healthHandler) // 健康检查 handler 从外部传入
 	r.sprintRoutes = sprint.NewRoutes(r.db)
+	r.demoRoutes = demo.NewRoutes(r.pxc) // 创建新的 demo routes
 
 	// 初始化新架构的 handlers
 	r.initializeNewHandlers()
@@ -57,10 +59,12 @@ func (r *Registry) RegisterRoutes(healthHandler *handlers.HealthHandler) {
 	r.healthRoutes.Register(r.engine)
 	logger.Infof("Registered %s routes", r.healthRoutes.GetName())
 
-	// 注册 gRPC 演示路由（用于测试和开发）
+	// 注册 gRPC 演示路由（用于测试和开发）- 使用新的分层架构
 	if r.pxc != nil {
-		demo.GRPCDemoRoutes(r.engine, r.pxc)
-		logger.Info("Registered gRPC demo routes")
+		// 使用新的分层架构的 demo routes
+		apiGroup := r.engine.Group("/api/v1")
+		r.demoRoutes.Register(apiGroup)
+		logger.Info("Registered new demo routes with proper architecture")
 	}
 
 	// 注册需要认证的 API 路由
@@ -111,6 +115,9 @@ func (r *Registry) GetRegisteredRoutes() []string {
 	}
 	if r.sprintRoutes != nil {
 		routes = append(routes, r.sprintRoutes.GetName())
+	}
+	if r.demoRoutes != nil {
+		routes = append(routes, r.demoRoutes.GetName())
 	}
 
 	return routes
