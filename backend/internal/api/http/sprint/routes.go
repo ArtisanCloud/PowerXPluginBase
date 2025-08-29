@@ -2,18 +2,23 @@ package sprint
 
 import (
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // Routes Sprint 路由配置
 type Routes struct {
+	db *gorm.DB
 	// TODO: 添加 sprintHandler 当实现了 Sprint 功能时
 	// sprintHandler *handlers.SprintHandler
 }
 
 // NewRoutes 创建 Sprint 路由
-func NewRoutes() *Routes {
+func NewRoutes(db *gorm.DB) *Routes {
 	return &Routes{
-		// sprintHandler: sprintHandler,
+		db: db,
+		// 将来在这里创建 sprintHandler
+		// sprintService := services.NewSprintService(db)
+		// sprintHandler: handlers.NewSprintHandler(sprintService),
 	}
 }
 

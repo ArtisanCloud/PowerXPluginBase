@@ -1,19 +1,30 @@
 package task
 
 import (
-	"github.com/gin-gonic/gin"
 	"scrum-plugin/internal/handlers"
+	"scrum-plugin/internal/services"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // Routes Task 路由配置
 type Routes struct {
 	taskHandler *handlers.TaskHandler
+	db          *gorm.DB
 }
 
 // NewRoutes 创建 Task 路由
-func NewRoutes(taskHandler *handlers.TaskHandler) *Routes {
+func NewRoutes(db *gorm.DB) *Routes {
+	// 创建服务层
+	taskService := services.NewTaskService(db)
+
+	// 创建 handler 层
+	taskHandler := handlers.NewTaskHandler(taskService)
+
 	return &Routes{
 		taskHandler: taskHandler,
+		db:          db,
 	}
 }
 

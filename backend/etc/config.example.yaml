@@ -61,3 +61,19 @@ logging:
   level: "debug"
   format: "text"              # 开发环境使用文本格式更易读
   output: "stdout"
+
+# gRPC 上游配置（连接 PowerX 核心服务）
+grpc_upstream:
+  address: "localhost:9001"    # PowerX gRPC 服务地址
+  token: ""                    # Capability Token（插件安装后获得）
+  tenant_id: 1                 # 租户 ID
+  use_tls: false               # 开发环境关闭 TLS
+  ca_cert: ""                 # TLS 根证书路径（生产环境使用）
+
+# gRPC 服务器配置（插件提供的 gRPC 服务）
+grpc_server:
+  enable: true                 # 是否启用插件 gRPC 服务器
+  addr: ":9101"               # 插件 gRPC 监听地址
+  use_tls: false               # 开发环境关闭 TLS
+  cert: ""                    # TLS 证书路径（生产环境使用）
+  key: ""                     # TLS 私钥路径（生产环境使用）

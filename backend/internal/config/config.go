@@ -39,6 +39,10 @@ type Config struct {
 	// 日志配置
 	Logging LoggingConfig `yaml:"logging" json:"logging"`
 
+	// gRPC 配置
+	GRPCUpstream GRPCUpstream `yaml:"grpc_upstream" json:"grpc_upstream"`
+	GRPCServer   GRPCServer   `yaml:"grpc_server" json:"grpc_server"`
+
 	// 向后兼容的字段（从环境变量或旧配置中填充）
 	BindAddr   string `yaml:"-" json:"bind_addr,omitempty"`
 	LogLevel   string `yaml:"-" json:"log_level,omitempty"`
@@ -158,6 +162,24 @@ type LoggingConfig struct {
 	MaxAge     int    `yaml:"max_age" json:"max_age"`
 }
 
+// GRPCUpstream PowerX gRPC 上游配置
+type GRPCUpstream struct {
+	Address  string `yaml:"address" json:"address"`     // PowerX 网关/服务地址，如 "localhost:9001"
+	Token    string `yaml:"token" json:"token"`         // Capability Token（插件安装后下发）
+	TenantID int64  `yaml:"tenant_id" json:"tenant_id"` // 当前租户
+	UseTLS   bool   `yaml:"use_tls" json:"use_tls"`     // 上线后建议 true
+	CACert   string `yaml:"ca_cert" json:"ca_cert"`     // 可选：根证书（UseTLS=true 时）
+}
+
+// GRPCServer 插件 gRPC 服务器配置
+type GRPCServer struct {
+	Enable bool   `yaml:"enable" json:"enable"` // 是否启用插件自己的 gRPC Server
+	Addr   string `yaml:"addr" json:"addr"`     // 插件 gRPC 监听，如 ":9101"
+	UseTLS bool   `yaml:"use_tls" json:"use_tls"`
+	Cert   string `yaml:"cert" json:"cert"`
+	Key    string `yaml:"key" json:"key"`
+}
+
 // ContextConfig PowerX 上下文相关配置
 type ContextConfig struct {
 	// HMAC 模式配置
@@ -267,6 +289,20 @@ func getDefaultConfig() *Config {
 			MaxBackups: 3,
 			MaxAge:     28,
 		},
+		GRPCUpstream: GRPCUpstream{
+			Address:  "localhost:9001",
+			Token:    "",
+			TenantID: 1,
+			UseTLS:   false,
+			CACert:   "",
+		},
+		GRPCServer: GRPCServer{
+			Enable: true,
+			Addr:   ":9101",
+			UseTLS: false,
+			Cert:   "",
+			Key:    "",
+		},
 	}
 }
 
@@ -364,6 +400,42 @@ func loadEnvConfig(cfg *Config) {
 		if ttl, err := time.ParseDuration(ttlStr); err == nil {
 			cfg.Context.TTL = ttl
 		}
+	}
+
+	// gRPC 上游配置
+	if grpcAddr := os.Getenv("PX_GRPC_UPSTREAM_ADDRESS"); grpcAddr != "" {
+		cfg.GRPCUpstream.Address = grpcAddr
+	}
+	if grpcToken := os.Getenv("PX_GRPC_UPSTREAM_TOKEN"); grpcToken != "" {
+		cfg.GRPCUpstream.Token = grpcToken
+	}
+	if grpcTenantID := os.Getenv("PX_GRPC_UPSTREAM_TENANT_ID"); grpcTenantID != "" {
+		if tenantID, err := strconv.ParseInt(grpcTenantID, 10, 64); err == nil {
+			cfg.GRPCUpstream.TenantID = tenantID
+		}
+	}
+	if grpcUseTLS := os.Getenv("PX_GRPC_UPSTREAM_USE_TLS"); grpcUseTLS == "true" {
+		cfg.GRPCUpstream.UseTLS = true
+	}
+	if grpcCACert := os.Getenv("PX_GRPC_UPSTREAM_CA_CERT"); grpcCACert != "" {
+		cfg.GRPCUpstream.CACert = grpcCACert
+	}
+
+	// gRPC 服务器配置
+	if grpcServerEnable := os.Getenv("PX_GRPC_SERVER_ENABLE"); grpcServerEnable == "false" {
+		cfg.GRPCServer.Enable = false
+	}
+	if grpcServerAddr := os.Getenv("PX_GRPC_SERVER_ADDR"); grpcServerAddr != "" {
+		cfg.GRPCServer.Addr = grpcServerAddr
+	}
+	if grpcServerUseTLS := os.Getenv("PX_GRPC_SERVER_USE_TLS"); grpcServerUseTLS == "true" {
+		cfg.GRPCServer.UseTLS = true
+	}
+	if grpcServerCert := os.Getenv("PX_GRPC_SERVER_CERT"); grpcServerCert != "" {
+		cfg.GRPCServer.Cert = grpcServerCert
+	}
+	if grpcServerKey := os.Getenv("PX_GRPC_SERVER_KEY"); grpcServerKey != "" {
+		cfg.GRPCServer.Key = grpcServerKey
 	}
 }
 

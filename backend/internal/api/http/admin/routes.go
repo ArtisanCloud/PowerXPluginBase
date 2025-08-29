@@ -1,19 +1,26 @@
 package admin
 
 import (
-	"github.com/gin-gonic/gin"
 	"scrum-plugin/internal/handlers"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // Routes Admin 路由配置
 type Routes struct {
 	adminHandler *handlers.AdminHandler
+	db           *gorm.DB
 }
 
 // NewRoutes 创建 Admin 路由
-func NewRoutes(adminHandler *handlers.AdminHandler) *Routes {
+func NewRoutes(db *gorm.DB) *Routes {
+	// 创建 admin handler
+	adminHandler := handlers.NewAdminHandler()
+
 	return &Routes{
 		adminHandler: adminHandler,
+		db:           db,
 	}
 }
 

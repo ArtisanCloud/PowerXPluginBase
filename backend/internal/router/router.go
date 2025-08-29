@@ -6,10 +6,10 @@ import (
 
 	"scrum-plugin/internal/config"
 	"scrum-plugin/internal/db"
+	powerxclient "scrum-plugin/internal/grpc/client"
 	"scrum-plugin/internal/handlers"
 	"scrum-plugin/internal/logger"
 	"scrum-plugin/internal/middleware"
-	"scrum-plugin/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,9 +18,8 @@ import (
 type Router struct {
 	engine        *gin.Engine
 	cfg           *config.Config
-	adminHandler  *handlers.AdminHandler
-	taskHandler   *handlers.TaskHandler
-	healthHandler *handlers.HealthHandler
+	pxc           *powerxclient.PowerX    // PowerX gRPC 客户端
+	healthHandler *handlers.HealthHandler // 基础健康检查 handler
 }
 
 // New 创建新的路由器
@@ -28,6 +27,11 @@ func New(cfg *config.Config) *Router {
 	return &Router{
 		cfg: cfg,
 	}
+}
+
+// SetPowerXClient 设置 PowerX gRPC 客户端
+func (r *Router) SetPowerXClient(pxc *powerxclient.PowerX) {
+	r.pxc = pxc
 }
 
 // Setup 设置路由
@@ -55,20 +59,12 @@ func (r *Router) Setup() *gin.Engine {
 	return r.engine
 }
 
-// initializeHandlers 初始化所有 handlers
+// initializeHandlers 初始化基础 handlers
 func (r *Router) initializeHandlers() {
-	// 获取数据库实例
-	gDB := db.GetGlobalDB()
-
-	// 初始化服务层
-	taskService := services.NewTaskService(gDB)
-
-	// 初始化处理器
-	r.adminHandler = handlers.NewAdminHandler()
-	r.taskHandler = handlers.NewTaskHandler(taskService)
+	// 只初始化基础的 handler，其他 handler 由各自的 routes 负责
 	r.healthHandler = handlers.NewHealthHandler()
 
-	logger.Info("All handlers initialized successfully")
+	logger.Info("Basic handlers initialized successfully")
 }
 
 // setupGlobalMiddleware 设置全局中间件
@@ -111,12 +107,8 @@ func (r *Router) setupRoutes() {
 	gApi.Use(middleware.RBACMiddleware(rbacConfig))
 
 	// 使用 API 注册器注册所有路由
-	apiRegistry := api.NewRegistry(r.engine)
-	apiRegistry.RegisterRoutes(
-		r.taskHandler,
-		r.adminHandler,
-		r.healthHandler,
-	)
+	apiRegistry := api.NewRegistry(r.engine, r.pxc, db.GetGlobalDB())
+	apiRegistry.RegisterRoutes(r.healthHandler)
 
 	// 记录已注册的路由
 	routes := apiRegistry.GetRegisteredRoutes()
