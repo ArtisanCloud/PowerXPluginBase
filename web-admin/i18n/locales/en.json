@@ -75,6 +75,7 @@
     "testing": "Testing"
   },
   "priority": {
+    "lowest": "Lowest",
     "low": "Low",
     "medium": "Medium",
     "high": "High",
@@ -108,7 +109,14 @@
     "feature": "Feature",
     "prioritize": "Prioritize",
     "estimate": "Estimate",
-    "groom": "Groom"
+    "groom": "Groom",
+    "businessValue": "Business Value",
+    "startDate": "Start Date",
+    "dueDate": "Due Date",
+    "epicColor": "Epic Color",
+    "status": "Status",
+    "projectId": "Project ID",
+    "lowest": "Lowest"
   },
   "team": {
     "members": "Team Members",

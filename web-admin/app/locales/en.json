@@ -69,7 +69,14 @@
     "userStory": "User Story",
     "subtask": "Subtask",
     "bug": "Bug",
-    "improvement": "Improvement"
+    "improvement": "Improvement",
+    "startDate": "Start Date",
+    "businessValue": "Business Value",
+    "originalHours": "Original Hours",
+    "remainingHours": "Remaining Hours",
+    "originalHoursPlaceholder": "Enter original hours estimate",
+    "remainingHoursPlaceholder": "Enter remaining hours estimate",
+    "selectDate": "Select Date"
   },
   "status": {
     "todo": "To Do",
@@ -80,6 +87,7 @@
     "testing": "Testing"
   },
   "priority": {
+    "lowest": "Lowest",
     "low": "Low",
     "medium": "Medium",
     "high": "High",
@@ -113,7 +121,14 @@
     "feature": "Feature",
     "prioritize": "Prioritize",
     "estimate": "Estimate",
-    "groom": "Groom"
+    "groom": "Groom",
+    "businessValue": "Business Value",
+    "startDate": "Start Date",
+    "dueDate": "Due Date",
+    "epicColor": "Epic Color",
+    "status": "Status",
+    "projectId": "Project ID",
+    "lowest": "Lowest"
   },
   "team": {
     "members": "Team Members",

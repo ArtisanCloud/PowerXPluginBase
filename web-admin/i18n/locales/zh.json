@@ -75,6 +75,7 @@
     "testing": "测试中"
   },
   "priority": {
+    "lowest": "最低",
     "low": "低",
     "medium": "中",
     "high": "高",
@@ -108,7 +109,14 @@
     "feature": "功能",
     "prioritize": "优先级排序",
     "estimate": "估算",
-    "groom": "梳理"
+    "groom": "梳理",
+    "businessValue": "业务价值",
+    "startDate": "开始日期",
+    "dueDate": "截止日期",
+    "epicColor": "Epic颜色",
+    "status": "状态",
+    "projectId": "项目ID",
+    "lowest": "最低"
   },
   "team": {
     "members": "团队成员",

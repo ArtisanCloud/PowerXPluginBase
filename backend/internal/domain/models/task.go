@@ -40,6 +40,11 @@ type Task struct {
 	RemainingHours *int `gorm:"column:remaining_hours" json:"remaining_hours,omitempty"`
 	LoggedHours    *int `gorm:"column:logged_hours;default:0" json:"logged_hours,omitempty"`
 
+	// 验收标准和业务价值
+	AcceptanceCriteria string  `gorm:"column:acceptance_criteria;type:text" json:"acceptance_criteria,omitempty"`
+	BusinessValue      *int    `gorm:"column:business_value" json:"business_value,omitempty"`
+	EpicColor          *string `gorm:"column:epic_color;type:varchar(7)" json:"epic_color,omitempty"` // Epic的颜色标识`
+
 	// 标签和元数据
 	Labels Labels         `gorm:"column:labels;type:jsonb" json:"labels,omitempty"`
 	Meta   datatypes.JSON `gorm:"column:meta;type:jsonb" json:"meta,omitempty"`
@@ -205,6 +210,62 @@ func (t *Task) RemoveLabel(label string) {
 	}
 }
 
+// IsEpic 检查是否为Epic
+func (t *Task) IsEpic() bool {
+	return t.TaskType == TaskTypeEpic
+}
+
+// IsUserStory 检查是否为用户故事
+func (t *Task) IsUserStory() bool {
+	return t.TaskType == TaskTypeUserStory
+}
+
+// GetChildrenTasks 获取子任务
+func (t *Task) GetChildrenTasks() []Task {
+	return t.Children
+}
+
+// GetEpic 获取所属的Epic（如果是用户故事或任务）
+func (t *Task) GetEpic() *Task {
+	if t.Parent != nil && t.Parent.IsEpic() {
+		return t.Parent
+	}
+	return nil
+}
+
+// GetCompletionPercentage 计算完成百分比（基于子任务）
+func (t *Task) GetCompletionPercentage() float64 {
+	if len(t.Children) == 0 {
+		if t.IsCompleted() {
+			return 100.0
+		}
+		return 0.0
+	}
+
+	completedCount := 0
+	for _, child := range t.Children {
+		if child.IsCompleted() {
+			completedCount++
+		}
+	}
+
+	return float64(completedCount) / float64(len(t.Children)) * 100.0
+}
+
+// GetTotalStoryPoints 计算总故事点数（包括子任务）
+func (t *Task) GetTotalStoryPoints() int {
+	total := 0
+	if t.StoryPoints != nil {
+		total += *t.StoryPoints
+	}
+
+	for _, child := range t.Children {
+		total += child.GetTotalStoryPoints()
+	}
+
+	return total
+}
+
 // CanTransitionTo 检查是否可以转换到指定状态
 func (t *Task) CanTransitionTo(status TaskStatus) bool {
 	switch t.Status {
@@ -252,6 +313,17 @@ func (t *Task) Validate() error {
 
 	if t.StoryPoints != nil && *t.StoryPoints < 0 {
 		return fmt.Errorf("story points cannot be negative")
+	}
+
+	if t.BusinessValue != nil && *t.BusinessValue < 0 {
+		return fmt.Errorf("business value cannot be negative")
+	}
+
+	if t.EpicColor != nil && len(*t.EpicColor) > 0 {
+		// 验证颜色值格式 (#RRGGBB)
+		if len(*t.EpicColor) != 7 || (*t.EpicColor)[0] != '#' {
+			return fmt.Errorf("epic color must be in format #RRGGBB")
+		}
 	}
 
 	if t.DueDate != nil && t.StartDate != nil && t.DueDate.Before(*t.StartDate) {
