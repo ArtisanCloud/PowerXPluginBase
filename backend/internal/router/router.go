@@ -1,37 +1,30 @@
 package router
 
 import (
-	"scrum-plugin/internal/api"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http"
+	middleware2 "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/middleware"
 	"time"
-
-	"scrum-plugin/internal/config"
-	"scrum-plugin/internal/db"
-	powerxclient "scrum-plugin/internal/grpc/client"
-	"scrum-plugin/internal/handlers"
-	"scrum-plugin/internal/logger"
-	"scrum-plugin/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 // Router 路由器结构
 type Router struct {
-	engine        *gin.Engine
-	cfg           *config.Config
-	pxc           *powerxclient.PowerX    // PowerX gRPC 客户端
-	healthHandler *handlers.HealthHandler // 基础健康检查 handler
+	engine *gin.Engine
+	cfg    *config.Config
+	deps   *app.Deps
 }
 
 // New 创建新的路由器
-func New(cfg *config.Config) *Router {
+func NewRouter(cfg *config.Config, deps *app.Deps) *Router {
 	return &Router{
-		cfg: cfg,
+		cfg:  cfg,
+		deps: deps,
 	}
-}
-
-// SetPowerXClient 设置 PowerX gRPC 客户端
-func (r *Router) SetPowerXClient(pxc *powerxclient.PowerX) {
-	r.pxc = pxc
 }
 
 // Setup 设置路由
@@ -42,9 +35,6 @@ func (r *Router) Setup() *gin.Engine {
 	} else {
 		gin.SetMode(gin.DebugMode)
 	}
-
-	// 初始化 handlers
-	r.initializeHandlers()
 
 	// 创建 Gin 引擎
 	r.engine = gin.New()
@@ -57,14 +47,6 @@ func (r *Router) Setup() *gin.Engine {
 
 	logger.Info("Router setup completed")
 	return r.engine
-}
-
-// initializeHandlers 初始化基础 handlers
-func (r *Router) initializeHandlers() {
-	// 只初始化基础的 handler，其他 handler 由各自的 routes 负责
-	r.healthHandler = handlers.NewHealthHandler()
-
-	logger.Info("Basic handlers initialized successfully")
 }
 
 // setupGlobalMiddleware 设置全局中间件
@@ -97,22 +79,31 @@ func (r *Router) setupGlobalMiddleware() {
 // setupRoutes 设置路由
 func (r *Router) setupRoutes() {
 	// 设置租户认证中间件
-	v1 := r.engine.Group("/v1")
-	v1.Use(middleware.TenantMiddleware(r.cfg))
+	prefix := r.cfg.Server.APIPrefix
+	if prefix == "" {
+		prefix = "api/v1"
+	}
 
-	// 设置业务路由的 RBAC 中间件
-	gApi := r.engine.Group("/api/v1")
-	gApi.Use(middleware.TenantMiddleware(r.cfg))
-	rbacConfig := middleware.NewRBACConfig()
-	gApi.Use(middleware.RBACMiddleware(rbacConfig))
+	jwtCfg := r.buildJWT()
+	rbacCfg := r.buildRBAC()
+	abacClient := r.buildABAC()
+
+	gApi := r.engine.Group(prefix)
+	gApi.Use(middleware2.JWTAuth(jwtCfg))
+	gApi.Use(middleware2.RBAC(rbacCfg, abacClient, func(m, path string) (bool, map[string]any) {
+		// 标记需要 ABAC 的路由（可换成表驱动/装饰器）
+		if path == "/api/v1/notes/:id" && m == "GET" {
+			return true, map[string]any{"note_id": "{id}"}
+		}
+		return false, nil
+	}))
 
 	// 使用 API 注册器注册所有路由
-	apiRegistry := api.NewRegistry(r.engine, r.pxc, db.GetGlobalDB())
-	apiRegistry.RegisterRoutes(r.healthHandler)
+	apiRegistry := http.NewRegistry(r.engine, r.deps)
+	apiRegistry.RegisterAPIRoutes(gApi)
 
-	// 记录已注册的路由
-	routes := apiRegistry.GetRegisteredRoutes()
-	logger.Infof("Successfully registered %d API route groups: %v", len(routes), routes)
+	// 记录已注册的路由表
+	//apiRegistry.PrintRegisteredRoutes()
 }
 
 // GetEngine 获取 Gin 引擎
@@ -132,4 +123,54 @@ func (r *Router) RegisterMiddleware(middleware gin.HandlerFunc) {
 	if r.engine != nil {
 		r.engine.Use(middleware)
 	}
+}
+
+// —— 从配置构造 JWT 配置 —— //
+func (r *Router) buildJWT() middleware.JWTAuthConfig {
+	prod := r.cfg.IsProduction()
+	cfg := middleware.JWTAuthConfig{
+		Issuer:             "powerx",
+		AcceptAudiences:    []string{"plugin:note"},
+		HMACSecret:         "change-me",
+		ClockSkewSeconds:   60,
+		Optional:           !prod,
+		AllowSignedContext: !prod,
+		ContextHMACSecret:  "change-me",
+		MaxCtxAgeSeconds:   300,
+	}
+	// TODO: 下面把你的真实配置字段映射进来（示例）：
+	// if r.cfg.Auth != nil {
+	//     cfg.Issuer = r.cfg.Auth.Issuer
+	//     cfg.AcceptAudiences = r.cfg.Auth.Audiences
+	//     cfg.HMACSecret = r.cfg.Auth.HMACSecret
+	//     cfg.AllowSignedContext = r.cfg.Auth.AllowSignedContext
+	//     cfg.ContextHMACSecret = r.cfg.Auth.ContextHMACSecret
+	//     cfg.Optional = r.cfg.Auth.Optional && !prod
+	// }
+	return cfg
+}
+
+// —— 从配置构造 RBAC 配置 —— //
+func (r *Router) buildRBAC() *middleware.RBACConfig {
+	cfg := &middleware.RBACConfig{
+		Enabled:         true,
+		DefaultDeny:     true,
+		SuperAdminRoles: []string{"superadmin"},
+		RoutePermissions: map[string]middleware.Permission{
+			"GET:/api/v1/notes/:id": {Resource: "note", Action: "read"},
+		},
+	}
+	// TODO: 若你有 RBAC 目录/配置文件，在这里加载并覆盖 cfg.RoutePermissions
+	return cfg
+}
+
+// —— 从配置构造 ABAC 客户端（可根据环境切换） —— //
+func (r *Router) buildABAC() middleware.ABACClient {
+	endpoint := "http://localhost:18080/check"
+	if r.cfg.IsProduction() {
+		endpoint = "http://pdp.powerx.svc/check"
+	}
+	// TODO: 如果 r.cfg 里有 PDP 地址，从配置读：
+	// if r.cfg.Auth != nil && r.cfg.Auth.PDP != "" { endpoint = r.cfg.Auth.PDP }
+	return middleware.NewHTTPABACClient(endpoint)
 }

@@ -1,8 +1,11 @@
 package logger
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"path"
+	"runtime"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -44,7 +47,18 @@ func Init(level string) {
 	Logger.SetOutput(os.Stdout)
 
 	// 添加调用位置信息（仅在 debug 模式）
-	if logLevel <= logrus.DebugLevel {
+	if logLevel == logrus.DebugLevel || logLevel == logrus.TraceLevel {
+		tf := &logrus.TextFormatter{
+			FullTimestamp:   true,
+			TimestampFormat: "2006-01-02 15:04:05",
+			ForceColors:     true,
+			CallerPrettyfier: func(f *runtime.Frame) (function string, file string) {
+				funcName := path.Base(f.Function)
+				fileName := path.Base(f.File)
+				return funcName, fmt.Sprintf("%s:%d", fileName, f.Line)
+			},
+		}
+		Logger.SetFormatter(tf)
 		Logger.SetReportCaller(true)
 	}
 }

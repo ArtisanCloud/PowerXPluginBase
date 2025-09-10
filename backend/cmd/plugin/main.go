@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/bootstrap"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/grpc/server"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/router"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"net/http"
 	"os"
 	"os/signal"
-	"scrum-plugin/internal/config"
-	"scrum-plugin/internal/db"
-	"scrum-plugin/internal/grpc/client"
-	"scrum-plugin/internal/grpc/server"
-	"scrum-plugin/internal/logger"
-	"scrum-plugin/internal/router"
 	"syscall"
 	"time"
 
@@ -20,6 +20,9 @@ import (
 )
 
 func main() {
+
+	ctx := context.Background()
+
 	// 加载配置
 	cfg, err := config.Load()
 	if err != nil {
@@ -27,44 +30,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	// 初始化日志
-	logger.Init(cfg.LogLevel)
-	logger.Info("Starting PowerX Scrum Plugin...")
-
-	// 连接数据库
-	if err := db.Connect(cfg); err != nil {
-		logger.WithError(err).Fatal("Failed to connect to database")
-	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			logger.WithError(err).Error("Failed to close database connection")
-		}
-	}()
-
-	// 注意：不再在应用启动时执行任何迁移操作
-	// 数据库迁移应该通过独立的 cmd/database/migrate 命令执行
-
-	// 初始化 PowerX gRPC 客户端
-	ctx := context.Background()
-	pxc, err := client.NewPowerX(ctx, cfg.GRPCUpstream)
+	// 初始化插件
+	queryDB, err := bootstrap.BootstrapPlugin(ctx, cfg)
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to initialize PowerX gRPC client")
+		logger.WithError(err).Fatal("Failed to bootstrap plugin")
 	}
-	defer func() {
-		if err := pxc.Close(); err != nil {
-			logger.WithError(err).Error("Failed to close PowerX gRPC client")
-		}
-	}()
 
-	logger.Info("PowerX gRPC client initialized successfully")
+	// 初始化 PowerX gRPC Client 客户端
+	pxc := bootstrap.BootstrapGRPCClient(ctx, cfg.GRPCUpstream)
 
-	// 设置路由
-	r := router.New(cfg)
-	r.SetPowerXClient(pxc) // 设置 PowerX 客户端
+	deps := &app.Deps{
+		DB:           queryDB,
+		Ctx:          &ctx,
+		PowerXClient: pxc,
+	}
+
+	// 设置 gin engine 路由
+	r := router.NewRouter(cfg, deps)
 	engine := r.Setup()
 
 	// 创建 gRPC 服务器（可选）
-	gs, err := server.New(ctx, cfg.GRPCServer)
+	gs, err := server.NewGRPCServer(ctx, cfg.GRPCServer)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create gRPC server")
 	}

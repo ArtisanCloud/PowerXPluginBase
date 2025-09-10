@@ -1,49 +1,41 @@
 <template>
-  <UModal v-model="isOpen">
-    <UCard>
-      <template #header>
-        <div class="flex items-center justify-between">
-          <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-            {{ options.title || $t('common.confirmation') }}
-          </h3>
-          <UButton
-            color="gray"
-            variant="ghost"
-            icon="i-heroicons-x-mark-20-solid"
-            class="-my-1"
-            @click="cancel"
-          />
-        </div>
-      </template>
+  <UModal
+    :close="{ onClick: () => emit('close', false) }"
+    :title="options.title || $t('common.confirmation')"
+  >
+    <div class="py-2">
+      <p class="text-sm text-gray-600 dark:text-gray-400">
+        {{ options.message }}
+      </p>
+    </div>
 
-      <div class="py-2">
-        <p class="text-sm text-gray-600 dark:text-gray-400">
-          {{ options.message }}
-        </p>
+    <template #footer>
+      <div class="flex justify-end gap-3">
+        <UButton variant="outline" @click="emit('close', false)">
+          {{ options.cancelText || $t("common.cancel") }}
+        </UButton>
+        <UButton
+          :color="options.type === 'error' ? 'red' : 'primary'"
+          @click="emit('close', true)"
+        >
+          {{ options.confirmText || $t("common.confirm") }}
+        </UButton>
       </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <UButton
-            variant="outline"
-            @click="cancel"
-          >
-            {{ options.cancelText || $t('common.cancel') }}
-          </UButton>
-          <UButton
-            :color="options.type === 'error' ? 'red' : 'primary'"
-            @click="confirm"
-          >
-            {{ options.confirmText || $t('common.confirm') }}
-          </UButton>
-        </div>
-      </template>
-    </UCard>
+    </template>
   </UModal>
 </template>
 
 <script setup>
-import useConfirm from '~/composables/useConfirm';
+const { t } = useI18n();
 
-const { isOpen, options, confirm, cancel } = useConfirm();
+// 定义props
+const props = defineProps({
+  options: {
+    type: Object,
+    default: () => ({}),
+  },
+});
+
+// 定义emits
+const emit = defineEmits(["close"]);
 </script>

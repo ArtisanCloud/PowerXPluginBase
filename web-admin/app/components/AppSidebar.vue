@@ -6,139 +6,41 @@
       <!-- 仪表盘 -->
       <div>
         <UButton
-          to="/dashboard"
+          to="/"
           variant="ghost"
           color="neutral"
           class="w-full justify-start"
           :class="{
             'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-              $route.path === '/dashboard',
+              $route.path === '/',
           }"
         >
-          <UIcon name="i-heroicons-chart-bar" class="w-4 h-4 mr-3" />
+          <UIcon name="i-heroicons-home" class="w-4 h-4 mr-3" />
           {{ $t("navigation.dashboard") }}
         </UButton>
       </div>
 
-      <!-- Scrum 管理 -->
+      <!-- 笔记管理 -->
       <div>
         <div
           class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
         >
-          {{ $t("navigation.scrumManagement") }}
+          {{ $t("navigation.contentManagement") }}
         </div>
         <div class="space-y-1">
-          <!-- 产品待办列表 -->
+          <!-- 笔记列表 -->
           <UButton
-            to="/backlog"
+            to="/notes/active"
             variant="ghost"
             color="neutral"
             class="w-full justify-start"
             :class="{
               'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/backlog',
+                $route.path === '/notes',
             }"
           >
-            <UIcon name="i-heroicons-list-bullet" class="w-4 h-4 mr-3" />
-            {{ $t("navigation.backlog") }}
-          </UButton>
-
-          <!-- 冲刺管理 -->
-          <div>
-            <UButton
-              variant="ghost"
-              color="neutral"
-              class="w-full justify-start"
-              @click="toggleSprintMenu"
-            >
-              <UIcon name="i-heroicons-clock" class="w-4 h-4 mr-3" />
-              {{ $t("navigation.sprints") }}
-              <UIcon
-                :name="
-                  showSprintMenu
-                    ? 'i-heroicons-chevron-down'
-                    : 'i-heroicons-chevron-right'
-                "
-                class="w-4 h-4 ml-auto"
-              />
-            </UButton>
-
-            <div v-show="showSprintMenu" class="ml-6 mt-1 space-y-1">
-              <UButton
-                to="/sprints/active"
-                variant="ghost"
-                color="neutral"
-                size="sm"
-                class="w-full justify-start text-sm"
-                :class="{
-                  'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                    $route.path === '/sprints/active',
-                }"
-              >
-                <UIcon name="i-heroicons-play" class="w-3 h-3 mr-2" />
-                {{ $t("navigation.activeSprint") }}
-              </UButton>
-
-              <UButton
-                to="/sprints/planning"
-                variant="ghost"
-                color="neutral"
-                size="sm"
-                class="w-full justify-start text-sm"
-                :class="{
-                  'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                    $route.path === '/sprints/planning',
-                }"
-              >
-                <UIcon name="i-heroicons-calendar" class="w-3 h-3 mr-2" />
-                {{ $t("navigation.sprintPlanning") }}
-              </UButton>
-
-              <UButton
-                to="/sprints/retrospective"
-                variant="ghost"
-                color="neutral"
-                size="sm"
-                class="w-full justify-start text-sm"
-                :class="{
-                  'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                    $route.path === '/sprints/retrospective',
-                }"
-              >
-                <UIcon name="i-heroicons-arrow-path-rounded-square" class="w-3 h-3 mr-2" />
-                {{ $t("navigation.retrospective") }}
-              </UButton>
-            </div>
-          </div>
-
-          <!-- 任务看板 -->
-          <UButton
-            to="/board"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/board',
-            }"
-          >
-            <UIcon name="i-heroicons-view-columns" class="w-4 h-4 mr-3" />
-            {{ $t("navigation.taskBoard") }}
-          </UButton>
-
-          <!-- 任务管理 -->
-          <UButton
-            to="/tasks"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/tasks',
-            }"
-          >
-            <UIcon name="i-heroicons-check-circle" class="w-4 h-4 mr-3" />
-            {{ $t("navigation.tasks") }}
+            <UIcon name="i-heroicons-document-text" class="w-4 h-4 mr-3" />
+            {{ $t("navigation.notesList") }}
           </UButton>
         </div>
       </div>
@@ -151,90 +53,61 @@
           {{ $t("navigation.teamCollaboration") }}
         </div>
         <div class="space-y-1">
-          <!-- 团队成员 -->
-          <UButton
-            to="/team"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/team',
-            }"
-          >
-            <UIcon name="i-heroicons-users" class="w-4 h-4 mr-3" />
-            {{ $t("navigation.team") }}
-          </UButton>
+          <!-- 团队协作 -->
+          <div>
+            <UButton
+              variant="ghost"
+              color="neutral"
+              class="w-full justify-start"
+              @click="toggleTeamMenu"
+            >
+              <UIcon name="i-heroicons-users" class="w-4 h-4 mr-3" />
+              {{ $t("navigation.teamCollaboration") }}
+              <UIcon
+                :name="
+                  showTeamMenu
+                    ? 'i-heroicons-chevron-down'
+                    : 'i-heroicons-chevron-right'
+                "
+                class="w-4 h-4 ml-auto"
+              />
+            </UButton>
 
-          <!-- 每日站会 -->
-          <UButton
-            to="/daily-standup"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/daily-standup',
-            }"
-          >
-            <UIcon name="i-heroicons-microphone" class="w-4 h-4 mr-3" />
-            {{ $t("navigation.dailyStandup") }}
-          </UButton>
-        </div>
-      </div>
+            <div v-show="showTeamMenu" class="ml-6 mt-1 space-y-1">
+              <UButton
+                to="/team/management"
+                variant="ghost"
+                color="neutral"
+                size="sm"
+                class="w-full justify-start text-sm"
+                :class="{
+                  'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
+                    $route.path === '/team/management',
+                }"
+              >
+                <UIcon
+                  name="i-heroicons-building-office"
+                  class="w-3 h-3 mr-2"
+                />
+                {{ $t("navigation.teamManagement") }}
+              </UButton>
 
-      <!-- 报告分析 -->
-      <div>
-        <div
-          class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-        >
-          {{ $t("navigation.reportsAnalytics") }}
-        </div>
-        <div class="space-y-1">
-          <!-- 燃尽图 -->
-          <UButton
-            to="/reports/burndown"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/reports/burndown',
-            }"
-          >
-            <UIcon name="i-heroicons-chart-bar" class="w-4 h-4 mr-3" />
-            {{ $t("navigation.burndownChart") }}
-          </UButton>
-
-          <!-- 速度图表 -->
-          <UButton
-            to="/reports/velocity"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/reports/velocity',
-            }"
-          >
-            <UIcon name="i-heroicons-arrow-trending-up" class="w-4 h-4 mr-3" />
-            {{ $t("navigation.velocityChart") }}
-          </UButton>
-
-          <!-- 累积流图 -->
-          <UButton
-            to="/reports/cumulative-flow"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/reports/cumulative-flow',
-            }"
-          >
-            <UIcon name="i-heroicons-chart-pie" class="w-4 h-4 mr-3" />
-            {{ $t("navigation.cumulativeFlow") }}
-          </UButton>
+              <UButton
+                to="/team/members"
+                variant="ghost"
+                color="neutral"
+                size="sm"
+                class="w-full justify-start text-sm"
+                :class="{
+                  'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
+                    $route.path === '/team/members',
+                }"
+              >
+                <UIcon name="i-heroicons-user-group" class="w-3 h-3 mr-2" />
+                {{ $t("navigation.memberManagement") }}
+              </UButton>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -246,21 +119,6 @@
           {{ $t("navigation.systemSettings") }}
         </div>
         <div class="space-y-1">
-          <!-- 项目设置 -->
-          <UButton
-            to="/settings/project"
-            variant="ghost"
-            color="neutral"
-            class="w-full justify-start"
-            :class="{
-              'bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-400':
-                $route.path === '/settings/project',
-            }"
-          >
-            <UIcon name="i-heroicons-cog-6-tooth" class="w-4 h-4 mr-3" />
-            {{ $t("navigation.projectSettings") }}
-          </UButton>
-
           <!-- 权限管理 -->
           <UButton
             to="/settings/permissions"
@@ -284,21 +142,21 @@
 <script setup lang="ts">
 const { t } = useI18n();
 
-// 控制冲刺管理子菜单的展开状态
-const showSprintMenu = ref(false);
+// 控制团队协作子菜单的展开状态
+const showTeamMenu = ref(false);
 
-// 切换冲刺管理子菜单
-const toggleSprintMenu = () => {
-  showSprintMenu.value = !showSprintMenu.value;
+// 切换团队协作子菜单
+const toggleTeamMenu = () => {
+  showTeamMenu.value = !showTeamMenu.value;
 };
 
-// 监听路由变化，如果当前路由在冲刺模块下，自动展开子菜单
+// 监听路由变化，如果当前路由在团队模块下，自动展开子菜单
 const route = useRoute();
 watch(
   () => route.path,
   (newPath) => {
-    if (newPath.startsWith("/sprints/")) {
-      showSprintMenu.value = true;
+    if (newPath.startsWith("/team/")) {
+      showTeamMenu.value = true;
     }
   },
   { immediate: true }

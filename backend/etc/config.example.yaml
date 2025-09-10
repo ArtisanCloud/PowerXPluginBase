@@ -1,20 +1,20 @@
-# PowerX Scrum Plugin Configuration - Example
+# PowerX Note Plugin Configuration - Example
 # 此文件是配置示例，请复制为 config.yaml 并根据实际环境修改
 
 # 服务配置
 server:
-  bind_addr: ":8086"          # 服务绑定地址
-  log_level: "debug"          # 开发环境建议使用 debug
-  dev_mode: true              # 开发模式
+  bind_addr: ":8086" # 服务绑定地址
+  log_level: "debug" # 开发环境建议使用 debug
+  dev_mode: true # 开发模式
 
 # 数据库配置
 database:
-  dsn: "host=localhost user=your_username dbname=powerx_plugin_scrum port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-  schema: "scrum"
+  dsn: "host=localhost user=your_username dbname=px_plugin port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+  schema: "px_plugin"
 
 # 运行时配置
 runtime:
-  run_migrate: true           # 开发环境可以启用自动迁移
+  run_migrate: true # 开发环境可以启用自动迁移
 
 # PowerX 上下文配置
 context:
@@ -28,16 +28,13 @@ context:
 
 # 业务配置
 business:
-  sprint:
-    default_capacity: 40
-    max_duration_days: 30
-  task:
+  note:
     max_estimate_points: 100
     default_priority: "medium"
   notifications:
-    enabled: false            # 开发环境通常关闭通知
+    enabled: false # 开发环境通常关闭通知
   cache:
-    enabled: false            # 开发环境可关闭缓存
+    enabled: false # 开发环境可关闭缓存
 
 # 安全配置
 security:
@@ -47,7 +44,7 @@ security:
     - "http://localhost:3000"
     - "http://127.0.0.1:3036"
   rate_limit:
-    enabled: false            # 开发环境可关闭限流
+    enabled: false # 开发环境可关闭限流
 
 # 监控配置
 monitoring:
@@ -59,21 +56,21 @@ monitoring:
 # 日志配置
 logging:
   level: "debug"
-  format: "text"              # 开发环境使用文本格式更易读
+  format: "text" # 开发环境使用文本格式更易读
   output: "stdout"
 
 # gRPC 上游配置（连接 PowerX 核心服务）
 grpc_upstream:
-  address: "localhost:9001"    # PowerX gRPC 服务地址
-  token: ""                    # Capability Token（插件安装后获得）
-  tenant_id: 1                 # 租户 ID
-  use_tls: false               # 开发环境关闭 TLS
-  ca_cert: ""                 # TLS 根证书路径（生产环境使用）
+  address: "localhost:9001" # PowerX gRPC 服务地址
+  token: "" # Capability Token（插件安装后获得）
+  tenant_id: 1 # 租户 ID
+  use_tls: false # 开发环境关闭 TLS
+  ca_cert: "" # TLS 根证书路径（生产环境使用）
 
 # gRPC 服务器配置（插件提供的 gRPC 服务）
 grpc_server:
-  enable: true                 # 是否启用插件 gRPC 服务器
-  addr: ":9101"               # 插件 gRPC 监听地址
-  use_tls: false               # 开发环境关闭 TLS
-  cert: ""                    # TLS 证书路径（生产环境使用）
-  key: ""                     # TLS 私钥路径（生产环境使用）
+  enable: true # 是否启用插件 gRPC 服务器
+  addr: ":9101" # 插件 gRPC 监听地址
+  use_tls: false # 开发环境关闭 TLS
+  cert: "" # TLS 证书路径（生产环境使用）
+  key: "" # TLS 私钥路径（生产环境使用）

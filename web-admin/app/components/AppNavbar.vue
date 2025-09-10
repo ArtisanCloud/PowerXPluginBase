@@ -5,30 +5,17 @@
     <div class="flex h-16 items-center justify-between px-6">
       <!-- 左侧品牌 -->
       <div class="flex items-center">
-        <UIcon name="i-heroicons-rocket-launch" class="w-6 h-6 mr-3 text-primary-600" />
+        <UIcon
+          name="i-heroicons-rocket-launch"
+          class="w-6 h-6 mr-3 text-primary-600"
+        />
         <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
           {{ $t("common.appName") }}
         </h1>
       </div>
 
       <!-- 中间快捷操作 -->
-      <div class="flex items-center space-x-4">
-        <!-- 快速创建任务 -->
-        <UButton
-          color="primary"
-          size="sm"
-          icon="i-heroicons-plus"
-          @click="createQuickTask"
-        >
-          {{ $t("navigation.quickCreateTask") }}
-        </UButton>
-        
-        <!-- 当前冲刺信息 -->
-        <div class="hidden md:flex items-center text-sm text-gray-500 dark:text-gray-400">
-          <UIcon name="i-heroicons-clock" class="w-4 h-4 mr-1" />
-          {{ $t("navigation.currentSprint") }}: Sprint #3
-        </div>
-      </div>
+      <div class="flex items-center space-x-4"></div>
 
       <!-- 右侧控制区 -->
       <div class="flex items-center space-x-4">
@@ -42,12 +29,15 @@
         >
           <UIcon name="i-heroicons-bell" class="w-5 h-5" />
         </UButton>
-        
+
         <ThemeSelector />
         <LanguageSelector />
-        
+
         <!-- 用户头像和下拉菜单 -->
-        <UDropdownMenu :items="userMenuItems" :popper="{ placement: 'bottom-end' }">
+        <UDropdownMenu
+          :items="userMenuItems"
+          :popper="{ placement: 'bottom-end' }"
+        >
           <UAvatar
             src="https://avatars.githubusercontent.com/u/739984?v=4"
             alt="管理员"
@@ -65,44 +55,51 @@ const { t } = useI18n();
 
 // 用户菜单项
 const userMenuItems = [
-  [{
-    label: t('navigation.profile'),
-    avatar: {
-      src: 'https://avatars.githubusercontent.com/u/739984?v=4'
+  [
+    {
+      label: t("navigation.profile"),
+      avatar: {
+        src: "https://avatars.githubusercontent.com/u/739984?v=4",
+      },
+      click: () => navigateTo("/profile"),
     },
-    click: () => navigateTo('/profile')
-  }],
-  [{
-    label: t('navigation.settings'),
-    icon: 'i-heroicons-cog-6-tooth',
-    click: () => navigateTo('/settings')
-  }, {
-    label: t('navigation.help'),
-    icon: 'i-heroicons-question-mark-circle',
-    click: () => navigateTo('/help')
-  }],
-  [{
-    label: t('navigation.logout'),
-    icon: 'i-heroicons-arrow-right-on-rectangle',
-    click: () => logout()
-  }]
+  ],
+  [
+    {
+      label: t("navigation.settings"),
+      icon: "i-heroicons-cog-6-tooth",
+      click: () => navigateTo("/settings"),
+    },
+    {
+      label: t("navigation.help"),
+      icon: "i-heroicons-question-mark-circle",
+      click: () => navigateTo("/help"),
+    },
+  ],
+  [
+    {
+      label: t("navigation.logout"),
+      icon: "i-heroicons-arrow-right-on-rectangle",
+      click: () => logout(),
+    },
+  ],
 ];
 
 // 快速创建任务
-const createQuickTask = () => {
+const createQuickNote = () => {
   // TODO: 实现快速创建任务功能
-  console.log('快速创建任务');
+  console.log("快速创建任务");
 };
 
 // 切换通知
 const toggleNotifications = () => {
   // TODO: 实现通知面板切换
-  console.log('切换通知');
+  console.log("切换通知");
 };
 
 // 退出登录
 const logout = () => {
   // TODO: 实现退出登录功能
-  console.log('退出登录');
+  console.log("退出登录");
 };
 </script>

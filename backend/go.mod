@@ -1,11 +1,10 @@
-module scrum-plugin
+module github.com/ArtisanCloud/PowerXPlugin
 
 go 1.23.0
 
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
-	github.com/joho/godotenv v1.5.1
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/sync v0.16.0
 	google.golang.org/grpc v1.75.0

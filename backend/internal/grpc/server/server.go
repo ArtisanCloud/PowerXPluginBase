@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net"
 
-	cfgpkg "scrum-plugin/internal/config"
-	"scrum-plugin/internal/logger"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+
+	cfgpkg "github.com/ArtisanCloud/PowerXPlugin/internal/config"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -20,11 +21,11 @@ import (
 type Server struct {
 	*grpc.Server
 	lis    net.Listener
-	config cfgpkg.GRPCServer
+	config *cfgpkg.GRPCServer
 }
 
 // New 创建新的插件 gRPC 服务器
-func New(ctx context.Context, c cfgpkg.GRPCServer) (*Server, error) {
+func NewGRPCServer(ctx context.Context, c *cfgpkg.GRPCServer) (*Server, error) {
 	if !c.Enable {
 		logger.Info("gRPC server is disabled")
 		return nil, nil
@@ -61,15 +62,16 @@ func New(ctx context.Context, c cfgpkg.GRPCServer) (*Server, error) {
 
 	// 设置服务健康状态
 	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
-	healthServer.SetServingStatus("scrum-plugin", healthpb.HealthCheckResponse_SERVING)
+	healthServer.SetServingStatus("note-plugin", healthpb.HealthCheckResponse_SERVING)
 
 	// 注册反射服务（开发和调试用）
 	reflection.Register(s)
 
 	// TODO: 在这里注册你的插件 gRPC 服务
-	// 例如：pluginv1.RegisterScrumPluginServiceServer(s, NewScrumServer(deps))
+	// 例如：pluginv1.RegisterNotePluginServiceServer(s, NewNoteServer(deps))
 
-	logger.WithField("address", lis.Addr().String()).Info("gRPC server configured")
+	//logger.WithField("address", lis.Addr().String()).Info("gRPC server configured")
+	logger.Info("gRPC server configured")
 
 	return &Server{
 		Server: s,
@@ -108,24 +110,24 @@ func (s *Server) IsServing() bool {
 // TODO: 当定义插件自己的 proto 服务时，在这里实现服务逻辑
 // 例如：
 //
-// type ScrumServer struct {
-// 	pluginv1.UnimplementedScrumPluginServiceServer
-// 	taskService *services.TaskService
+// type NoteServer struct {
+// 	pluginv1.UnimplementedNotePluginServiceServer
+// 	noteService *services.NoteService
 // 	// 其他依赖
 // }
 //
-// func NewScrumServer(deps *SomeDependencies) *ScrumServer {
-// 	return &ScrumServer{
-// 		taskService: deps.TaskService,
+// func NewNoteServer(deps *SomeDependencies) *NoteServer {
+// 	return &NoteServer{
+// 		noteService: deps.NoteService,
 // 	}
 // }
 //
-// func (s *ScrumServer) CreateTask(ctx context.Context, req *pluginv1.CreateTaskRequest) (*pluginv1.CreateTaskResponse, error) {
+// func (s *NoteServer) CreateNote(ctx context.Context, req *pluginv1.CreateNoteRequest) (*pluginv1.CreateNoteResponse, error) {
 // 	// 实现创建任务逻辑
-// 	return &pluginv1.CreateTaskResponse{}, nil
+// 	return &pluginv1.CreateNoteResponse{}, nil
 // }
 //
-// func (s *ScrumServer) GetTask(ctx context.Context, req *pluginv1.GetTaskRequest) (*pluginv1.GetTaskResponse, error) {
+// func (s *NoteServer) GetNote(ctx context.Context, req *pluginv1.GetNoteRequest) (*pluginv1.GetNoteResponse, error) {
 // 	// 实现获取任务逻辑
-// 	return &pluginv1.GetTaskResponse{}, nil
+// 	return &pluginv1.GetNoteResponse{}, nil
 // }

@@ -1,12 +1,12 @@
-# Makefile for PowerX Scrum Plugin
+# Makefile for PowerX Note Plugin
 
 # 变量定义
-APP_NAME := powerx-plugin-scrum
+APP_NAME := powerx-plugin-note
 VERSION := 0.1.0
-PLUGIN_ID := com.powerx.plugins.scrum
+PLUGIN_ID := com.powerx.plugins.note
 
 # Go 相关变量
-GO_MODULE := github.com/powerx-plugins/scrum
+GO_MODULE := github.com/powerx-plugins/note
 BACKEND_DIR := backend
 BUILD_DIR := $(BACKEND_DIR)/bin
 MAIN_FILE := $(BACKEND_DIR)/cmd/plugin/main.go
@@ -18,7 +18,7 @@ DOCKER_REGISTRY ?=
 # 默认目标
 .PHONY: help
 help: ## 显示帮助信息
-	@echo "PowerX Scrum Plugin Makefile"
+	@echo "PowerX Note Plugin Makefile"
 	@echo ""
 	@echo "可用的命令:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
@@ -40,7 +40,7 @@ run: ## 启动后端服务（开发模式）
 	@echo "启动后端服务..."
 	cd $(BACKEND_DIR) && \
 	PX_BIND_ADDR=":8091" \
-	PX_DB_SCHEMA="scrum" \
+	PX_DB_SCHEMA="note" \
 	PX_LOG_LEVEL="debug" \
 	PX_DEV_MODE=1 \
 	go run ./cmd/plugin
@@ -115,7 +115,7 @@ docker-run: ## 运行 Docker 容器
 	@echo "运行 Docker 容器..."
 	docker run --rm -p 8091:8091 \
 		-e PX_BIND_ADDR=":8091" \
-		-e PX_DB_SCHEMA="scrum" \
+		-e PX_DB_SCHEMA="note" \
 		-e PX_LOG_LEVEL="debug" \
 		$(DOCKER_IMAGE)
 

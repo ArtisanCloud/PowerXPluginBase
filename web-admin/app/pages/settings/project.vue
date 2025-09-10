@@ -18,13 +18,24 @@
         </h2>
       </template>
 
-      <UForm :state="projectForm" class="space-y-4" @submit="saveProjectSettings">
+      <UForm
+        :state="projectForm"
+        class="space-y-4"
+        @submit="saveProjectSettings"
+      >
         <UFormGroup :label="$t('settings.projectName')" name="name">
           <UInput v-model="projectForm.name" placeholder="输入项目名称" />
         </UFormGroup>
 
-        <UFormGroup :label="$t('settings.projectDescription')" name="description">
-          <UTextarea v-model="projectForm.description" :placeholder="$t('settings.projectDescriptionPlaceholder')" rows="3" />
+        <UFormGroup
+          :label="$t('settings.projectDescription')"
+          name="description"
+        >
+          <UTextarea
+            v-model="projectForm.description"
+            :placeholder="$t('settings.projectDescriptionPlaceholder')"
+            rows="3"
+          />
         </UFormGroup>
 
         <UFormGroup :label="$t('settings.projectKey')" name="key">
@@ -47,7 +58,7 @@
       </UForm>
     </UCard>
 
-    <!-- 冲刺设置 -->
+    <!-- 笔记设置 -->
     <UCard>
       <template #header>
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -56,7 +67,10 @@
       </template>
 
       <UForm :state="sprintForm" class="space-y-4" @submit="saveSprintSettings">
-        <UFormGroup :label="$t('settings.defaultSprintLength')" name="defaultLength">
+        <UFormGroup
+          :label="$t('settings.defaultSprintLength')"
+          name="defaultLength"
+        >
           <USelectMenu
             v-model="sprintForm.defaultLength"
             :options="sprintLengthOptions"
@@ -98,7 +112,7 @@
       <div class="space-y-4">
         <div>
           <h3 class="font-medium text-gray-900 dark:text-white mb-3">
-            {{ $t("settings.taskStatuses") }}
+            {{ $t("settings.noteStatuses") }}
           </h3>
           <div class="space-y-2">
             <div
@@ -108,7 +122,10 @@
             >
               <div class="flex items-center space-x-3">
                 <div class="flex items-center space-x-2">
-                  <UIcon name="i-heroicons-bars-3" class="w-4 h-4 text-gray-400 cursor-move" />
+                  <UIcon
+                    name="i-heroicons-bars-3"
+                    class="w-4 h-4 text-gray-400 cursor-move"
+                  />
                   <UBadge :color="status.color" variant="soft">
                     {{ status.name }}
                   </UBadge>
@@ -121,7 +138,12 @@
                 <UButton size="xs" variant="ghost" @click="editStatus(status)">
                   {{ $t("common.edit") }}
                 </UButton>
-                <UButton size="xs" variant="ghost" color="red" @click="deleteStatus(status)">
+                <UButton
+                  size="xs"
+                  variant="ghost"
+                  color="red"
+                  @click="deleteStatus(status)"
+                >
                   {{ $t("common.delete") }}
                 </UButton>
               </div>
@@ -179,7 +201,9 @@
           <UToggle v-model="notificationSettings.sprintReminders" />
         </div>
 
-        <div class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div
+          class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700"
+        >
           <UButton color="primary" @click="saveNotificationSettings">
             {{ $t("common.save") }}
           </UButton>
@@ -192,106 +216,106 @@
 <script setup>
 // 页面元数据
 definePageMeta({
-  title: 'projectSettings'
+  title: "projectSettings",
 });
 
 // 响应式数据
 const projectForm = ref({
-  name: 'PowerX Scrum项目',
-  description: 'Scrum项目管理系统',
-  key: 'PSM',
-  lead: null
+  name: "PowerX Note项目",
+  description: "Note项目管理系统",
+  key: "PSM",
+  lead: null,
 });
 
 const sprintForm = ref({
   defaultLength: 2,
   startDay: 1,
-  autoCreate: true
+  autoCreate: true,
 });
 
 const notificationSettings = ref({
   email: true,
   dailyDigest: false,
-  sprintReminders: true
+  sprintReminders: true,
 });
 
 // 选项数据
 const teamMembers = ref([
-  { label: '张三', value: 'zhangsan' },
-  { label: '李四', value: 'lisi' },
-  { label: '王五', value: 'wangwu' }
+  { label: "张三", value: "zhangsan" },
+  { label: "李四", value: "lisi" },
+  { label: "王五", value: "wangwu" },
 ]);
 
 const sprintLengthOptions = ref([
-  { label: '1周', value: 1 },
-  { label: '2周', value: 2 },
-  { label: '3周', value: 3 },
-  { label: '4周', value: 4 }
+  { label: "1周", value: 1 },
+  { label: "2周", value: 2 },
+  { label: "3周", value: 3 },
+  { label: "4周", value: 4 },
 ]);
 
 const weekDayOptions = ref([
-  { label: '周一', value: 1 },
-  { label: '周二', value: 2 },
-  { label: '周三', value: 3 },
-  { label: '周四', value: 4 },
-  { label: '周五', value: 5 }
+  { label: "周一", value: 1 },
+  { label: "周二", value: 2 },
+  { label: "周三", value: 3 },
+  { label: "周四", value: 4 },
+  { label: "周五", value: 5 },
 ]);
 
 const workflowStatuses = ref([
   {
     id: 1,
-    name: '待办',
-    description: '待开始的任务',
-    color: 'gray'
+    name: "待办",
+    description: "待开始的任务",
+    color: "gray",
   },
   {
     id: 2,
-    name: '进行中',
-    description: '正在开发的任务',
-    color: 'blue'
+    name: "进行中",
+    description: "正在开发的任务",
+    color: "blue",
   },
   {
     id: 3,
-    name: '待审核',
-    description: '等待代码审查的任务',
-    color: 'yellow'
+    name: "待审核",
+    description: "等待代码审查的任务",
+    color: "yellow",
   },
   {
     id: 4,
-    name: '已完成',
-    description: '已完成的任务',
-    color: 'green'
-  }
+    name: "已完成",
+    description: "已完成的任务",
+    color: "green",
+  },
 ]);
 
 // 方法
 const saveProjectSettings = () => {
-  console.log('保存项目设置', projectForm.value);
+  console.log("保存项目设置", projectForm.value);
   // 这里添加保存逻辑
 };
 
 const saveSprintSettings = () => {
-  console.log('保存冲刺设置', sprintForm.value);
+  console.log("保存笔记设置", sprintForm.value);
   // 这里添加保存逻辑
 };
 
 const saveNotificationSettings = () => {
-  console.log('保存通知设置', notificationSettings.value);
+  console.log("保存通知设置", notificationSettings.value);
   // 这里添加保存逻辑
 };
 
 const editStatus = (status) => {
-  console.log('编辑状态', status);
+  console.log("编辑状态", status);
   // 这里添加编辑逻辑
 };
 
 const deleteStatus = (status) => {
-  console.log('删除状态', status);
+  console.log("删除状态", status);
   // 这里添加删除逻辑
 };
 
 const addNewStatus = () => {
-  console.log('添加新状态');
+  console.log("添加新状态");
   // 这里添加新增逻辑
 };
 

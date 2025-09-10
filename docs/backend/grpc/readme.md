@@ -1,6 +1,6 @@
 # gRPC 集成指南（插件侧） — `grpc.md`
 
-> 目标：在 **当前backend目录结构** 下为插件同时提供
+> 目标：在 **当前 backend 目录结构** 下为插件同时提供
 > 1）**PowerX 核心的 gRPC 客户端**（调用 Member/Team 等服务）
 > 2）**插件自己的 gRPC Server**（可选，后续供平台/其他插件调用）
 > 并与现有 Gin HTTP 一起运行。
@@ -89,7 +89,7 @@ import (
   "io/ioutil"
   "time"
 
-  cfgpkg "github.com/ArtisanCloud/PowerX/Core/Plugins/com.powerx.plugin.scrum/backend/internal/config"
+  cfgpkg "github.com/ArtisanCloud/PowerX/Core/Plugins/com.powerx.plugin.note/backend/internal/config"
 
   commonv1 "github.com/ArtisanCloud/PowerX/api/grpc/gen/go/common/v1"
   orgv1 "github.com/ArtisanCloud/PowerX/api/grpc/gen/go/powerx/organization/v1"
@@ -183,7 +183,7 @@ import (
   "fmt"
   "net"
 
-  cfgpkg "github.com/ArtisanCloud/PowerX/Core/Plugins/com.powerx.plugin.scrum/backend/internal/config"
+  cfgpkg "github.com/ArtisanCloud/PowerX/Core/Plugins/com.powerx.plugin.note/backend/internal/config"
   "github.com/ArtisanCloud/PowerX/internal/logger"
 
   "google.golang.org/grpc"
@@ -227,7 +227,7 @@ func New(ctx context.Context, c cfgpkg.GRPCServer /* 传入你的 deps 也行 */
   reflection.Register(s)
 
   // TODO: 在这里注册你的插件 gRPC 服务
-  // pluginv1.RegisterScrumPluginServiceServer(s, NewScrumServer(deps))
+  // pluginv1.RegisterNotePluginServiceServer(s, NewNoteServer(deps))
 
   return &Server{Server: s, lis: lis}, nil
 }
@@ -256,9 +256,9 @@ import (
 
   "golang.org/x/sync/errgroup"
 
-  cfgpkg "github.com/ArtisanCloud/PowerX/Core/Plugins/com.powerx.plugin.scrum/backend/internal/config"
-  powerxgrpc "github.com/ArtisanCloud/PowerX/Core/Plugins/com.powerx.plugin.scrum/backend/internal/grpc/client"
-  plugingrpc "github.com/ArtisanCloud/PowerX/Core/Plugins/com.powerx.plugin.scrum/backend/internal/grpc/server"
+  cfgpkg "github.com/ArtisanCloud/PowerX/Core/Plugins/com.powerx.plugin.note/backend/internal/config"
+  powerxgrpc "github.com/ArtisanCloud/PowerX/Core/Plugins/com.powerx.plugin.note/backend/internal/grpc/client"
+  plugingrpc "github.com/ArtisanCloud/PowerX/Core/Plugins/com.powerx.plugin.note/backend/internal/grpc/server"
 
   "github.com/gin-gonic/gin"
 )
@@ -326,22 +326,23 @@ go get google.golang.org/grpc \
 > `github.com/ArtisanCloud/PowerX/api/grpc/gen/go/...`
 > 如果插件仓库无法直接 import，可选两种方案：
 >
-> * **方案 A（推荐）**：在 Core 仓库给生成物打 tag/release，让插件以模块依赖方式引入；
-> * **方案 B**：在插件仓库下新建 `third_party/powerx-contracts`（或 git submodule）放 `contracts/`，执行 `buf generate` 生成本地 `gen/go` 后从本地包导入。
+> - **方案 A（推荐）**：在 Core 仓库给生成物打 tag/release，让插件以模块依赖方式引入；
+> - **方案 B**：在插件仓库下新建 `third_party/powerx-contracts`（或 git submodule）放 `contracts/`，执行 `buf generate` 生成本地 `gen/go` 后从本地包导入。
 
 ---
 
 ## 6) 本地联调 & 验证
 
-* 启动 **Core（:9001）** 与 **插件（HTTP :8080 / gRPC :9101）**
-* `grpcurl` 验证 Core：
+- 启动 **Core（:9001）** 与 **插件（HTTP :8080 / gRPC :9101）**
+- `grpcurl` 验证 Core：
 
   ```bash
   grpcurl -plaintext localhost:9001 list
   grpcurl -plaintext -d '{"ctx":{"tenantId":42},"page":{"pageSize":10}}' \
     localhost:9001 powerx.organization.v1.MemberService.ListMembers
   ```
-* 访问插件 HTTP：
+
+- 访问插件 HTTP：
 
   ```
   curl "http://localhost:8080/members"
@@ -351,19 +352,19 @@ go get google.golang.org/grpc \
 
 ## 7) 常见问题
 
-* **`no matching versions for query "latest"`**
+- **`no matching versions for query "latest"`**
   说明插件的 `go.mod` 找不到 Core 的生成物包版本。请按“依赖”章节处理（发布 tag 或使用本地生成）。
-* **包名/目录不匹配（buf lint 报错）**
+- **包名/目录不匹配（buf lint 报错）**
   `common.v1` → `common/v1/`；`powerx.organization.v1` → `powerx/organization/v1/`。
-* **请求没携带租户**
+- **请求没携带租户**
   在未启用拦截器前，**务必在请求消息里填 `RequestContext.TenantId`**，否则服务端会拒绝。
 
 ---
 
 ## 8) 下一步建议
 
-* 给客户端加**重试/超时**与**封装 Helper**（如：`client.ListMembers(ctx, keyword, pageSize)`）
-* 插件 gRPC Server 定义自己的 `.proto`（如 `plugin.scrum.v1`），在 `server.go` 注册
-* 上线环境启用 **TLS/mTLS**；Core 侧建议走统一网关（Envoy / gRPC-Gateway）
+- 给客户端加**重试/超时**与**封装 Helper**（如：`client.ListMembers(ctx, keyword, pageSize)`）
+- 插件 gRPC Server 定义自己的 `.proto`（如 `plugin.note.v1`），在 `server.go` 注册
+- 上线环境启用 **TLS/mTLS**；Core 侧建议走统一网关（Envoy / gRPC-Gateway）
 
 ---

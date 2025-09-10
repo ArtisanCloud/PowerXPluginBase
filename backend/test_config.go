@@ -3,14 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	"log"
-
-	"scrum-plugin/internal/config"
 )
 
 func main() {
 	fmt.Println("Loading configuration...")
-	
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)

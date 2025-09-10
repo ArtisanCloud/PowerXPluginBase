@@ -6,11 +6,10 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	cfgpkg "github.com/ArtisanCloud/PowerXPlugin/internal/config"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
 	"io/ioutil"
 	"time"
-
-	cfgpkg "scrum-plugin/internal/config"
-	"scrum-plugin/internal/logger"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -29,92 +28,21 @@ type PageRequest struct {
 	PageSize  int32 `json:"page_size"`
 }
 
-type ListMembersRequest struct {
-	Ctx      *RequestContext `json:"ctx"`
-	Page     *PageRequest    `json:"page"`
-	Keyword  string          `json:"keyword,omitempty"`
-	TeamIds  []int64         `json:"team_ids,omitempty"`
-	Statuses []string        `json:"statuses,omitempty"`
-}
-
-type Member struct {
-	Id         int64  `json:"id"`
-	UserId     int64  `json:"user_id"`
-	Name       string `json:"name"`
-	Email      string `json:"email"`
-	Phone      string `json:"phone"`
-	Position   string `json:"position"`
-	Department string `json:"department"`
-	Status     string `json:"status"`
-	JoinedAt   string `json:"joined_at"`
-	CreatedAt  string `json:"created_at"`
-	UpdatedAt  string `json:"updated_at"`
-}
-
-type ListMembersResponse struct {
-	Members    []*Member `json:"members"`
-	TotalCount int64     `json:"total_count"`
-	PageIndex  int32     `json:"page_index"`
-	PageSize   int32     `json:"page_size"`
-}
-
-type ListTeamsRequest struct {
-	Ctx      *RequestContext `json:"ctx"`
-	Page     *PageRequest    `json:"page"`
-	Keyword  string          `json:"keyword,omitempty"`
-	Statuses []string        `json:"statuses,omitempty"`
-}
-
-type Team struct {
-	Id          int64  `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	LeaderId    int64  `json:"leader_id"`
-	Status      string `json:"status"`
-	MemberCount int32  `json:"member_count"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
-}
-
-type ListTeamsResponse struct {
-	Teams      []*Team `json:"teams"`
-	TotalCount int64   `json:"total_count"`
-	PageIndex  int32   `json:"page_index"`
-	PageSize   int32   `json:"page_size"`
-}
-
-type GetMemberRequest struct {
-	Ctx *RequestContext `json:"ctx"`
-	Id  int64           `json:"id"`
-}
-
-type GetMemberResponse struct {
-	Member *Member `json:"member"`
-}
-
-type GetTeamRequest struct {
-	Ctx *RequestContext `json:"ctx"`
-	Id  int64           `json:"id"`
-}
-
-type GetTeamResponse struct {
-	Team *Team `json:"team"`
-}
-
 // PowerX PowerX gRPC 客户端封装
-type PowerX struct {
-	conn *grpc.ClientConn
+type PowerXServiceClient struct {
+    conn *grpc.ClientConn
 	// TODO: 当有实际的 PowerX proto 文件时，添加客户端
 	// Members orgv1.MemberServiceClient
 	// Teams   orgv1.TeamServiceClient
 
-	token    string
-	tenantID int64
-	cfg      cfgpkg.GRPCUpstream
+    token    string
+    tenantID int64
+    cfg      *cfgpkg.GRPCUpstream
+    tm       *TokenManager
 }
 
 // NewPowerX 根据配置拨号 PowerX gRPC
-func NewPowerX(ctx context.Context, c cfgpkg.GRPCUpstream) (*PowerX, error) {
+func NewPowerXServiceClient(ctx context.Context, c *cfgpkg.GRPCUpstream) (*PowerXServiceClient, error) {
 	if c.Address == "" {
 		return nil, fmt.Errorf("grpc upstream address is required")
 	}
@@ -146,39 +74,69 @@ func NewPowerX(ctx context.Context, c cfgpkg.GRPCUpstream) (*PowerX, error) {
 
 	logger.WithField("address", c.Address).Info("Connecting to PowerX gRPC service")
 
-	conn, err := grpc.DialContext(ctx, c.Address, dialOpts...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to dial PowerX gRPC: %w", err)
-	}
+    conn, err := grpc.DialContext(ctx, c.Address, dialOpts...)
+    if err != nil {
+        return nil, fmt.Errorf("failed to dial PowerX gRPC: %w", err)
+    }
 
 	logger.Info("Successfully connected to PowerX gRPC service")
 
-	return &PowerX{
-		conn: conn,
+    p := &PowerXServiceClient{
+        conn: conn,
 		// TODO: 当有实际的 PowerX proto 文件时，初始化客户端
 		// Members:  orgv1.NewMemberServiceClient(conn),
 		// Teams:    orgv1.NewTeamServiceClient(conn),
-		token:    c.Token,
-		tenantID: c.TenantID,
-		cfg:      c,
-	}, nil
+        token:    c.Token,
+        tenantID: c.TenantID,
+        cfg:      c,
+    }
+
+    // 初始化 STS TokenManager（若提供了 client_id/secret）
+    if c.STSClientID != "" && c.STSClientSecret != "" {
+        p.tm = NewTokenManager(c.STSClientID, c.STSClientSecret, c.STSAudience, c.STSScope, c.STSTTL, func(ctx context.Context, req *STSExchangeRequest) (*STSExchangeResponse, error) {
+            // 使用通用调用与约定的服务/方法名
+            var resp STSExchangeResponse
+            // 直接调用，不附带旧的 Authorization 头
+            // 这里复用 InvokeGRPC 的日志和错误语义；未来替换为真实 proto 客户端
+            if err := p.InvokeGRPC(ctx, "powerx.auth.sts.v1.STSService", "Exchange", req, &resp); err != nil {
+                return nil, err
+            }
+            return &resp, nil
+        })
+    }
+
+    return p, nil
 }
 
 // Close 关闭 gRPC 连接
-func (p *PowerX) Close() error {
+func (p *PowerXServiceClient) Close() error {
 	if p.conn != nil {
 		return p.conn.Close()
 	}
 	return nil
 }
 
-// Outgoing 基础 ctx：附带 auth 头（未来加拦截器时无缝）
-func (p *PowerX) Outgoing(ctx context.Context) context.Context {
-	md := metadata.New(map[string]string{})
-
-	if p.token != "" {
-		md.Set("authorization", "Bearer "+p.token)
+func (p *PowerXServiceClient) RC() *RequestContext {
+	return &RequestContext{
+		TenantId:    p.tenantID,
+		AccessToken: p.token,
 	}
+}
+
+// Outgoing 基础 ctx：附带 auth 头（未来加拦截器时无缝）
+func (p *PowerXServiceClient) Outgoing(ctx context.Context) context.Context {
+    md := metadata.New(map[string]string{})
+
+    // 优先使用 STS token，其次使用静态 Token
+    bearer := p.token
+    if p.tm != nil {
+        if tok, err := p.tm.GetToken(ctx); err == nil && tok != "" {
+            bearer = tok
+        }
+    }
+    if bearer != "" {
+        md.Set("authorization", "Bearer "+bearer)
+    }
 
 	if p.tenantID > 0 {
 		md.Set("x-powerx-tenant-id", fmt.Sprint(p.tenantID))
@@ -188,63 +146,44 @@ func (p *PowerX) Outgoing(ctx context.Context) context.Context {
 }
 
 // GetToken 获取认证 token
-func (p *PowerX) GetToken() string {
-	return p.token
+func (p *PowerXServiceClient) GetToken() string {
+    if p.token != "" {
+        return p.token
+    }
+    if p.tm != nil && p.tm.HasValid() {
+        // 为避免阻塞，这里不触发刷新，只返回空串代表未知
+        // 上层可通过 HealthCheck/实际调用来驱动刷新
+        return "sts"
+    }
+    return ""
+}
+
+// HasToken 是否配置/具备可用的访问凭据（静态或临时）
+func (p *PowerXServiceClient) HasToken() bool {
+    if p.token != "" {
+        return true
+    }
+    if p.tm != nil && p.tm.HasValid() {
+        return true
+    }
+    return false
 }
 
 // GetTenantID 获取租户 ID
-func (p *PowerX) GetTenantID() int64 {
+func (p *PowerXServiceClient) GetTenantID() int64 {
 	return p.tenantID
 }
 
 // IsConnected 检查连接状态
-func (p *PowerX) IsConnected() bool {
+func (p *PowerXServiceClient) IsConnected() bool {
 	if p.conn == nil {
 		return false
 	}
 	return p.conn.GetState().String() == "READY"
 }
 
-// TODO: 当有实际的 PowerX proto 文件时，添加以下方法：
-
-// RC 便捷构造 RequestContext
-func (p *PowerX) RC() *RequestContext {
-	return &RequestContext{
-		TenantId:    p.tenantID,
-		AccessToken: p.token,
-	}
-}
-
-// ListMembers 获取成员列表
-func (p *PowerX) ListMembers(ctx context.Context, req *ListMembersRequest) (*ListMembersResponse, error) {
-	resp := &ListMembersResponse{}
-	err := p.invokeGRPC(ctx, "powerx.organization.v1.MemberService", "ListMembers", req, resp)
-	return resp, err
-}
-
-// GetMember 获取单个成员
-func (p *PowerX) GetMember(ctx context.Context, req *GetMemberRequest) (*GetMemberResponse, error) {
-	resp := &GetMemberResponse{}
-	err := p.invokeGRPC(ctx, "powerx.organization.v1.MemberService", "GetMember", req, resp)
-	return resp, err
-}
-
-// ListTeams 获取团队列表
-func (p *PowerX) ListTeams(ctx context.Context, req *ListTeamsRequest) (*ListTeamsResponse, error) {
-	resp := &ListTeamsResponse{}
-	err := p.invokeGRPC(ctx, "powerx.organization.v1.TeamService", "ListTeams", req, resp)
-	return resp, err
-}
-
-// GetTeam 获取单个团队
-func (p *PowerX) GetTeam(ctx context.Context, req *GetTeamRequest) (*GetTeamResponse, error) {
-	resp := &GetTeamResponse{}
-	err := p.invokeGRPC(ctx, "powerx.organization.v1.TeamService", "GetTeam", req, resp)
-	return resp, err
-}
-
 // invokeGRPC 通用 gRPC 调用方法
-func (p *PowerX) invokeGRPC(ctx context.Context, service, method string, req, resp interface{}) error {
+func (p *PowerXServiceClient) InvokeGRPC(ctx context.Context, service, method string, req, resp interface{}) error {
 	if p.conn == nil {
 		return fmt.Errorf("gRPC connection is not established")
 	}
@@ -265,133 +204,11 @@ func (p *PowerX) invokeGRPC(ctx context.Context, service, method string, req, re
 	// 目前返回模拟数据供测试
 	_ = reqBytes
 
-	// 模拟响应（实际应该从 gRPC 服务获取）
-	switch method {
-	case "ListMembers":
-		if listResp, ok := resp.(*ListMembersResponse); ok {
-			*listResp = *p.mockListMembersResponse()
-		}
-	case "GetMember":
-		if getResp, ok := resp.(*GetMemberResponse); ok {
-			*getResp = *p.mockGetMemberResponse()
-		}
-	case "ListTeams":
-		if listResp, ok := resp.(*ListTeamsResponse); ok {
-			*listResp = *p.mockListTeamsResponse()
-		}
-	case "GetTeam":
-		if getResp, ok := resp.(*GetTeamResponse); ok {
-			*getResp = *p.mockGetTeamResponse()
-		}
-	default:
-		return fmt.Errorf("unsupported method: %s", method)
-	}
-
 	return nil
 }
 
-// 模拟数据方法（供测试使用）
-func (p *PowerX) mockListMembersResponse() *ListMembersResponse {
-	return &ListMembersResponse{
-		Members: []*Member{
-			{
-				Id:         1,
-				UserId:     101,
-				Name:       "Alice Johnson",
-				Email:      "alice@example.com",
-				Phone:      "+1234567890",
-				Position:   "Software Engineer",
-				Department: "Engineering",
-				Status:     "active",
-				JoinedAt:   "2023-01-15T00:00:00Z",
-				CreatedAt:  "2023-01-15T10:00:00Z",
-				UpdatedAt:  "2024-01-15T10:00:00Z",
-			},
-			{
-				Id:         2,
-				UserId:     102,
-				Name:       "Bob Smith",
-				Email:      "bob@example.com",
-				Phone:      "+1234567891",
-				Position:   "Product Manager",
-				Department: "Product",
-				Status:     "active",
-				JoinedAt:   "2023-02-01T00:00:00Z",
-				CreatedAt:  "2023-02-01T10:00:00Z",
-				UpdatedAt:  "2024-01-15T10:00:00Z",
-			},
-		},
-		TotalCount: 2,
-		PageIndex:  0,
-		PageSize:   20,
-	}
-}
-
-func (p *PowerX) mockGetMemberResponse() *GetMemberResponse {
-	return &GetMemberResponse{
-		Member: &Member{
-			Id:         1,
-			UserId:     101,
-			Name:       "Alice Johnson",
-			Email:      "alice@example.com",
-			Phone:      "+1234567890",
-			Position:   "Software Engineer",
-			Department: "Engineering",
-			Status:     "active",
-			JoinedAt:   "2023-01-15T00:00:00Z",
-			CreatedAt:  "2023-01-15T10:00:00Z",
-			UpdatedAt:  "2024-01-15T10:00:00Z",
-		},
-	}
-}
-
-func (p *PowerX) mockListTeamsResponse() *ListTeamsResponse {
-	return &ListTeamsResponse{
-		Teams: []*Team{
-			{
-				Id:          1,
-				Name:        "Development Team",
-				Description: "Core development team",
-				LeaderId:    101,
-				Status:      "active",
-				MemberCount: 5,
-				CreatedAt:   "2023-01-01T10:00:00Z",
-				UpdatedAt:   "2024-01-15T10:00:00Z",
-			},
-			{
-				Id:          2,
-				Name:        "Product Team",
-				Description: "Product management team",
-				LeaderId:    102,
-				Status:      "active",
-				MemberCount: 3,
-				CreatedAt:   "2023-01-01T10:00:00Z",
-				UpdatedAt:   "2024-01-15T10:00:00Z",
-			},
-		},
-		TotalCount: 2,
-		PageIndex:  0,
-		PageSize:   20,
-	}
-}
-
-func (p *PowerX) mockGetTeamResponse() *GetTeamResponse {
-	return &GetTeamResponse{
-		Team: &Team{
-			Id:          1,
-			Name:        "Development Team",
-			Description: "Core development team",
-			LeaderId:    101,
-			Status:      "active",
-			MemberCount: 5,
-			CreatedAt:   "2023-01-01T10:00:00Z",
-			UpdatedAt:   "2024-01-15T10:00:00Z",
-		},
-	}
-}
-
 // HealthCheck 健康检查方法
-func (p *PowerX) HealthCheck(ctx context.Context) error {
+func (p *PowerXServiceClient) HealthCheck(ctx context.Context) error {
 	if p.conn == nil {
 		return fmt.Errorf("grpc connection is nil")
 	}
@@ -405,12 +222,12 @@ func (p *PowerX) HealthCheck(ctx context.Context) error {
 }
 
 // Reconnect 重新连接
-func (p *PowerX) Reconnect(ctx context.Context) error {
+func (p *PowerXServiceClient) Reconnect(ctx context.Context) error {
 	if p.conn != nil {
 		p.conn.Close()
 	}
 
-	newClient, err := NewPowerX(ctx, p.cfg)
+	newClient, err := NewPowerXServiceClient(ctx, p.cfg)
 	if err != nil {
 		return err
 	}

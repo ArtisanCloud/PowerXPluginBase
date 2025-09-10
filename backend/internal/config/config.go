@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -16,32 +15,29 @@ import (
 // Config 插件配置结构
 type Config struct {
 	// 服务配置
-	Server ServerConfig `yaml:"server" json:"server"`
+	Server *ServerConfig `yaml:"server" json:"server"`
 
 	// 数据库配置
-	Database DatabaseConfig `yaml:"database" json:"database"`
+	Database *DatabaseConfig `yaml:"database" json:"database"`
 
 	// 运行时配置
-	Runtime RuntimeConfig `yaml:"runtime" json:"runtime"`
+	Runtime *RuntimeConfig `yaml:"runtime" json:"runtime"`
 
 	// PowerX 上下文配置
-	Context ContextConfig `yaml:"context" json:"context"`
-
-	// 业务配置
-	Business BusinessConfig `yaml:"business" json:"business"`
+	Context *ContextConfig `yaml:"context" json:"context"`
 
 	// 安全配置
-	Security SecurityConfig `yaml:"security" json:"security"`
+	Security *SecurityConfig `yaml:"security" json:"security"`
 
 	// 监控配置
 	Monitoring MonitoringConfig `yaml:"monitoring" json:"monitoring"`
 
 	// 日志配置
-	Logging LoggingConfig `yaml:"logging" json:"logging"`
+	Logging *LoggingConfig `yaml:"logging" json:"logging"`
 
 	// gRPC 配置
-	GRPCUpstream GRPCUpstream `yaml:"grpc_upstream" json:"grpc_upstream"`
-	GRPCServer   GRPCServer   `yaml:"grpc_server" json:"grpc_server"`
+	GRPCUpstream *GRPCUpstream `yaml:"grpc_upstream" json:"grpc_upstream"`
+	GRPCServer   *GRPCServer   `yaml:"grpc_server" json:"grpc_server"`
 
 	// 向后兼容的字段（从环境变量或旧配置中填充）
 	BindAddr   string `yaml:"-" json:"bind_addr,omitempty"`
@@ -54,40 +50,21 @@ type Config struct {
 
 // ServerConfig 服务配置
 type ServerConfig struct {
-	BindAddr string `yaml:"bind_addr" json:"bind_addr"`
-	LogLevel string `yaml:"log_level" json:"log_level"`
-	DevMode  bool   `yaml:"dev_mode" json:"dev_mode"`
-}
-
-// DatabaseConfig 数据库配置
-type DatabaseConfig struct {
-	DSN    string `yaml:"dsn" json:"dsn"`
-	Schema string `yaml:"schema" json:"schema"`
+	BindAddr            string `yaml:"bind_addr" json:"bind_addr"`
+	LogLevel            string `yaml:"log_level" json:"log_level"`
+	DevMode             bool   `yaml:"dev_mode" json:"dev_mode"`
+	Port                int    `yaml:"port"`                  // HTTP 端口
+	ReadTimeoutSeconds  int    `yaml:"read_timeout_seconds"`  // 读取超时
+	WriteTimeoutSeconds int    `yaml:"write_timeout_seconds"` // 写入超时
+	Mode                string `yaml:"mode"`                  // gin 模式: debug/release
+	APIPrefix           string `yaml:"api_prefix"`            // API 前缀
+	WSPrefix            string `yaml:"ws_prefix"`             // API 前缀
+	SecretKey           string `yaml:"secret_key"`
 }
 
 // RuntimeConfig 运行时配置
 type RuntimeConfig struct {
 	RunMigrate bool `yaml:"run_migrate" json:"run_migrate"`
-}
-
-// BusinessConfig 业务配置
-type BusinessConfig struct {
-	Sprint        SprintConfig        `yaml:"sprint" json:"sprint"`
-	Task          TaskConfig          `yaml:"task" json:"task"`
-	Notifications NotificationsConfig `yaml:"notifications" json:"notifications"`
-	Cache         CacheConfig         `yaml:"cache" json:"cache"`
-}
-
-// SprintConfig Sprint 相关配置
-type SprintConfig struct {
-	DefaultCapacity int `yaml:"default_capacity" json:"default_capacity"`
-	MaxDurationDays int `yaml:"max_duration_days" json:"max_duration_days"`
-}
-
-// TaskConfig 任务相关配置
-type TaskConfig struct {
-	MaxEstimatePoints int    `yaml:"max_estimate_points" json:"max_estimate_points"`
-	DefaultPriority   string `yaml:"default_priority" json:"default_priority"`
 }
 
 // NotificationsConfig 通知配置
@@ -164,11 +141,17 @@ type LoggingConfig struct {
 
 // GRPCUpstream PowerX gRPC 上游配置
 type GRPCUpstream struct {
-	Address  string `yaml:"address" json:"address"`     // PowerX 网关/服务地址，如 "localhost:9001"
-	Token    string `yaml:"token" json:"token"`         // Capability Token（插件安装后下发）
-	TenantID int64  `yaml:"tenant_id" json:"tenant_id"` // 当前租户
-	UseTLS   bool   `yaml:"use_tls" json:"use_tls"`     // 上线后建议 true
-	CACert   string `yaml:"ca_cert" json:"ca_cert"`     // 可选：根证书（UseTLS=true 时）
+    Address  string `yaml:"address" json:"address"`     // PowerX 网关/服务地址，如 "localhost:9001"
+    Token    string `yaml:"token" json:"token"`         // Capability Token（插件安装后下发）
+    TenantID int64  `yaml:"tenant_id" json:"tenant_id"` // 当前租户
+    UseTLS   bool   `yaml:"use_tls" json:"use_tls"`     // 上线后建议 true
+    CACert   string `yaml:"ca_cert" json:"ca_cert"`     // 可选：根证书（UseTLS=true 时）
+    // STS 交换短期令牌（可选）：若配置，则优先通过 STS 获取内存 Token
+    STSClientID     string        `yaml:"sts_client_id" json:"sts_client_id"`
+    STSClientSecret string        `yaml:"sts_client_secret" json:"sts_client_secret"`
+    STSAudience     string        `yaml:"sts_audience" json:"sts_audience"`
+    STSScope        string        `yaml:"sts_scope" json:"sts_scope"`
+    STSTTL          time.Duration `yaml:"sts_ttl" json:"sts_ttl"`
 }
 
 // GRPCServer 插件 gRPC 服务器配置
@@ -195,11 +178,6 @@ type ContextConfig struct {
 
 // Load 加载配置，优先级：YAML 文件 > 环境变量 > 默认值
 func Load() (*Config, error) {
-	// 尝试加载 .env 文件（开发环境）
-	if err := godotenv.Load(); err != nil {
-		// 生产环境可能没有 .env 文件，这是正常的
-		logrus.Debug("No .env file found, using environment variables")
-	}
 
 	// 设置默认配置
 	cfg := getDefaultConfig()
@@ -226,41 +204,21 @@ func Load() (*Config, error) {
 // getDefaultConfig 获取默认配置
 func getDefaultConfig() *Config {
 	return &Config{
-		Server: ServerConfig{
+		Server: &ServerConfig{
 			BindAddr: ":8086",
 			LogLevel: "info",
 			DevMode:  false,
 		},
-		Database: DatabaseConfig{
-			Schema: "scrum",
+		Database: &DatabaseConfig{
+			Schema: "px_plugin_note",
 		},
-		Runtime: RuntimeConfig{
+		Runtime: &RuntimeConfig{
 			RunMigrate: false,
 		},
-		Context: ContextConfig{
+		Context: &ContextConfig{
 			TTL: 300 * time.Second, // 5分钟
 		},
-		Business: BusinessConfig{
-			Sprint: SprintConfig{
-				DefaultCapacity: 40,
-				MaxDurationDays: 30,
-			},
-			Task: TaskConfig{
-				MaxEstimatePoints: 100,
-				DefaultPriority:   "medium",
-			},
-			Notifications: NotificationsConfig{
-				Enabled: false,
-				Email: EmailConfig{
-					SMTPPort: 587,
-				},
-			},
-			Cache: CacheConfig{
-				Enabled: false,
-				TTL:     time.Hour,
-			},
-		},
-		Security: SecurityConfig{
+		Security: &SecurityConfig{
 			EnableCORS: true,
 			CORSOrigins: []string{
 				"http://localhost:3036",
@@ -281,7 +239,7 @@ func getDefaultConfig() *Config {
 				Path:    "/health",
 			},
 		},
-		Logging: LoggingConfig{
+		Logging: &LoggingConfig{
 			Level:      "info",
 			Format:     "json",
 			Output:     "stdout",
@@ -289,14 +247,17 @@ func getDefaultConfig() *Config {
 			MaxBackups: 3,
 			MaxAge:     28,
 		},
-		GRPCUpstream: GRPCUpstream{
+		GRPCUpstream: &GRPCUpstream{
 			Address:  "localhost:9001",
 			Token:    "",
 			TenantID: 1,
 			UseTLS:   false,
 			CACert:   "",
+			STSAudience: "powerx:api",
+			STSScope:    "access",
+			STSTTL:      300 * time.Second,
 		},
-		GRPCServer: GRPCServer{
+		GRPCServer: &GRPCServer{
 			Enable: true,
 			Addr:   ":9101",
 			UseTLS: false,
@@ -421,6 +382,25 @@ func loadEnvConfig(cfg *Config) {
 		cfg.GRPCUpstream.CACert = grpcCACert
 	}
 
+	// STS 相关环境变量（可选）
+	if v := os.Getenv("PX_STS_CLIENT_ID"); v != "" {
+		cfg.GRPCUpstream.STSClientID = v
+	}
+	if v := os.Getenv("PX_STS_CLIENT_SECRET"); v != "" {
+		cfg.GRPCUpstream.STSClientSecret = v
+	}
+	if v := os.Getenv("PX_STS_AUDIENCE"); v != "" {
+		cfg.GRPCUpstream.STSAudience = v
+	}
+	if v := os.Getenv("PX_STS_SCOPE"); v != "" {
+		cfg.GRPCUpstream.STSScope = v
+	}
+	if v := os.Getenv("PX_STS_TTL"); v != "" {
+		if d, err := time.ParseDuration(v); err == nil {
+			cfg.GRPCUpstream.STSTTL = d
+		}
+	}
+
 	// gRPC 服务器配置
 	if grpcServerEnable := os.Getenv("PX_GRPC_SERVER_ENABLE"); grpcServerEnable == "false" {
 		cfg.GRPCServer.Enable = false
@@ -514,26 +494,6 @@ func (c *Config) Validate() error {
 	// 认证模式验证
 	if !c.Server.DevMode && !c.IsHMACMode() && !c.IsJWTMode() {
 		return NewConfigError("either HMAC or JWT mode must be configured in production")
-	}
-
-	// 业务配置验证
-	if c.Business.Sprint.DefaultCapacity <= 0 {
-		return NewConfigError("sprint default capacity must be positive")
-	}
-
-	if c.Business.Sprint.MaxDurationDays <= 0 || c.Business.Sprint.MaxDurationDays > 365 {
-		return NewConfigError("sprint max duration days must be between 1 and 365")
-	}
-
-	if c.Business.Task.MaxEstimatePoints <= 0 {
-		return NewConfigError("task max estimate points must be positive")
-	}
-
-	validPriorities := map[string]bool{
-		"low": true, "medium": true, "high": true, "urgent": true,
-	}
-	if !validPriorities[c.Business.Task.DefaultPriority] {
-		return NewConfigError("task default priority must be one of: low, medium, high, urgent")
 	}
 
 	// 安全配置验证

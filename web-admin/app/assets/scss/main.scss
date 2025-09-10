@@ -1,4 +1,4 @@
-// PowerX Scrum Plugin - Main SCSS
+// PowerX Note Plugin - Main SCSS
 // Advanced styles and component-specific styles
 
 // Import Sass color module for modern color functions
@@ -66,12 +66,12 @@ $breakpoint-xl: 1280px;
   background-color: $bg-color;
   color: $text-color;
   border: 1px solid $bg-color;
-  
+
   &:hover:not(:disabled) {
     background-color: $hover-color;
     border-color: $hover-color;
   }
-  
+
   &:focus {
     box-shadow: 0 0 0 3px rgba($bg-color, 0.25);
   }
@@ -81,9 +81,13 @@ $breakpoint-xl: 1280px;
   @if $level == 1 {
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   } @else if $level == 2 {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -2px rgba(0, 0, 0, 0.1);
   } @else if $level == 3 {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -4px rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -108,16 +112,16 @@ $breakpoint-xl: 1280px;
 }
 
 // Component styles
-.scrum-header {
+.note-header {
   background: $bg-primary;
   border-bottom: 1px solid $border-color;
   padding: $spacing-md 0;
   position: sticky;
   top: 0;
   z-index: 100;
-  
+
   @include card-shadow(1);
-  
+
   .header-content {
     display: flex;
     align-items: center;
@@ -126,18 +130,18 @@ $breakpoint-xl: 1280px;
     margin: 0 auto;
     padding: 0 $spacing-md;
   }
-  
+
   .logo {
     font-size: $font-xl;
     font-weight: 700;
     color: $primary-color;
     text-decoration: none;
   }
-  
+
   .nav-menu {
     display: flex;
     gap: $spacing-lg;
-    
+
     a {
       color: $text-secondary;
       text-decoration: none;
@@ -145,12 +149,12 @@ $breakpoint-xl: 1280px;
       padding: $spacing-sm $spacing-md;
       border-radius: $radius-md;
       transition: all 0.2s ease;
-      
+
       &:hover {
         color: $primary-color;
         background: $primary-light;
       }
-      
+
       &.active {
         color: $primary-color;
         background: $primary-light;
@@ -159,7 +163,7 @@ $breakpoint-xl: 1280px;
   }
 }
 
-.scrum-sidebar {
+.note-sidebar {
   width: 280px;
   background: $bg-primary;
   border-right: 1px solid $border-color;
@@ -168,11 +172,11 @@ $breakpoint-xl: 1280px;
   position: fixed;
   left: 0;
   top: 73px;
-  
+
   .sidebar-section {
     padding: $spacing-lg;
     border-bottom: 1px solid $border-color;
-    
+
     .section-title {
       font-size: $font-sm;
       font-weight: 600;
@@ -181,7 +185,7 @@ $breakpoint-xl: 1280px;
       letter-spacing: 0.5px;
       margin-bottom: $spacing-md;
     }
-    
+
     .menu-item {
       display: flex;
       align-items: center;
@@ -191,16 +195,16 @@ $breakpoint-xl: 1280px;
       text-decoration: none;
       margin-bottom: $spacing-xs;
       transition: all 0.2s ease;
-      
+
       &:hover {
         background: $bg-tertiary;
       }
-      
+
       &.active {
         background: $primary-light;
         color: $primary-color;
       }
-      
+
       .icon {
         width: 20px;
         height: 20px;
@@ -210,11 +214,11 @@ $breakpoint-xl: 1280px;
   }
 }
 
-.scrum-main {
+.note-main {
   margin-left: 280px;
   padding: $spacing-xl;
   min-height: calc(100vh - 73px);
-  
+
   @media (max-width: $breakpoint-lg) {
     margin-left: 0;
     padding: $spacing-lg;
@@ -231,22 +235,31 @@ $breakpoint-xl: 1280px;
 }
 
 .btn-success {
-  @include button-variant($success-color, color.adjust($success-color, $lightness: -10%));
+  @include button-variant(
+    $success-color,
+    color.adjust($success-color, $lightness: -10%)
+  );
 }
 
 .btn-warning {
-  @include button-variant($warning-color, color.adjust($warning-color, $lightness: -10%));
+  @include button-variant(
+    $warning-color,
+    color.adjust($warning-color, $lightness: -10%)
+  );
 }
 
 .btn-error {
-  @include button-variant($error-color, color.adjust($error-color, $lightness: -10%));
+  @include button-variant(
+    $error-color,
+    color.adjust($error-color, $lightness: -10%)
+  );
 }
 
 .btn-outline {
   background: transparent;
   color: $primary-color;
   border: 1px solid $primary-color;
-  
+
   &:hover:not(:disabled) {
     background: $primary-color;
     color: white;
@@ -256,7 +269,7 @@ $breakpoint-xl: 1280px;
 // Card variants
 .card-elevated {
   @include card-shadow(2);
-  
+
   &:hover {
     @include card-shadow(3);
   }
@@ -272,22 +285,22 @@ $breakpoint-xl: 1280px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  
+
   &.status-todo {
     background: color.adjust($secondary-color, $lightness: 40%);
     color: $secondary-color;
   }
-  
+
   &.status-progress {
     background: color.adjust($info-color, $lightness: 40%);
     color: $info-color;
   }
-  
+
   &.status-done {
     background: color.adjust($success-color, $lightness: 40%);
     color: $success-color;
   }
-  
+
   &.status-blocked {
     background: color.adjust($error-color, $lightness: 40%);
     color: $error-color;
@@ -302,41 +315,41 @@ $breakpoint-xl: 1280px;
   border-radius: $radius-xl;
   font-size: $font-xs;
   font-weight: 600;
-  
+
   &.priority-low {
     background: color.adjust($success-color, $lightness: 45%);
     color: color.adjust($success-color, $lightness: -10%);
   }
-  
+
   &.priority-medium {
     background: color.adjust($warning-color, $lightness: 45%);
     color: color.adjust($warning-color, $lightness: -10%);
   }
-  
+
   &.priority-high {
     background: color.adjust($error-color, $lightness: 45%);
     color: color.adjust($error-color, $lightness: -10%);
   }
-  
+
   &.priority-urgent {
     background: $error-color;
     color: white;
   }
 }
 
-// Task board styles
-.task-board {
+// Note board styles
+.note-board {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: $spacing-lg;
   padding: $spacing-lg 0;
-  
+
   .board-column {
     background: $bg-primary;
     border-radius: $radius-lg;
     border: 1px solid $border-color;
     min-height: 600px;
-    
+
     .column-header {
       padding: $spacing-md $spacing-lg;
       border-bottom: 1px solid $border-color;
@@ -344,8 +357,8 @@ $breakpoint-xl: 1280px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      
-      .task-count {
+
+      .note-count {
         background: $bg-tertiary;
         color: $text-secondary;
         padding: $spacing-xs $spacing-sm;
@@ -354,11 +367,11 @@ $breakpoint-xl: 1280px;
         font-weight: 500;
       }
     }
-    
+
     .column-content {
       padding: $spacing-md;
-      
-      .task-card {
+
+      .note-card {
         background: white;
         border: 1px solid $border-color;
         border-radius: $radius-md;
@@ -366,21 +379,21 @@ $breakpoint-xl: 1280px;
         margin-bottom: $spacing-md;
         cursor: pointer;
         transition: all 0.2s ease;
-        
+
         @include card-shadow(1);
-        
+
         &:hover {
           @include card-shadow(2);
           border-color: $primary-color;
         }
-        
-        .task-title {
+
+        .note-title {
           font-weight: 600;
           margin-bottom: $spacing-sm;
           color: $text-primary;
         }
-        
-        .task-meta {
+
+        .note-meta {
           display: flex;
           align-items: center;
           gap: $spacing-sm;
@@ -395,41 +408,41 @@ $breakpoint-xl: 1280px;
 
 // Responsive design
 @include responsive(md) {
-  .scrum-sidebar {
+  .note-sidebar {
     transform: translateX(-100%);
     transition: transform 0.3s ease;
-    
+
     &.open {
       transform: translateX(0);
     }
   }
-  
-  .scrum-main {
+
+  .note-main {
     margin-left: 0;
   }
-  
-  .task-board {
+
+  .note-board {
     grid-template-columns: 1fr;
   }
 }
 
 // Dark theme support
 @media (prefers-color-scheme: dark) {
-  .scrum-header {
+  .note-header {
     background: #1e293b;
     border-color: #334155;
   }
-  
-  .scrum-sidebar {
+
+  .note-sidebar {
     background: #1e293b;
     border-color: #334155;
   }
-  
-  .task-board .board-column {
+
+  .note-board .board-column {
     background: #1e293b;
     border-color: #334155;
-    
-    .task-card {
+
+    .note-card {
       background: #334155;
       border-color: #475569;
     }

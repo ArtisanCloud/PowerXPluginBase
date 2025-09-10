@@ -6,8 +6,8 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
 	"github.com/gin-gonic/gin"
-	"scrum-plugin/internal/logger"
 )
 
 // CORS 跨域中间件
@@ -209,7 +209,7 @@ func HealthCheck(endpoint string) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{
 				"status":    "healthy",
 				"timestamp": time.Now().UTC(),
-				"service":   "powerx-plugin-scrum",
+				"service":   "powerx-plugin-note",
 			})
 			c.Abort()
 			return

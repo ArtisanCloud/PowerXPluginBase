@@ -3,6 +3,7 @@
 ## 概述
 
 本项目支持灵活的配置管理，优先级顺序为：
+
 1. **环境变量** (最高优先级)
 2. **YAML 配置文件**
 3. **默认值** (最低优先级)
@@ -12,6 +13,7 @@
 ### 配置文件位置
 
 配置文件按以下顺序查找：
+
 1. `./etc/config.yaml` (推荐)
 2. `./config.yaml`
 3. `../etc/config.yaml`
@@ -20,6 +22,7 @@
 ### 使用方法
 
 1. **复制示例配置**:
+
    ```bash
    cp backend/etc/config.example.yaml backend/etc/config.yaml
    ```
@@ -38,22 +41,22 @@
 ```yaml
 # 服务配置
 server:
-  bind_addr: ":8086"      # 服务绑定地址
-  log_level: "info"       # 日志级别
-  dev_mode: false         # 开发模式
+  bind_addr: ":8086" # 服务绑定地址
+  log_level: "info" # 日志级别
+  dev_mode: false # 开发模式
 
 # 数据库配置
 database:
-  dsn: "host=localhost..."  # 数据库连接字符串
-  schema: "scrum"          # 数据库模式
+  dsn: "host=localhost..." # 数据库连接字符串
+  schema: "px_plugin" # 数据库模式
 
 # 业务配置
 business:
   sprint:
-    default_capacity: 40   # 默认 Sprint 容量
-  task:
-    default_priority: "medium"  # 默认任务优先级
-  
+    default_capacity: 40 # 默认 Sprint 容量
+  note:
+    default_priority: "medium" # 默认任务优先级
+
 # 安全配置
 security:
   enable_cors: true
@@ -65,34 +68,36 @@ security:
 
 环境变量会覆盖 YAML 配置：
 
-| 环境变量 | 说明 | 示例 |
-|---------|------|------|
-| `PX_BIND_ADDR` | 服务绑定地址 | `:8086` |
-| `PX_LOG_LEVEL` | 日志级别 | `debug` |
-| `PX_DEV_MODE` | 开发模式 | `true` |
-| `PX_DB_DSN` | 数据库连接 | `host=localhost...` |
-| `PX_DB_SCHEMA` | 数据库模式 | `scrum` |
-| `PX_RUN_MIGRATE` | 运行迁移 | `true` |
+| 环境变量         | 说明         | 示例                |
+| ---------------- | ------------ | ------------------- |
+| `PX_BIND_ADDR`   | 服务绑定地址 | `:8086`             |
+| `PX_LOG_LEVEL`   | 日志级别     | `debug`             |
+| `PX_DEV_MODE`    | 开发模式     | `true`              |
+| `PX_DB_DSN`      | 数据库连接   | `host=localhost...` |
+| `PX_DB_SCHEMA`   | 数据库模式   | `px_plugin`         |
+| `PX_RUN_MIGRATE` | 运行迁移     | `true`              |
 
 ### PowerX 集成环境变量
 
-| 环境变量 | 说明 |
-|---------|------|
-| `PLUGIN_CTX_HMAC_SECRET` | HMAC 密钥 |
-| `PLUGIN_CTX_KID` | 密钥 ID |
-| `PX_CTX_JWKS_URL` | JWKS URL |
-| `PX_CTX_ISSUER` | JWT 签发者 |
-| `PX_CTX_AUDIENCE` | JWT 受众 |
-| `PX_CTX_TTL` | 上下文 TTL |
+| 环境变量                 | 说明       |
+| ------------------------ | ---------- |
+| `PLUGIN_CTX_HMAC_SECRET` | HMAC 密钥  |
+| `PLUGIN_CTX_KID`         | 密钥 ID    |
+| `PX_CTX_JWKS_URL`        | JWKS URL   |
+| `PX_CTX_ISSUER`          | JWT 签发者 |
+| `PX_CTX_AUDIENCE`        | JWT 受众   |
+| `PX_CTX_TTL`             | 上下文 TTL |
 
 ## 开发环境设置
 
 1. **创建开发配置**:
+
    ```bash
    cp backend/etc/config.example.yaml backend/etc/config.yaml
    ```
 
 2. **修改开发配置**:
+
    ```yaml
    server:
      dev_mode: true
@@ -114,6 +119,7 @@ security:
 ## 生产环境部署
 
 1. **创建生产配置**:
+
    ```yaml
    server:
      bind_addr: ":8086"

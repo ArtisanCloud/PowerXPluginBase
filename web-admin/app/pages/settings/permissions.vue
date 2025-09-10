@@ -45,7 +45,13 @@
               <UButton size="xs" variant="ghost" @click="editRole(role)">
                 {{ $t("common.edit") }}
               </UButton>
-              <UButton size="xs" variant="ghost" color="red" :disabled="role.isSystem" @click="deleteRole(role)">
+              <UButton
+                size="xs"
+                variant="ghost"
+                color="red"
+                :disabled="role.isSystem"
+                @click="deleteRole(role)"
+              >
                 {{ $t("common.delete") }}
               </UButton>
             </div>
@@ -92,24 +98,36 @@
 
         <!-- 用户列表 -->
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table
+            class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <thead class="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                >
                   {{ $t("settings.user") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                >
                   {{ $t("settings.role") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                >
                   {{ $t("settings.lastActive") }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                >
                   {{ $t("common.actions") }}
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody
+              class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700"
+            >
               <tr v-for="user in filteredUsers" :key="user.id">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
@@ -117,7 +135,9 @@
                       <UAvatar :src="user.avatar" :alt="user.name" size="sm" />
                     </div>
                     <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900 dark:text-white">
+                      <div
+                        class="text-sm font-medium text-gray-900 dark:text-white"
+                      >
                         {{ user.name }}
                       </div>
                       <div class="text-sm text-gray-500">
@@ -131,14 +151,21 @@
                     {{ user.role }}
                   </UBadge>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400"
+                >
                   {{ formatDate(user.lastActive) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                >
                   <UDropdown :items="getUserActions(user)">
                     <UButton variant="ghost" size="xs">
                       {{ $t("common.actions") }}
-                      <UIcon name="i-heroicons-chevron-down" class="w-4 h-4 ml-1" />
+                      <UIcon
+                        name="i-heroicons-chevron-down"
+                        class="w-4 h-4 ml-1"
+                      />
                     </UButton>
                   </UDropdown>
                 </td>
@@ -161,7 +188,9 @@
         <table class="min-w-full">
           <thead>
             <tr class="border-b border-gray-200 dark:border-gray-700">
-              <th class="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+              <th
+                class="text-left py-3 px-4 font-medium text-gray-900 dark:text-white"
+              >
                 {{ $t("settings.permission") }}
               </th>
               <th
@@ -197,7 +226,9 @@
                 <UCheckbox
                   :model-value="hasPermission(role, permission.key)"
                   :disabled="role.isSystem"
-                  @update:model-value="togglePermission(role, permission.key, $event)"
+                  @update:model-value="
+                    togglePermission(role, permission.key, $event)
+                  "
                 />
               </td>
             </tr>
@@ -211,139 +242,150 @@
 <script setup>
 // 页面元数据
 definePageMeta({
-  title: 'permissions'
+  title: "permissions",
 });
 
 // 响应式数据
-const userSearchQuery = ref('');
-const selectedRoleFilter = ref('all');
+const userSearchQuery = ref("");
+const selectedRoleFilter = ref("all");
 
 // 角色数据
 const roles = ref([
   {
     id: 1,
-    name: 'Scrum Master',
-    description: 'Scrum团队的促进者，负责流程管理',
+    name: "管理员",
+    description: "系统管理员，拥有所有权限",
     userCount: 2,
     isSystem: true,
-    permissions: ['viewProjects', 'manageTeam', 'manageSprints', 'viewReports']
+    permissions: ["viewNotes", "manageNotes", "manageTeam", "manageUsers", "viewReports", "manageSettings"],
   },
   {
     id: 2,
-    name: '产品负责人',
-    description: '负责产品需求和优先级决策',
-    userCount: 1,
+    name: "编辑者",
+    description: "可以创建和编辑笔记内容",
+    userCount: 5,
     isSystem: true,
-    permissions: ['viewProjects', 'manageBacklog', 'viewReports']
+    permissions: ["viewNotes", "manageNotes", "viewReports"],
   },
   {
     id: 3,
-    name: '开发人员',
-    description: '负责软件开发和实现',
-    userCount: 5,
+    name: "查看者",
+    description: "只能查看笔记内容",
+    userCount: 8,
     isSystem: true,
-    permissions: ['viewProjects', 'manageTasks', 'viewReports']
+    permissions: ["viewNotes"],
   },
   {
     id: 4,
-    name: '测试人员',
-    description: '负责软件测试和质量保证',
-    userCount: 2,
+    name: "协作者",
+    description: "可以查看和评论笔记",
+    userCount: 3,
     isSystem: false,
-    permissions: ['viewProjects', 'manageTasks', 'viewReports']
-  }
+    permissions: ["viewNotes", "commentNotes"],
+  },
 ]);
 
 // 用户数据
 const users = ref([
   {
     id: 1,
-    name: '张三',
-    email: 'zhangsan@example.com',
-    role: 'Scrum Master',
-    lastActive: '2024-02-15',
-    avatar: null
+    name: "张三",
+    email: "zhangsan@example.com",
+    role: "管理员",
+    lastActive: "2024-02-15",
+    avatar: null,
   },
   {
     id: 2,
-    name: '李四',
-    email: 'lisi@example.com',
-    role: '产品负责人',
-    lastActive: '2024-02-14',
-    avatar: null
+    name: "李四",
+    email: "lisi@example.com",
+    role: "编辑者",
+    lastActive: "2024-02-14",
+    avatar: null,
   },
   {
     id: 3,
-    name: '王五',
-    email: 'wangwu@example.com',
-    role: '开发人员',
-    lastActive: '2024-02-15',
-    avatar: null
-  }
+    name: "王五",
+    email: "wangwu@example.com",
+    role: "查看者",
+    lastActive: "2024-02-15",
+    avatar: null,
+  },
+  {
+    id: 4,
+    name: "赵六",
+    email: "zhaoliu@example.com",
+    role: "协作者",
+    lastActive: "2024-02-13",
+    avatar: null,
+  },
 ]);
 
 // 所有权限列表
 const allPermissions = ref([
   {
-    key: 'viewProjects',
-    name: '查看项目',
-    description: '可以查看项目信息和数据'
+    key: "viewNotes",
+    name: "查看笔记",
+    description: "可以查看笔记内容和列表",
   },
   {
-    key: 'manageProjects',
-    name: '管理项目',
-    description: '可以创建、编辑和删除项目'
+    key: "manageNotes",
+    name: "管理笔记",
+    description: "可以创建、编辑和删除笔记",
   },
   {
-    key: 'manageTeam',
-    name: '管理团队',
-    description: '可以添加、移除和管理团队成员'
+    key: "commentNotes",
+    name: "评论笔记",
+    description: "可以对笔记进行评论和回复",
   },
   {
-    key: 'manageSprints',
-    name: '管理冲刺',
-    description: '可以创建、编辑和管理冲刺'
+    key: "shareNotes",
+    name: "分享笔记",
+    description: "可以分享笔记给其他用户",
   },
   {
-    key: 'manageBacklog',
-    name: '管理待办列表',
-    description: '可以管理产品待办列表'
+    key: "manageTeam",
+    name: "管理团队",
+    description: "可以添加、移除和管理团队成员",
   },
   {
-    key: 'manageTasks',
-    name: '管理任务',
-    description: '可以创建、编辑和管理任务'
+    key: "manageUsers",
+    name: "管理用户",
+    description: "可以管理用户账户和权限",
   },
   {
-    key: 'viewReports',
-    name: '查看报告',
-    description: '可以查看各种报告和分析'
+    key: "viewReports",
+    name: "查看报告",
+    description: "可以查看使用统计和分析报告",
   },
   {
-    key: 'manageSettings',
-    name: '管理设置',
-    description: '可以修改系统设置和配置'
-  }
+    key: "manageSettings",
+    name: "管理设置",
+    description: "可以修改系统设置和配置",
+  },
 ]);
 
 // 计算属性
 const roleFilterOptions = computed(() => [
-  { label: '全部角色', value: 'all' },
-  ...roles.value.map(role => ({ label: role.name, value: role.name }))
+  { label: "全部角色", value: "all" },
+  ...roles.value.map((role) => ({ label: role.name, value: role.name })),
 ]);
 
 const filteredUsers = computed(() => {
   let filtered = users.value;
 
   if (userSearchQuery.value) {
-    filtered = filtered.filter(user =>
-      user.name.toLowerCase().includes(userSearchQuery.value.toLowerCase()) ||
-      user.email.toLowerCase().includes(userSearchQuery.value.toLowerCase())
+    filtered = filtered.filter(
+      (user) =>
+        user.name.toLowerCase().includes(userSearchQuery.value.toLowerCase()) ||
+        user.email.toLowerCase().includes(userSearchQuery.value.toLowerCase())
     );
   }
 
-  if (selectedRoleFilter.value !== 'all') {
-    filtered = filtered.filter(user => user.role === selectedRoleFilter.value);
+  if (selectedRoleFilter.value !== "all") {
+    filtered = filtered.filter(
+      (user) => user.role === selectedRoleFilter.value
+    );
   }
 
   return filtered;
@@ -351,55 +393,61 @@ const filteredUsers = computed(() => {
 
 // 方法
 const addNewRole = () => {
-  console.log('添加新角色');
+  console.log("添加新角色");
 };
 
 const editRole = (role) => {
-  console.log('编辑角色', role);
+  console.log("编辑角色", role);
 };
 
 const deleteRole = (role) => {
-  console.log('删除角色', role);
+  console.log("删除角色", role);
 };
 
 const getRoleColor = (roleName) => {
   const colorMap = {
-    'Scrum Master': 'blue',
-    '产品负责人': 'green',
-    '开发人员': 'purple',
-    '测试人员': 'yellow'
+    管理员: "red",
+    编辑者: "blue",
+    查看者: "green",
+    协作者: "purple",
   };
-  return colorMap[roleName] || 'gray';
+  return colorMap[roleName] || "gray";
 };
 
 const getUserActions = (user) => [
-  [{
-    label: '编辑角色',
-    icon: 'i-heroicons-pencil',
-    click: () => editUserRole(user)
-  }],
-  [{
-    label: '重置密码',
-    icon: 'i-heroicons-key',
-    click: () => resetPassword(user)
-  }],
-  [{
-    label: '禁用用户',
-    icon: 'i-heroicons-no-symbol',
-    click: () => disableUser(user)
-  }]
+  [
+    {
+      label: "编辑角色",
+      icon: "i-heroicons-pencil",
+      click: () => editUserRole(user),
+    },
+  ],
+  [
+    {
+      label: "重置密码",
+      icon: "i-heroicons-key",
+      click: () => resetPassword(user),
+    },
+  ],
+  [
+    {
+      label: "禁用用户",
+      icon: "i-heroicons-no-symbol",
+      click: () => disableUser(user),
+    },
+  ],
 ];
 
 const editUserRole = (user) => {
-  console.log('编辑用户角色', user);
+  console.log("编辑用户角色", user);
 };
 
 const resetPassword = (user) => {
-  console.log('重置密码', user);
+  console.log("重置密码", user);
 };
 
 const disableUser = (user) => {
-  console.log('禁用用户', user);
+  console.log("禁用用户", user);
 };
 
 const hasPermission = (role, permissionKey) => {

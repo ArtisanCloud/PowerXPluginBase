@@ -8,11 +8,10 @@
   </UApp>
 </template>
 
-
 <script setup>
-// PowerX Scrum Plugin Admin Interface
+// PowerX Note Plugin Admin Interface
 useSeoMeta({
-  title: 'PowerX Scrum Plugin',
-  description: 'Scrum task management for PowerX platform'
-})
+  title: "PowerX Note Plugin",
+  description: "Note note management for PowerX platform",
+});
 </script>
