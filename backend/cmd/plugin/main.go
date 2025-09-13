@@ -1,22 +1,25 @@
 package main
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/bootstrap"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/grpc/server"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/router"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+    "context"
+    "errors"
+    "fmt"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/bootstrap"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/config"
+    dbpkg "github.com/ArtisanCloud/PowerXPlugin/internal/db"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/grpc/server"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/router"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
+    agent "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent"
+    repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/plugin"
+    "net/http"
+    "os"
+    "os/signal"
+    "syscall"
+    "time"
 
-	"golang.org/x/sync/errgroup"
+    "golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -36,14 +39,31 @@ func main() {
 		logger.WithError(err).Fatal("Failed to bootstrap plugin")
 	}
 
+	// 在初始化 gRPC 客户端之前，尝试从本地数据库加载租户凭证（若存在），以便通过 STS 获取短期令牌
+	if cfg.GRPCUpstream != nil && cfg.GRPCUpstream.TenantID > 0 {
+		// 延迟依赖：仅当配置未提供 STS client 时，尝试 DB 加载；若配置已有，则优先生效
+		if cfg.GRPCUpstream.STSClientID == "" || cfg.GRPCUpstream.STSClientSecret == "" {
+			repo := repository.NewCredentialsRepo(queryDB)
+			svc := agent.NewCredentialService(cfg, repo)
+			if cid, sec, err := svc.LoadDecryptedCredentials(ctx, cfg.GRPCUpstream.TenantID, app.PluginID); err == nil {
+				cfg.GRPCUpstream.STSClientID = cid
+				cfg.GRPCUpstream.STSClientSecret = sec
+				logger.Info("Loaded STS credentials for tenant from DB")
+			} else {
+				logger.WithError(err).Warn("No DB-stored credentials found or failed to decrypt; will rely on config/env if provided")
+			}
+		}
+	}
+
 	// 初始化 PowerX gRPC Client 客户端
 	pxc := bootstrap.BootstrapGRPCClient(ctx, cfg.GRPCUpstream)
 
-	deps := &app.Deps{
-		DB:           queryDB,
-		Ctx:          &ctx,
-		PowerXClient: pxc,
-	}
+    deps := &app.Deps{
+        DB:           queryDB,
+        Ctx:          &ctx,
+        PowerXClient: pxc,
+        Config:       cfg,
+    }
 
 	// 设置 gin engine 路由
 	r := router.NewRouter(cfg, deps)
@@ -104,6 +124,14 @@ func main() {
 		} else {
 			logger.Info("HTTP server shutdown completed")
 		}
+
+
+		// 关闭数据库连接
+        if err := dbpkg.Close(); err != nil {
+            logger.WithError(err).Error("DB close error")
+        } else {
+            logger.Info("Database connection closed")
+        }
 
 		// gRPC 服务器会通过 context 取消自动关闭
 	}()

@@ -152,6 +152,13 @@ type GRPCUpstream struct {
     STSAudience     string        `yaml:"sts_audience" json:"sts_audience"`
     STSScope        string        `yaml:"sts_scope" json:"sts_scope"`
     STSTTL          time.Duration `yaml:"sts_ttl" json:"sts_ttl"`
+
+    // 连接策略
+    // eager: 启动时立刻连接（默认）
+    // lazy: 首次调用时再连接（开发模式友好）
+    ConnectMode string `yaml:"connect_mode" json:"connect_mode"`
+    // 可选连接：为 true 时，连接失败不致命（仅建议在开发模式）
+    Optional    bool   `yaml:"optional" json:"optional"`
 }
 
 // GRPCServer 插件 gRPC 服务器配置
@@ -176,22 +183,21 @@ type ContextConfig struct {
 	TTL      time.Duration `yaml:"ttl" json:"ttl"`
 }
 
-// Load 加载配置，优先级：YAML 文件 > 环境变量 > 默认值
+// Load 加载配置，优先级：YAML 文件 > 默认值（不再从环境变量覆盖）
 func Load() (*Config, error) {
 
-	// 设置默认配置
-	cfg := getDefaultConfig()
+    // 设置默认配置
+    cfg := getDefaultConfig()
 
-	// 尝试加载 YAML 配置文件
-	if err := loadYAMLConfig(cfg); err != nil {
-		logrus.WithError(err).Warn("Failed to load YAML config, using defaults and environment variables")
-	}
+    // 尝试加载 YAML 配置文件
+    if err := loadYAMLConfig(cfg); err != nil {
+        logrus.WithError(err).Warn("Failed to load YAML config, using defaults only")
+    }
 
-	// 从环境变量覆盖配置（最高优先级）
-	loadEnvConfig(cfg)
+    // 不再从环境变量覆盖配置
 
-	// 同步向后兼容字段
-	syncBackwardCompatibility(cfg)
+    // 同步向后兼容字段
+    syncBackwardCompatibility(cfg)
 
 	// 验证配置
 	if err := cfg.Validate(); err != nil {
@@ -247,16 +253,18 @@ func getDefaultConfig() *Config {
 			MaxBackups: 3,
 			MaxAge:     28,
 		},
-		GRPCUpstream: &GRPCUpstream{
-			Address:  "localhost:9001",
-			Token:    "",
-			TenantID: 1,
-			UseTLS:   false,
-			CACert:   "",
-			STSAudience: "powerx:api",
-			STSScope:    "access",
-			STSTTL:      300 * time.Second,
-		},
+        GRPCUpstream: &GRPCUpstream{
+            Address:  "localhost:9001",
+            Token:    "",
+            TenantID: 1,
+            UseTLS:   false,
+            CACert:   "",
+            STSAudience: "powerx:api",
+            STSScope:    "access",
+            STSTTL:      300 * time.Second,
+            ConnectMode: "eager",
+            Optional:    false,
+        },
 		GRPCServer: &GRPCServer{
 			Enable: true,
 			Addr:   ":9101",
@@ -314,19 +322,22 @@ func loadYAMLConfig(cfg *Config) error {
 	return nil
 }
 
-// loadEnvConfig 从环境变量加载配置
+// loadEnvConfig 从环境变量加载配置（已弃用，不再调用）
 func loadEnvConfig(cfg *Config) {
-	// 服务配置
-	if addr := os.Getenv("PX_BIND_ADDR"); addr != "" {
-		cfg.Server.BindAddr = addr
-	}
-	if level := os.Getenv("PX_LOG_LEVEL"); level != "" {
-		cfg.Server.LogLevel = level
-		cfg.Logging.Level = level
-	}
-	if devMode := os.Getenv("PX_DEV_MODE"); devMode != "" {
-		cfg.Server.DevMode = (devMode == "1" || devMode == "true")
-	}
+    // 服务配置
+    if addr := os.Getenv("PX_BIND_ADDR"); addr != "" {
+        cfg.Server.BindAddr = addr
+    }
+    if level := os.Getenv("PX_LOG_LEVEL"); level != "" {
+        cfg.Server.LogLevel = level
+        cfg.Logging.Level = level
+    }
+    if devMode := os.Getenv("PX_DEV_MODE"); devMode != "" {
+        cfg.Server.DevMode = (devMode == "1" || devMode == "true")
+    }
+    if sec := os.Getenv("PX_SERVER_SECRET_KEY"); sec != "" {
+        cfg.Server.SecretKey = sec
+    }
 
 	// 数据库配置
 	if dsn := os.Getenv("PX_DB_DSN"); dsn != "" {
@@ -487,9 +498,9 @@ func (c *Config) IsJWTMode() bool {
 // Validate 验证配置
 func (c *Config) Validate() error {
 	// 数据库配置验证
-	if c.Database.DSN == "" && c.DBDSN == "" {
-		return NewConfigError("database DSN is required (set PX_DB_DSN or configure in YAML)")
-	}
+    if c.Database.DSN == "" && c.DBDSN == "" {
+        return NewConfigError("database DSN is required (configure in YAML)")
+    }
 
 	// 认证模式验证
 	if !c.Server.DevMode && !c.IsHMACMode() && !c.IsJWTMode() {

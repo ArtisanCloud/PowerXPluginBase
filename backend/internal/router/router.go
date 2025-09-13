@@ -1,13 +1,13 @@
 package router
 
 import (
-	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http"
-	middleware2 "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/middleware"
-	"time"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/config"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http"
+    middleware2 "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/middleware"
+    "time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -69,11 +69,25 @@ func (r *Router) setupGlobalMiddleware() {
 	// 超时中间件（30秒）
 	r.engine.Use(middleware.Timeout(30 * time.Second))
 
-	// 速率限制中间件（每分钟最多 100 个请求）
-	r.engine.Use(middleware.RateLimiter(100, time.Minute))
+    // 速率限制中间件（每分钟最多 100 个请求）
+    r.engine.Use(middleware.RateLimiter(100, time.Minute))
 
-	// 健康检查中间件（在其他中间件之前）
-	r.engine.Use(middleware.HealthCheck("/healthz"))
+    // 健康检查中间件（在其他中间件之前）
+    r.engine.Use(middleware.HealthCheck("/healthz"))
+
+    // 开发模式：若未鉴权，则注入一个默认 TenantContext，便于本地无 PowerX 时调试
+    if !r.cfg.IsProduction() {
+        tenantID := int64(1)
+        if r.cfg.GRPCUpstream != nil && r.cfg.GRPCUpstream.TenantID > 0 {
+            tenantID = r.cfg.GRPCUpstream.TenantID
+        }
+        r.engine.Use(middleware2.DevSwitch(true, middleware.TenantContext{
+            TenantID:    tenantID,
+            UserID:      0,
+            Roles:       []string{"superadmin"},
+            Permissions: []string{"*"},
+        }))
+    }
 }
 
 // setupRoutes 设置路由
@@ -152,14 +166,15 @@ func (r *Router) buildJWT() middleware.JWTAuthConfig {
 
 // —— 从配置构造 RBAC 配置 —— //
 func (r *Router) buildRBAC() *middleware.RBACConfig {
-	cfg := &middleware.RBACConfig{
-		Enabled:         true,
-		DefaultDeny:     true,
-		SuperAdminRoles: []string{"superadmin"},
-		RoutePermissions: map[string]middleware.Permission{
-			"GET:/api/v1/notes/:id": {Resource: "note", Action: "read"},
-		},
-	}
+    cfg := &middleware.RBACConfig{
+        Enabled:         true,
+        // 开发模式默认放行未配置的路由；生产环境默认拒绝
+        DefaultDeny:     r.cfg.IsProduction(),
+        SuperAdminRoles: []string{"superadmin"},
+        RoutePermissions: map[string]middleware.Permission{
+            "GET:/api/v1/notes/:id": {Resource: "note", Action: "read"},
+        },
+    }
 	// TODO: 若你有 RBAC 目录/配置文件，在这里加载并覆盖 cfg.RoutePermissions
 	return cfg
 }

@@ -55,7 +55,8 @@ func (m *TokenManager) GetToken(ctx context.Context) (string, error) {
     if tok, ok := m.peek(); ok {
         return tok, nil
     }
-    return m.refresh(ctx)
+    tok, _, err := m.refresh(ctx)
+    return tok, err
 }
 
 func (m *TokenManager) peek() (string, bool) {
@@ -71,15 +72,15 @@ func (m *TokenManager) peek() (string, bool) {
     return m.token, true
 }
 
-func (m *TokenManager) refresh(ctx context.Context) (string, error) {
+func (m *TokenManager) refresh(ctx context.Context) (string, time.Time, error) {
     m.mu.Lock()
     defer m.mu.Unlock()
     // double-check after acquiring lock
     if m.token != "" && time.Now().Before(m.expiry.Add(-60*time.Second)) {
-        return m.token, nil
+        return m.token, m.expiry, nil
     }
     if m.exchange == nil {
-        return "", errors.New("sts exchanger not configured")
+        return "", time.Time{}, errors.New("sts exchanger not configured")
     }
     req := &STSExchangeRequest{
         ClientID:     m.clientID,
@@ -90,10 +91,10 @@ func (m *TokenManager) refresh(ctx context.Context) (string, error) {
     }
     resp, err := m.exchange(ctx, req)
     if err != nil {
-        return "", err
+        return "", time.Time{}, err
     }
     if resp == nil || resp.AccessToken == "" {
-        return "", errors.New("empty access token from STS")
+        return "", time.Time{}, errors.New("empty access token from STS")
     }
     ttl := time.Duration(resp.ExpiresIn) * time.Second
     if ttl <= 0 {
@@ -101,7 +102,7 @@ func (m *TokenManager) refresh(ctx context.Context) (string, error) {
     }
     m.token = resp.AccessToken
     m.expiry = time.Now().Add(ttl)
-    return m.token, nil
+    return m.token, m.expiry, nil
 }
 
 // Invalidate 使当前 token 失效，用于 401/403 兜底重试
@@ -116,4 +117,9 @@ func (m *TokenManager) Invalidate() {
 func (m *TokenManager) HasValid() bool {
     _, ok := m.peek()
     return ok
+}
+
+// ExchangeNow 立即向 STS 发起交换，返回 token 与过期时间
+func (m *TokenManager) ExchangeNow(ctx context.Context) (string, time.Time, error) {
+    return m.refresh(ctx)
 }

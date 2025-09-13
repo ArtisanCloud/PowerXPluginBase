@@ -5,6 +5,7 @@
 - `web-admin/`: Nuxt 4 admin UI (TypeScript, Pinia, i18n). Start from `web-admin/app/`.
 - `docs/`: Documentation; `plugin.yaml`: plugin manifest; `Makefile`: task runner.
 
+
 ## Build, Test, and Development
 - Backend
   - `make dev`: Run DB migrate then start backend (`PX_*` envs set).

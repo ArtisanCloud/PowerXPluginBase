@@ -1,39 +1,52 @@
 package client
 
 import (
-	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"encoding/json"
-	"fmt"
-	cfgpkg "github.com/ArtisanCloud/PowerXPlugin/internal/config"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
-	"io/ioutil"
-	"time"
+    "context"
+    "crypto/tls"
+    "crypto/x509"
+    "encoding/json"
+    "fmt"
+    cfgpkg "github.com/ArtisanCloud/PowerXPlugin/internal/config"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+    "io/ioutil"
+    "time"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/credentials"
+    "google.golang.org/grpc/credentials/insecure"
+    "google.golang.org/grpc/metadata"
+
+    protojson "google.golang.org/protobuf/encoding/protojson"
+    "google.golang.org/protobuf/proto"
+    v1alpha "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
+    "google.golang.org/protobuf/reflect/protodesc"
+    "google.golang.org/protobuf/reflect/protoreflect"
+    "google.golang.org/protobuf/types/descriptorpb"
+    "google.golang.org/protobuf/types/dynamicpb"
+
+    commonv1 "github.com/ArtisanCloud/PowerX/api/grpc/gen/go/common/v1"
+    iamv1 "github.com/ArtisanCloud/PowerX/api/grpc/gen/go/powerx/iam/v1"
+    stsv1 "github.com/ArtisanCloud/PowerX/api/grpc/gen/go/powerx/auth/sts/v1"
 )
 
 // 通用请求和响应结构（与 PowerX proto 兼容）
 type RequestContext struct {
-	TenantId    int64  `json:"tenant_id"`
-	AccessToken string `json:"access_token"`
+    TenantId    int64  `json:"tenant_id"`
+    AccessToken string `json:"access_token"`
 }
 
 type PageRequest struct {
-	PageIndex int32 `json:"page_index"`
-	PageSize  int32 `json:"page_size"`
+    PageIndex int32 `json:"page_index"`
+    PageSize  int32 `json:"page_size"`
 }
 
 // PowerX PowerX gRPC 客户端封装
 type PowerXServiceClient struct {
     conn *grpc.ClientConn
-	// TODO: 当有实际的 PowerX proto 文件时，添加客户端
-	// Members orgv1.MemberServiceClient
-	// Teams   orgv1.TeamServiceClient
+    // 基于 proto 的强类型客户端
+    members iamv1.MemberServiceClient
+    teams   iamv1.TeamServiceClient
+    sts     stsv1.STSServiceClient
 
     token    string
     tenantID int64
@@ -43,69 +56,105 @@ type PowerXServiceClient struct {
 
 // NewPowerX 根据配置拨号 PowerX gRPC
 func NewPowerXServiceClient(ctx context.Context, c *cfgpkg.GRPCUpstream) (*PowerXServiceClient, error) {
-	if c.Address == "" {
-		return nil, fmt.Errorf("grpc upstream address is required")
-	}
-
-	dialOpts := []grpc.DialOption{grpc.WithBlock()}
-
-	if c.UseTLS {
-		var creds credentials.TransportCredentials
-		if c.CACert != "" {
-			pem, err := ioutil.ReadFile(c.CACert)
-			if err != nil {
-				return nil, fmt.Errorf("read ca cert: %w", err)
-			}
-			cp := x509.NewCertPool()
-			if !cp.AppendCertsFromPEM(pem) {
-				return nil, fmt.Errorf("failed to append ca cert")
-			}
-			creds = credentials.NewTLS(&tls.Config{RootCAs: cp})
-		} else {
-			creds = credentials.NewTLS(&tls.Config{})
-		}
-		dialOpts = append(dialOpts, grpc.WithTransportCredentials(creds))
-	} else {
-		dialOpts = append(dialOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	logger.WithField("address", c.Address).Info("Connecting to PowerX gRPC service")
-
-    conn, err := grpc.DialContext(ctx, c.Address, dialOpts...)
-    if err != nil {
-        return nil, fmt.Errorf("failed to dial PowerX gRPC: %w", err)
+    if c.Address == "" {
+        return nil, fmt.Errorf("grpc upstream address is required")
     }
 
-	logger.Info("Successfully connected to PowerX gRPC service")
-
     p := &PowerXServiceClient{
-        conn: conn,
-		// TODO: 当有实际的 PowerX proto 文件时，初始化客户端
-		// Members:  orgv1.NewMemberServiceClient(conn),
-		// Teams:    orgv1.NewTeamServiceClient(conn),
+        conn:     nil,
         token:    c.Token,
         tenantID: c.TenantID,
         cfg:      c,
     }
 
+    // eager 模式：启动即连接；lazy 模式：首次调用再连接
+    if c.ConnectMode == "" || c.ConnectMode == "eager" {
+        if err := p.ensureConn(ctx); err != nil {
+            if c.Optional {
+                logger.WithError(err).Warn("gRPC upstream not available; continue in optional mode")
+            } else {
+                return nil, err
+            }
+        }
+    }
+
     // 初始化 STS TokenManager（若提供了 client_id/secret）
     if c.STSClientID != "" && c.STSClientSecret != "" {
         p.tm = NewTokenManager(c.STSClientID, c.STSClientSecret, c.STSAudience, c.STSScope, c.STSTTL, func(ctx context.Context, req *STSExchangeRequest) (*STSExchangeResponse, error) {
-            // 使用通用调用与约定的服务/方法名
-            var resp STSExchangeResponse
-            // 直接调用，不附带旧的 Authorization 头
-            // 这里复用 InvokeGRPC 的日志和错误语义；未来替换为真实 proto 客户端
-            if err := p.InvokeGRPC(ctx, "powerx.auth.sts.v1.STSService", "Exchange", req, &resp); err != nil {
+            // 使用 proto 强类型客户端调用 STS Exchange
+            if p.conn == nil {
+                if err := p.ensureConn(ctx); err != nil {
+                    return nil, err
+                }
+            }
+            // STS Exchange 通常不带原有 Authorization
+            // 但仍可携带租户信息到 Ctx
+            pr := &stsv1.ExchangeRequest{
+                Ctx: &commonv1.RequestContext{TenantId: p.tenantID},
+                ClientId:     req.ClientID,
+                ClientSecret: req.ClientSecret,
+                Audience:     req.Audience,
+                Scope:        req.Scope,
+                TtlSeconds:   req.TTL,
+            }
+            // 直接用底层连接构造 client（或使用 p.sts）
+            stscli := p.sts
+            if stscli == nil {
+                stscli = stsv1.NewSTSServiceClient(p.conn)
+            }
+            resp, err := stscli.Exchange(ctx, pr)
+            if err != nil {
                 return nil, err
             }
-            return &resp, nil
+            if resp == nil || resp.Data == nil {
+                return nil, fmt.Errorf("empty response from STS Exchange")
+            }
+            return &STSExchangeResponse{AccessToken: resp.Data.GetAccessToken(), ExpiresIn: int32(resp.Data.GetExpiresIn())}, nil
         })
     }
 
     return p, nil
+}
+
+// ensureConn: 若未连接或不可用，尝试拨号（短超时）。
+func (p *PowerXServiceClient) ensureConn(ctx context.Context) error {
+    if p.conn != nil {
+        st := p.conn.GetState().String()
+        if st == "READY" || st == "IDLE" || st == "CONNECTING" {
+            return nil
+        }
+    }
+    // 重新拨号
+    dialOpts := []grpc.DialOption{}
+    if p.cfg.UseTLS {
+        var creds credentials.TransportCredentials
+        if p.cfg.CACert != "" {
+            pem, err := ioutil.ReadFile(p.cfg.CACert)
+            if err != nil { return fmt.Errorf("read ca cert: %w", err) }
+            cp := x509.NewCertPool()
+            if !cp.AppendCertsFromPEM(pem) { return fmt.Errorf("failed to append ca cert") }
+            creds = credentials.NewTLS(&tls.Config{RootCAs: cp})
+        } else {
+            creds = credentials.NewTLS(&tls.Config{})
+        }
+        dialOpts = append(dialOpts, grpc.WithTransportCredentials(creds))
+    } else {
+        dialOpts = append(dialOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+    }
+    // 非阻塞 + 短超时拨号（尝试立即建立；失败返回错误）
+    ctxDial, cancel := context.WithTimeout(ctx, 3*time.Second)
+    defer cancel()
+    logger.WithField("address", p.cfg.Address).Info("Dialing PowerX gRPC (on-demand)")
+    conn, err := grpc.DialContext(ctxDial, p.cfg.Address, dialOpts...)
+    if err != nil {
+        return fmt.Errorf("failed to dial PowerX gRPC: %w", err)
+    }
+    p.conn = conn
+    // 初始化强类型客户端
+    p.members = iamv1.NewMemberServiceClient(conn)
+    p.teams = iamv1.NewTeamServiceClient(conn)
+    p.sts = stsv1.NewSTSServiceClient(conn)
+    return nil
 }
 
 // Close 关闭 gRPC 连接
@@ -117,10 +166,43 @@ func (p *PowerXServiceClient) Close() error {
 }
 
 func (p *PowerXServiceClient) RC() *RequestContext {
-	return &RequestContext{
-		TenantId:    p.tenantID,
-		AccessToken: p.token,
-	}
+    return &RequestContext{
+        TenantId:    p.tenantID,
+        AccessToken: p.token,
+    }
+}
+
+// MembersClient 返回 iam 成员服务客户端
+func (p *PowerXServiceClient) MembersClient(ctx context.Context) (iamv1.MemberServiceClient, error) {
+    if p.conn == nil {
+        if err := p.ensureConn(ctx); err != nil { return nil, err }
+    }
+    if p.members == nil {
+        p.members = iamv1.NewMemberServiceClient(p.conn)
+    }
+    return p.members, nil
+}
+
+// TeamsClient 返回 iam 团队服务客户端
+func (p *PowerXServiceClient) TeamsClient(ctx context.Context) (iamv1.TeamServiceClient, error) {
+    if p.conn == nil {
+        if err := p.ensureConn(ctx); err != nil { return nil, err }
+    }
+    if p.teams == nil {
+        p.teams = iamv1.NewTeamServiceClient(p.conn)
+    }
+    return p.teams, nil
+}
+
+// STSClient 返回 STS 服务客户端
+func (p *PowerXServiceClient) STSClient(ctx context.Context) (stsv1.STSServiceClient, error) {
+    if p.conn == nil {
+        if err := p.ensureConn(ctx); err != nil { return nil, err }
+    }
+    if p.sts == nil {
+        p.sts = stsv1.NewSTSServiceClient(p.conn)
+    }
+    return p.sts, nil
 }
 
 // Outgoing 基础 ctx：附带 auth 头（未来加拦截器时无缝）
@@ -184,34 +266,196 @@ func (p *PowerXServiceClient) IsConnected() bool {
 
 // invokeGRPC 通用 gRPC 调用方法
 func (p *PowerXServiceClient) InvokeGRPC(ctx context.Context, service, method string, req, resp interface{}) error {
-	if p.conn == nil {
-		return fmt.Errorf("gRPC connection is not established")
-	}
+    if p.conn == nil {
+        if err := p.ensureConn(ctx); err != nil {
+            return err
+        }
+    }
 
-	// 添加认证头部
-	ctx = p.Outgoing(ctx)
+    // STS Exchange 不附带 Authorization，其它服务使用 Outgoing 附带 token
+    if service == "powerx.auth.sts.v1.STSService" {
+        // no auth header
+    } else {
+        ctx = p.Outgoing(ctx)
+    }
 
-	// 将请求序列化为 JSON（简化版本，实际应使用 protobuf）
-	reqBytes, err := json.Marshal(req)
-	if err != nil {
-		return fmt.Errorf("failed to marshal request: %w", err)
-	}
+    logger.WithField("service", service).WithField("method", method).Info("Calling PowerX gRPC service via reflection")
 
-	// 记录调用日志
-	logger.WithField("service", service).WithField("method", method).Info("Calling PowerX gRPC service")
+    // 1) 通过反射拉取包含该符号的文件描述
+    refClient := v1alpha.NewServerReflectionClient(p.conn)
+    stream, err := refClient.ServerReflectionInfo(ctx)
+    if err != nil {
+        return fmt.Errorf("open reflection stream: %w", err)
+    }
+    if err := stream.Send(&v1alpha.ServerReflectionRequest{
+        MessageRequest: &v1alpha.ServerReflectionRequest_FileContainingSymbol{
+            FileContainingSymbol: service,
+        },
+    }); err != nil {
+        return fmt.Errorf("send reflection request: %w", err)
+    }
+    respMsg, err := stream.Recv()
+    if err != nil {
+        return fmt.Errorf("recv reflection response: %w", err)
+    }
+    fdResp := respMsg.GetFileDescriptorResponse()
+    if fdResp == nil {
+        return fmt.Errorf("no file descriptor in reflection response")
+    }
+    var files []*descriptorpb.FileDescriptorProto
+    for _, b := range fdResp.FileDescriptorProto {
+        fdp := &descriptorpb.FileDescriptorProto{}
+        if err := proto.Unmarshal(b, fdp); err != nil {
+            return fmt.Errorf("unmarshal FileDescriptorProto: %w", err)
+        }
+        files = append(files, fdp)
+    }
+    fileSet := &descriptorpb.FileDescriptorSet{File: files}
+    r, err := protodesc.NewFiles(fileSet)
+    if err != nil {
+        return fmt.Errorf("build file descriptors: %w", err)
+    }
+    d, err := r.FindDescriptorByName(protoreflect.FullName(service))
+    if err != nil {
+        return fmt.Errorf("find service descriptor: %w", err)
+    }
+    sd, ok := d.(protoreflect.ServiceDescriptor)
+    if !ok {
+        return fmt.Errorf("descriptor is not a service: %s", service)
+    }
+    var md protoreflect.MethodDescriptor
+    for i := 0; i < sd.Methods().Len(); i++ {
+        m := sd.Methods().Get(i)
+        if string(m.Name()) == method {
+            md = m
+            break
+        }
+    }
+    if md == nil {
+        return fmt.Errorf("method not found: %s", method)
+    }
 
-	// 这里应该使用实际的 gRPC 调用
-	// 目前返回模拟数据供测试
-	_ = reqBytes
+    inDesc := md.Input()
+    outDesc := md.Output()
+    inMsg := dynamicpb.NewMessage(inDesc)
+    outMsg := dynamicpb.NewMessage(outDesc)
 
-	return nil
+    // 将调用方的 req（Go struct）转为 map，并按字段名/jsonName 逐一赋值，兼容 client_id/clientId
+    jb, err := json.Marshal(req)
+    if err != nil {
+        return fmt.Errorf("marshal req: %w", err)
+    }
+    var m map[string]interface{}
+    if err := json.Unmarshal(jb, &m); err != nil {
+        return fmt.Errorf("unmarshal req to map: %w", err)
+    }
+    in := inMsg.ProtoReflect()
+    fds := inDesc.Fields()
+    for i := 0; i < fds.Len(); i++ {
+        fd := fds.Get(i)
+        // 两种命名都试一下
+        var v interface{}
+        if vv, ok := m[string(fd.Name())]; ok {
+            v = vv
+        } else if vv, ok := m[fd.JSONName()]; ok {
+            v = vv
+        } else {
+            continue
+        }
+        switch fd.Kind() {
+        case protoreflect.StringKind:
+            if s, ok := v.(string); ok {
+                in.Set(fd, protoreflect.ValueOfString(s))
+            }
+        case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind:
+            switch t := v.(type) {
+            case float64:
+                in.Set(fd, protoreflect.ValueOfInt32(int32(t)))
+            case int:
+                in.Set(fd, protoreflect.ValueOfInt32(int32(t)))
+            case int32:
+                in.Set(fd, protoreflect.ValueOfInt32(t))
+            case string:
+                // 尝试解析
+                var iv int
+                if _, err := fmt.Sscanf(t, "%d", &iv); err == nil {
+                    in.Set(fd, protoreflect.ValueOfInt32(int32(iv)))
+                }
+            }
+        case protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
+            switch t := v.(type) {
+            case float64:
+                in.Set(fd, protoreflect.ValueOfInt64(int64(t)))
+            case int64:
+                in.Set(fd, protoreflect.ValueOfInt64(t))
+            case string:
+                var iv int64
+                if _, err := fmt.Sscanf(t, "%d", &iv); err == nil {
+                    in.Set(fd, protoreflect.ValueOfInt64(iv))
+                }
+            }
+        case protoreflect.BoolKind:
+            if b, ok := v.(bool); ok {
+                in.Set(fd, protoreflect.ValueOfBool(b))
+            }
+        default:
+            // 对于其他标量类型，可按需补齐
+        }
+    }
+
+    fullMethod := "/" + service + "/" + method
+    if err := p.conn.Invoke(ctx, fullMethod, inMsg, outMsg); err != nil {
+        return fmt.Errorf("grpc invoke %s: %w", fullMethod, err)
+    }
+
+    // 动态响应转 JSON，再映射到调用方 resp（Go struct）
+    ob, err := protojson.MarshalOptions{UseEnumNumbers: true}.Marshal(outMsg)
+    if err != nil {
+        return fmt.Errorf("marshal dynamic response: %w", err)
+    }
+    // 兼容包裹结构：若顶层包含 {"data": {...}}，优先解开 data 再反序列化
+    var envelope map[string]json.RawMessage
+    if err := json.Unmarshal(ob, &envelope); err == nil {
+        if data, ok := envelope["data"]; ok && len(data) > 0 {
+            ob = data
+        }
+    }
+    if err := json.Unmarshal(ob, resp); err != nil {
+        return fmt.Errorf("unmarshal response: %w", err)
+    }
+    return nil
+}
+
+// ExchangeSTS 立即触发 STS Exchange（调试用）
+func (p *PowerXServiceClient) ExchangeSTS(ctx context.Context) (token string, expiresIn int32, err error) {
+    if p.tm == nil {
+        return "", 0, fmt.Errorf("sts not configured")
+    }
+    tok, exp, err := p.tm.ExchangeNow(ctx)
+    if err != nil {
+        return "", 0, err
+    }
+    sec := int32(time.Until(exp).Seconds())
+    if sec < 0 {
+        sec = 0
+    }
+    return tok, sec, nil
+}
+
+// InvalidateSTS 使当前 STS token 失效，便于轮换后强制刷新
+func (p *PowerXServiceClient) InvalidateSTS() {
+    if p.tm != nil {
+        p.tm.Invalidate()
+    }
 }
 
 // HealthCheck 健康检查方法
 func (p *PowerXServiceClient) HealthCheck(ctx context.Context) error {
-	if p.conn == nil {
-		return fmt.Errorf("grpc connection is nil")
-	}
+    if p.conn == nil {
+        if err := p.ensureConn(ctx); err != nil {
+            return err
+        }
+    }
 
 	state := p.conn.GetState()
 	if state.String() != "READY" && state.String() != "IDLE" {

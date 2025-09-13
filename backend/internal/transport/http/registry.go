@@ -1,12 +1,13 @@
 package http
 
 import (
-	"fmt"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/iam"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/notes"
-	"github.com/gin-gonic/gin"
+    "fmt"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
+    agentapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/agent"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/iam"
+    "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/notes"
+    "github.com/gin-gonic/gin"
 )
 
 // Registry API 注册器
@@ -25,9 +26,10 @@ func NewRegistry(engine *gin.Engine, deps *app.Deps) *Registry {
 
 // RegisterRoutes 注册所有路由
 func (r *Registry) RegisterAPIRoutes(gApi *gin.RouterGroup) {
-	admin.RegisterAPIRoutes(gApi, r.deps)
-	iam.RegisterAPIRoutes(gApi, r.deps)
-	notes.RegisterAPIRoutes(gApi, r.deps)
+    admin.RegisterAPIRoutes(gApi, r.deps)
+    agentapi.RegisterAPIRoutes(gApi, r.deps)
+    iam.RegisterAPIRoutes(gApi, r.deps)
+    notes.RegisterAPIRoutes(gApi, r.deps)
 }
 
 func (r *Registry) PrintRegisteredRoutes() {

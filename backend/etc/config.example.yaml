@@ -66,6 +66,10 @@ grpc_upstream:
   tenant_id: 1 # 租户 ID
   use_tls: false # 开发环境关闭 TLS
   ca_cert: "" # TLS 根证书路径（生产环境使用）
+  # 连接策略：eager(启动即连)/lazy(首次调用再连)
+  connect_mode: "lazy"
+  # 可选：true 时连接失败不致命（仅建议开发使用）
+  optional: true
 
 # gRPC 服务器配置（插件提供的 gRPC 服务）
 grpc_server:

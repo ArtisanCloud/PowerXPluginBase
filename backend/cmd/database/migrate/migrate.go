@@ -11,14 +11,15 @@ import (
 
 // MigratePluginModels 只做 AutoMigrate（最小实现）
 func MigratePluginModels(ctx context.Context, db *gorm.DB) error {
-	return db.AutoMigrate(
-		&models.PluginTenantExt{},
-		&note.Note{},
-		&iam.TeamCache{},
-		&iam.TeamExt{},
-		&iam.MemberExt{},
-		&iam.MemberCache{},
-	)
+    return db.AutoMigrate(
+        &models.PluginCredential{},
+        &models.PluginTenantExt{},
+        &note.Note{},
+        &iam.TeamCache{},
+        &iam.TeamExt{},
+        &iam.MemberExt{},
+        &iam.MemberCache{},
+    )
 }
 
 func ResetDatabase(ctx context.Context, db *gorm.DB, cfg *config.DatabaseConfig) error {

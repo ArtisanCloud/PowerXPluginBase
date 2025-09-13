@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
-	"net/http"
+    authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+    "net/http"
+    "strings"
 
-	"github.com/gin-gonic/gin"
+    "github.com/gin-gonic/gin"
 )
 
 // NeedABACFn：可选的 ABAC 触发回调（返回是否需要 ABAC 以及附加属性）
@@ -12,12 +13,17 @@ type NeedABACFn func(method, route string) (need bool, attrs map[string]any)
 
 // RBAC：粗粒度 RBAC；命中需要 ABAC 的路由时，调用 PDP 在线校验
 func RBAC(cfg *authx.RBACConfig, abac authx.ABACClient, needABAC NeedABACFn) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// 预检查
-		if cfg == nil || !cfg.Enabled || c.Request.Method == http.MethodOptions {
-			c.Next()
-			return
-		}
+    return func(c *gin.Context) {
+        // 预检查
+        if cfg == nil || !cfg.Enabled || c.Request.Method == http.MethodOptions {
+            c.Next()
+            return
+        }
+        // 内部回调路径（用于宿主→插件推送），跳过 RBAC（生产应结合网络/签名层控制）
+        if strings.HasPrefix(c.Request.URL.Path, "/api/v1/internal/") || strings.HasPrefix(c.Request.URL.Path, "/api/v1/agent/") {
+            c.Next()
+            return
+        }
 		tc, ok := authx.GetTenantContext(c)
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
