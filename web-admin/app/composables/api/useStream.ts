@@ -31,6 +31,7 @@ export function useEventStream<T = any>(
     onClose?: () => void;
     autoReconnect?: boolean;
     reconnectDelay?: number;
+    maxRetries?: number; // 最大重试次数，默认为3
   }
 ) {
   const connected = ref(false);
@@ -38,6 +39,8 @@ export function useEventStream<T = any>(
   const data = ref<T | null>(null);
   let eventSource: EventSource | null = null;
   let reconnectTimer: NodeJS.Timeout | null = null;
+  let retryCount = 0;
+  const maxRetries = options?.maxRetries ?? 3;
 
   const connect = () => {
     if (typeof window === "undefined") return;
@@ -48,6 +51,7 @@ export function useEventStream<T = any>(
       eventSource.onopen = () => {
         connected.value = true;
         error.value = null;
+        retryCount = 0; // 连接成功后重置重试计数
         options?.onOpen?.();
       };
 
@@ -63,17 +67,28 @@ export function useEventStream<T = any>(
 
       eventSource.onerror = (event) => {
         connected.value = false;
-        error.value = "连接错误";
         options?.onError?.(event);
 
-        if (options?.autoReconnect !== false) {
+        if (options?.autoReconnect !== false && retryCount < maxRetries) {
+          retryCount++;
+          error.value = `连接错误，正在重试 (${retryCount}/${maxRetries})`;
           reconnectTimer = setTimeout(() => {
             connect();
           }, options?.reconnectDelay || 3000);
+        } else {
+          error.value = `连接失败，已达到最大重试次数 (${maxRetries})`;
         }
       };
     } catch (e) {
-      error.value = `连接失败: ${e instanceof Error ? e.message : String(e)}`;
+      if (options?.autoReconnect !== false && retryCount < maxRetries) {
+        retryCount++;
+        error.value = `连接失败，正在重试 (${retryCount}/${maxRetries}): ${e instanceof Error ? e.message : String(e)}`;
+        reconnectTimer = setTimeout(() => {
+          connect();
+        }, options?.reconnectDelay || 3000);
+      } else {
+        error.value = `连接失败，已达到最大重试次数 (${maxRetries}): ${e instanceof Error ? e.message : String(e)}`;
+      }
     }
   };
 
@@ -114,6 +129,7 @@ export function useWebSocket<T = any>(
     onClose?: () => void;
     autoReconnect?: boolean;
     reconnectDelay?: number;
+    maxRetries?: number; // 最大重试次数，默认为3
   }
 ) {
   const connected = ref(false);
@@ -121,6 +137,8 @@ export function useWebSocket<T = any>(
   const data = ref<T | null>(null);
   let websocket: WebSocket | null = null;
   let reconnectTimer: NodeJS.Timeout | null = null;
+  let retryCount = 0;
+  const maxRetries = options?.maxRetries ?? 3;
 
   const connect = () => {
     if (typeof window === "undefined") return;
@@ -131,6 +149,7 @@ export function useWebSocket<T = any>(
       websocket.onopen = () => {
         connected.value = true;
         error.value = null;
+        retryCount = 0; // 连接成功后重置重试计数
         options?.onOpen?.();
       };
 
@@ -148,22 +167,35 @@ export function useWebSocket<T = any>(
 
       websocket.onerror = (event) => {
         connected.value = false;
-        error.value = "WebSocket 连接错误";
+        error.value = `WebSocket 连接错误`;
         options?.onError?.(event);
+        // 注意：WebSocket 的 onerror 后通常会触发 onclose，所以重试逻辑放在 onclose 中处理
       };
 
       websocket.onclose = () => {
         connected.value = false;
         options?.onClose?.();
 
-        if (options?.autoReconnect !== false) {
+        if (options?.autoReconnect !== false && retryCount < maxRetries) {
+          retryCount++;
+          error.value = `WebSocket 连接断开，正在重试 (${retryCount}/${maxRetries})`;
           reconnectTimer = setTimeout(() => {
             connect();
           }, options?.reconnectDelay || 3000);
+        } else if (retryCount >= maxRetries) {
+          error.value = `WebSocket 连接失败，已达到最大重试次数 (${maxRetries})`;
         }
       };
     } catch (e) {
-      error.value = `WebSocket 连接失败: ${e instanceof Error ? e.message : String(e)}`;
+      if (options?.autoReconnect !== false && retryCount < maxRetries) {
+        retryCount++;
+        error.value = `WebSocket 连接失败，正在重试 (${retryCount}/${maxRetries}): ${e instanceof Error ? e.message : String(e)}`;
+        reconnectTimer = setTimeout(() => {
+          connect();
+        }, options?.reconnectDelay || 3000);
+      } else {
+        error.value = `WebSocket 连接失败，已达到最大重试次数 (${maxRetries}): ${e instanceof Error ? e.message : String(e)}`;
+      }
     }
   };
 

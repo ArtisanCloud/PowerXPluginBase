@@ -27,6 +27,12 @@ export default defineNuxtConfig({
     "@nuxt/test-utils",
   ],
 
+  nitro: {
+    experimental: {
+      websocket: true, // ✅ 开启 Nitro 原生 WS
+    },
+  },
+
   // CSS configuration
   css: ["~/assets/css/main.css", "@/assets/scss/main.scss"],
 
@@ -83,6 +89,11 @@ export default defineNuxtConfig({
           changeOrigin: true,
           ws: true,
           rewrite: (p: string) => p.replace(/^\/api/, ""),
+        },
+        "/ws": {
+          target: "ws://127.0.0.1:4000", // 修改为你的 WebSocket 服务地址
+          changeOrigin: true,
+          ws: true, // 启用 WebSocket 代理
         },
       },
     },
