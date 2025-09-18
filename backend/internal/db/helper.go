@@ -21,7 +21,19 @@ func createSchema(schema string) error {
 		return errors.New("empty schema")
 	}
 	sqlText := fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", qi(schema))
-	return db.Exec(sqlText).Error
+	if err := db.Exec(sqlText).Error; err != nil {
+		if isPermissionDenied(err) {
+			exists, checkErr := schemaExists(schema)
+			if checkErr != nil {
+				return checkErr
+			}
+			if exists {
+				return nil
+			}
+		}
+		return err
+	}
+	return nil
 }
 
 // setDefaultSchema: SET search_path（会话级）
@@ -78,4 +90,28 @@ func CreateRLSPolicy(tableName, policyName string) error {
 func DropRLSPolicy(tableName, policyName string) error {
 	sql := fmt.Sprintf("DROP POLICY IF EXISTS %s ON %s", policyName, tableName)
 	return db.Exec(sql).Error
+}
+
+type sqlStateError interface {
+	SQLState() string
+}
+
+func isPermissionDenied(err error) bool {
+	var sqlErr sqlStateError
+	if errors.As(err, &sqlErr) {
+		return sqlErr.SQLState() == "42501"
+	}
+	return strings.Contains(err.Error(), "42501")
+}
+
+func schemaExists(schema string) (bool, error) {
+	if db == nil {
+		return false, errors.New("database not initialized")
+	}
+	var count int64
+	query := `SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = ?`
+	if err := db.Raw(query, schema).Scan(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }

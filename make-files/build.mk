@@ -51,6 +51,7 @@ dist: build frontend-build ## 生成供 install/local 使用的目录结构
 			if [ -f config/$$f ]; then cp config/$$f $(DIST_DIR)/config/; fi; \
 		done; \
 	fi
+	@rm -f $(DIST_DIR)/config/host-values.yaml
 	@if [ -d "$(FRONTEND_OUTPUT)" ] && [ -n "$$(ls -A $(FRONTEND_OUTPUT) 2>/dev/null)" ]; then \
 			echo "复制前端构建产物 -> $(DIST_WEBADMIN_OUTPUT)"; \
 			mkdir -p $(DIST_WEBADMIN_OUTPUT); \
@@ -79,6 +80,7 @@ release: build frontend-build ## 生成 target/<version> 发布目录（包含�
 			if [ -f config/$$f ]; then cp config/$$f $(RELEASE_DIR)/config/; fi; \
 		done; \
 	fi
+	@rm -f $(RELEASE_DIR)/config/host-values.yaml
 	@mkdir -p $(RELEASE_WEBADMIN_DIR)
 	@cp -R $(FRONTEND_OUTPUT) $(RELEASE_WEBADMIN_OUTPUT)
 	@if [ -f README.md ]; then \
