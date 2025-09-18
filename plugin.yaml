@@ -10,7 +10,7 @@ runtime:
   kind: process
   entry: backend/bin/plugin
   env:
-    CONFIG_PATH: ./backend/etc # 告诉插件进程到何处加载 config.yaml
+    CONFIG_PATH: ${PX_PLUGIN_CONFIG_DIR:-./backend/etc} # 告诉插件进程到何处加载 config.yaml/host-values.yaml
     PX_BIND_ADDR: ${PX_BIND_ADDR:-:8091}
     PX_LOG_LEVEL: ${PX_LOG_LEVEL:-info}
     PX_DEV_MODE: ${PX_DEV_MODE:-0}

@@ -40,6 +40,12 @@ dist: build frontend-build ## 生成供 install/local 使用的目录结构
 	@mkdir -p $(DIST_BACKEND_BIN) $(DIST_WEBADMIN_DIR)
 	@cp plugin.yaml $(DIST_DIR)/
 	@cp $(BUILD_DIR)/plugin $(DIST_BACKEND_BIN)/
+	@if [ -d config ]; then \
+		mkdir -p $(DIST_DIR)/config; \
+		for f in schema.yaml values.example.yaml; do \
+			if [ -f config/$$f ]; then cp config/$$f $(DIST_DIR)/config/; fi; \
+		done; \
+	fi
 	@if [ -d "$(FRONTEND_OUTPUT)" ] && [ -n "$$(ls -A $(FRONTEND_OUTPUT) 2>/dev/null)" ]; then \
 			echo "复制前端构建产物 -> $(DIST_WEBADMIN_OUTPUT)"; \
 			mkdir -p $(DIST_WEBADMIN_OUTPUT); \
@@ -59,6 +65,12 @@ release: build frontend-build ## 生成 target/<version> 发布目录（包含�
 	@mkdir -p $(RELEASE_BACKEND_BIN)
 	@cp plugin.yaml $(RELEASE_DIR)/
 	@cp $(BUILD_DIR)/plugin $(RELEASE_BACKEND_BIN)/
+	@if [ -d config ]; then \
+		mkdir -p $(RELEASE_DIR)/config; \
+		for f in schema.yaml values.example.yaml; do \
+			if [ -f config/$$f ]; then cp config/$$f $(RELEASE_DIR)/config/; fi; \
+		done; \
+	fi
 	@mkdir -p $(RELEASE_WEBADMIN_DIR)
 	@cp -R $(FRONTEND_OUTPUT) $(RELEASE_WEBADMIN_OUTPUT)
 	@if [ -f README.md ]; then \

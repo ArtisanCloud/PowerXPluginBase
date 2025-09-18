@@ -77,8 +77,8 @@ psql --version  # PostgreSQL
 ### 2. 配置环境
 
 ```bash
-cp etc/config.example.yaml etc/config.yaml
-
+cp backend/etc/config.example.yaml backend/etc/config.yaml
+# 或者模拟宿主行为：cp config/values.example.yaml config/host-values.yaml
 ```
 
 ### 3. 安装依赖

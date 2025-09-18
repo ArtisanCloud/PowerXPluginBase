@@ -1,0 +1,227 @@
+# Base 插件配置模式，供 PowerX 宿主在安装阶段生成 host-values.yaml 使用。
+# - type/properties 均遵循 JSON Schema 约定；description 均为中文说明。
+# - 宿主在生成配置时可读取 default 字段作为缺省值，再结合当前 PowerX 环境覆盖。
+# - 插件本地调试时，可将 config/values.example.yaml 复制到 backend/etc/config.yaml。
+type: object
+title: Base 插件配置
+description: >-
+  描述运行 Base 插件所需的核心配置。宿主安装器应根据实际环境生成
+  config/host-values.yaml 并在启用插件前注入。
+additionalProperties: false
+properties:
+  server:
+    type: object
+    description: "插件 HTTP 服务相关配置，端口会由宿主通过 PX_BIND_ADDR 环境变量覆盖。"
+    additionalProperties: false
+    properties:
+      bind_addr:
+        type: string
+        description: "HTTP 监听地址，仅本地调试时使用。"
+        default: ":8091"
+      api_prefix:
+        type: string
+        description: "对外暴露的 API 前缀，需与 plugin.yaml 的 endpoints.http_base_path 一致。"
+        default: "/api/v1"
+      log_level:
+        type: string
+        enum: [debug, info, warn, error]
+        description: "日志级别。宿主未覆盖时由插件默认值生效。"
+        default: info
+      dev_mode:
+        type: boolean
+        description: "是否启用开发模式，关闭鉴权等保护机制。"
+        default: false
+  database:
+    type: object
+    description: "插件业务数据库连接，由宿主分配 DSN 与 Schema。"
+    additionalProperties: false
+    required: [dsn]
+    properties:
+      dsn:
+        type: string
+        description: "PostgreSQL 连接串，建议使用 PowerX 统一管理的账号。"
+      schema:
+        type: string
+        description: "插件使用的 Schema 名称，宿主需在首次启用前创建。"
+        default: px_plugin_base
+  runtime:
+    type: object
+    description: "运行时控制项。宿主可按需开启自动迁移。"
+    additionalProperties: false
+    properties:
+      run_migrate:
+        type: boolean
+        description: "启用时会在启动阶段自动执行数据库迁移。"
+        default: false
+  context:
+    type: object
+    description: "PowerX 向插件下发的鉴权上下文配置。生产环境需至少配置 HMAC 或 JWT 其一。"
+    additionalProperties: false
+    properties:
+      hmac_secret:
+        type: string
+        description: "HMAC 签名密钥。若为空则按 JWT 模式配置。"
+      key_id:
+        type: string
+        description: "配合 HMAC 密钥的标识。"
+      jwks_url:
+        type: string
+        description: "JWT 模式下的 JWKS 地址。"
+      issuer:
+        type: string
+        description: "JWT 签发者。"
+      audience:
+        type: string
+        description: "JWT Audience，通常为 PowerX 服务。"
+      ttl:
+        type: string
+        description: "下发上下文的存活时间，例如 5m、15m。"
+        default: 5m
+  grpc_upstream:
+    type: object
+    description: "插件访问 PowerX 核心服务时使用的上游配置。"
+    additionalProperties: false
+    properties:
+      address:
+        type: string
+        description: "PowerX 网关或 gRPC 服务地址。"
+        default: localhost:9001
+      token:
+        type: string
+        description: "Capability Token，由宿主分配。"
+      tenant_id:
+        type: integer
+        description: "当前租户 ID。"
+        default: 1
+      use_tls:
+        type: boolean
+        description: "是否启用 TLS 连接。"
+        default: false
+      ca_cert:
+        type: string
+        description: "自定义根证书路径，仅在 use_tls=true 时需要。"
+      connect_mode:
+        type: string
+        enum: [eager, lazy]
+        description: "连接策略：eager 为启动即连，lazy 为首次调用再连。"
+        default: eager
+      optional:
+        type: boolean
+        description: "当为 true 时，连接失败不会阻止插件启动（开发模式使用）。"
+        default: false
+  grpc_server:
+    type: object
+    description: "插件自身暴露的 gRPC 服务配置。"
+    additionalProperties: false
+    properties:
+      enable:
+        type: boolean
+        description: "是否启用插件内部 gRPC 服务器。"
+        default: true
+      addr:
+        type: string
+        description: "监听地址，通常由宿主通过环境变量覆写。"
+        default: :9101
+      use_tls:
+        type: boolean
+        description: "是否使用 TLS。"
+        default: false
+      cert:
+        type: string
+        description: "TLS 证书路径。"
+      key:
+        type: string
+        description: "TLS 私钥路径。"
+  security:
+    type: object
+    description: "HTTP 层安全控制。"
+    additionalProperties: false
+    properties:
+      enable_cors:
+        type: boolean
+        description: "是否开启 CORS 支持。"
+        default: true
+      cors_origins:
+        type: array
+        description: "允许访问的来源列表。"
+        items:
+          type: string
+      rate_limit:
+        type: object
+        description: "简单的请求速率限制。"
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            description: "是否开启限流。"
+            default: true
+          requests_per_minute:
+            type: integer
+            description: "每分钟允许的请求数。"
+            default: 60
+  monitoring:
+    type: object
+    description: "监控与健康检查端点配置。"
+    additionalProperties: false
+    properties:
+      metrics:
+        type: object
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            description: "是否暴露 Prometheus 指标。"
+            default: false
+          path:
+            type: string
+            description: "指标端点路径。"
+            default: /metrics
+      health_check:
+        type: object
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            description: "是否启用内部健康检查。"
+            default: true
+          path:
+            type: string
+            description: "健康检查路径。"
+            default: /healthz
+  logging:
+    type: object
+    description: "日志输出配置。"
+    additionalProperties: false
+    properties:
+      level:
+        type: string
+        enum: [debug, info, warn, error]
+        description: "日志级别。"
+        default: info
+      format:
+        type: string
+        enum: [json, text]
+        description: "日志格式。"
+        default: json
+      output:
+        type: string
+        enum: [stdout, stderr, file]
+        description: "输出目标。"
+        default: stdout
+      file_path:
+        type: string
+        description: "当 output=file 时的日志文件路径。"
+      max_size:
+        type: integer
+        description: "单个日志文件的最大容量（MB）。"
+        default: 100
+      max_backups:
+        type: integer
+        description: "日志文件保留的备份数量。"
+        default: 3
+      max_age:
+        type: integer
+        description: "日志文件保留天数。"
+        default: 28
+required:
+  - database

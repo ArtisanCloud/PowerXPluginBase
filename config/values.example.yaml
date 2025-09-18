@@ -1,0 +1,62 @@
+# 宿主可参考此文件生成 config/host-values.yaml；本地调试可复制为 backend/etc/config.yaml。
+# 注意：示例中的账号、口令仅供开发使用，生产环境请由 PowerX 底座统一生成。
+server:
+  bind_addr: ":8091"
+  api_prefix: "/api/v1"
+  log_level: "debug"
+  dev_mode: true
+
+database:
+  dsn: "postgres://powerx:powerx@localhost:5432/powerx?sslmode=disable"
+  schema: "px_plugin_base"
+
+runtime:
+  run_migrate: true
+
+context:
+  hmac_secret: "dev-hmac-secret"
+  key_id: "dev"
+  jwks_url: ""
+  issuer: ""
+  audience: ""
+  ttl: "5m"
+
+grpc_upstream:
+  address: "localhost:9001"
+  token: ""
+  tenant_id: 1
+  use_tls: false
+  connect_mode: "lazy"
+  optional: true
+
+grpc_server:
+  enable: true
+  addr: ":9101"
+  use_tls: false
+  cert: ""
+  key: ""
+
+security:
+  enable_cors: true
+  cors_origins:
+    - "http://localhost:3036"
+    - "http://127.0.0.1:3036"
+  rate_limit:
+    enabled: false
+    requests_per_minute: 120
+
+monitoring:
+  metrics:
+    enabled: true
+    path: "/metrics"
+  health_check:
+    enabled: true
+    path: "/healthz"
+
+logging:
+  level: "debug"
+  format: "text"
+  output: "stdout"
+  max_size: 50
+  max_backups: 3
+  max_age: 14
