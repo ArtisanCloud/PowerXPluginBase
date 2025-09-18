@@ -87,3 +87,5 @@ __debug*
 plugin-data/
 uploads/
 logs/
+
+dist/
