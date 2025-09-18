@@ -5,12 +5,14 @@ build: ## 构建后端二进制文件
 	@echo "构建后端二进制文件..."
 	@mkdir -p $(BUILD_DIR)
 	cd $(BACKEND_DIR) && go build -o bin/plugin ./cmd/plugin
+	cd $(BACKEND_DIR) && go build -o bin/migrate ./cmd/database
 
 .PHONY: build-linux
 build-linux: ## 构建 Linux 版本的后端二进制
 	@echo "构建 Linux 版本的后端二进制..."
 	@mkdir -p $(BUILD_DIR)
 	cd $(BACKEND_DIR) && GOOS=linux GOARCH=amd64 go build -o bin/plugin ./cmd/plugin
+	cd $(BACKEND_DIR) && GOOS=linux GOARCH=amd64 go build -o bin/migrate ./cmd/database
 
 .PHONY: frontend-build
 frontend-build: ## 构建 web-admin 前端产物
@@ -40,6 +42,9 @@ dist: build frontend-build ## 生成供 install/local 使用的目录结构
 	@mkdir -p $(DIST_BACKEND_BIN) $(DIST_WEBADMIN_DIR)
 	@cp plugin.yaml $(DIST_DIR)/
 	@cp $(BUILD_DIR)/plugin $(DIST_BACKEND_BIN)/
+	@if [ -f $(BUILD_DIR)/migrate ]; then \
+		cp $(BUILD_DIR)/migrate $(DIST_BACKEND_BIN)/; \
+	fi
 	@if [ -d config ]; then \
 		mkdir -p $(DIST_DIR)/config; \
 		for f in schema.yaml values.example.yaml; do \
@@ -65,6 +70,9 @@ release: build frontend-build ## 生成 target/<version> 发布目录（包含�
 	@mkdir -p $(RELEASE_BACKEND_BIN)
 	@cp plugin.yaml $(RELEASE_DIR)/
 	@cp $(BUILD_DIR)/plugin $(RELEASE_BACKEND_BIN)/
+	@if [ -f $(BUILD_DIR)/migrate ]; then \
+		cp $(BUILD_DIR)/migrate $(RELEASE_BACKEND_BIN)/; \
+	fi
 	@if [ -d config ]; then \
 		mkdir -p $(RELEASE_DIR)/config; \
 		for f in schema.yaml values.example.yaml; do \

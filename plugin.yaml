@@ -52,6 +52,42 @@ frontend:
             icon: i-heroicons-list-bullet
             path: /plugins/base/notes
             order: 2
+      - id: base.reports
+        title: menu.base.reports
+        icon: i-heroicons-chart-bar
+        path: /plugins/base/reports
+        order: 30
+        slot: group.plugins
+        required_policies: [base:report:read]
+        children:
+          - id: base.reports.daily
+            title: menu.base.reports.daily
+            icon: i-heroicons-calendar-days
+            path: /plugins/base/reports/daily
+            order: 1
+          - id: base.reports.monthly
+            title: menu.base.reports.monthly
+            icon: i-heroicons-calendar
+            path: /plugins/base/reports/monthly
+            order: 2
+      - id: base.settings
+        title: menu.base.settings
+        icon: i-heroicons-cog-6-tooth
+        path: /plugins/base/settings
+        order: 40
+        slot: group.plugins
+        required_policies: [base:note:read]
+        children:
+          - id: base.settings.preferences
+            title: menu.base.settings.preferences
+            icon: i-heroicons-adjustments-horizontal
+            path: /plugins/base/settings/preferences
+            order: 1
+          - id: base.settings.access
+            title: menu.base.settings.access
+            icon: i-heroicons-users
+            path: /plugins/base/settings/access
+            order: 2
 
 routes:
   basePath: /api/v1
@@ -89,6 +125,42 @@ menus:
         title: menu.base.notes
         icon: i-heroicons-list-bullet
         path: /plugins/base/notes
+        order: 2
+  - id: plugins.base.reports
+    title: menu.base.reports
+    icon: i-heroicons-chart-bar
+    path: /plugins/base/reports
+    order: 30
+    slot: group.plugins
+    required_policies: [base:report:read]
+    children:
+      - id: plugins.base.reports.daily
+        title: menu.base.reports.daily
+        icon: i-heroicons-calendar-days
+        path: /plugins/base/reports/daily
+        order: 1
+      - id: plugins.base.reports.monthly
+        title: menu.base.reports.monthly
+        icon: i-heroicons-calendar
+        path: /plugins/base/reports/monthly
+        order: 2
+  - id: plugins.base.settings
+    title: menu.base.settings
+    icon: i-heroicons-cog-6-tooth
+    path: /plugins/base/settings
+    order: 40
+    slot: group.plugins
+    required_policies: [base:note:read]
+    children:
+      - id: plugins.base.settings.preferences
+        title: menu.base.settings.preferences
+        icon: i-heroicons-adjustments-horizontal
+        path: /plugins/base/settings/preferences
+        order: 1
+      - id: plugins.base.settings.access
+        title: menu.base.settings.access
+        icon: i-heroicons-users
+        path: /plugins/base/settings/access
         order: 2
 
 agents:
@@ -195,6 +267,14 @@ tools:
                 format: date-time
         pagination:
           type: object
+
+migrations:
+  driver: go
+  entry: backend/bin/migrate
+  args: ["setup"]
+  workdir: ./backend
+  once: true
+  timeout: 60s
 
 assets:
   public_dir: ./web-admin/public

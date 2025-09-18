@@ -10,12 +10,12 @@ migrate: ## 运行数据库迁移（通过主进程）
 .PHONY: migrate-cmd
 migrate-cmd: ## 使用独立迁移命令
 	@echo "使用独立迁移命令..."
-	cd $(BACKEND_DIR) && go run ./cmd/database/migrate
+	cd $(BACKEND_DIR) && go run ./cmd/database/main.go migrate
 
 .PHONY: seed
 seed: ## 运行数据种子脚本
 	@echo "运行数据种子..."
-	cd $(BACKEND_DIR) && go run ./cmd/database/seed
+	cd $(BACKEND_DIR) && go run ./cmd/database/main.go seed
 
 .PHONY: reset-db
 reset-db: ## 重置数据库（危险操作）
@@ -23,7 +23,7 @@ reset-db: ## 重置数据库（危险操作）
 	@read -p "确定要继续吗？[y/N] " confirm; \
 	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
 		echo "重置数据库..."; \
-		cd $(BACKEND_DIR) && PX_RESET_DB=true go run ./cmd/database/migrate; \
+		cd $(BACKEND_DIR) && go run ./cmd/database/main.go refresh; \
 	else \
 		echo "操作已取消"; \
 	fi

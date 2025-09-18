@@ -48,6 +48,17 @@ func main() {
 		}
 		fmt.Println("seed ok")
 
+	case "setup":
+		if err := migrate.MigratePluginModels(ctx, db); err != nil {
+			log.Fatal("migrate failed:", err)
+		}
+		fmt.Println("migrate ok")
+
+		if err := seed.SeedPluginData(ctx, db); err != nil {
+			log.Fatal("seed failed:", err)
+		}
+		fmt.Println("seed ok")
+
 	case "refresh":
 		// 先 drop database（或 drop all tables）
 		if err := migrate.ResetDatabase(ctx, db, cfg.Database); err != nil {
