@@ -1,79 +1,139 @@
-id: com.powerx.plugins.note
-name: Note Note Plugin
+# plugin.yaml 是 PowerX 插件管理器读取的 Manifest，声明插件固定的元信息与能力。
+# 请勿在此写入环境相关的地址、口令等敏感配置；推荐放到 backend/etc/config.yaml 或部署环境变量中。
+id: com.powerx.plugins.base
+name: Base Note Plugin
 version: 0.1.0
-description: A Note management plugin for PowerX
+description: "PowerX 基础任务管理插件，提供任务、权限与 Agent 能力"
+corex_version: ">=0.6.0"
 
-# 后端配置
+runtime:
+  kind: process
+  entry: backend/bin/plugin
+  env:
+    CONFIG_PATH: ./backend/etc # 告诉插件进程到何处加载 config.yaml
+    PX_BIND_ADDR: ${PX_BIND_ADDR:-:8091}
+    PX_LOG_LEVEL: ${PX_LOG_LEVEL:-info}
+    PX_DEV_MODE: ${PX_DEV_MODE:-0}
+  health:
+    http: /healthz
+    interval: 10s
+    timeout: 3s
+
 backend:
   entry: backend/bin/plugin
   port: 8091
   health: /healthz
 
-# 路由配置
+endpoints:
+  http_base_path: /api/v1
+  grpc:
+    enabled: false
+
+frontend:
+  admin:
+    kind: static
+    static_dir: web-admin/.output/public
+    menus:
+      - id: base
+        title: menu.base
+        icon: i-heroicons-clipboard-document-check
+        path: /plugins/base
+        order: 20
+        slot: group.plugins
+        required_policies: [base:note:read]
+        children:
+          - id: base.dashboard
+            title: menu.base.dashboard
+            icon: i-heroicons-squares-2x2
+            path: /plugins/base/dashboard
+            order: 1
+          - id: base.notes
+            title: menu.base.notes
+            icon: i-heroicons-list-bullet
+            path: /plugins/base/notes
+            order: 2
+
 routes:
-  basePath: /v1 # 插件自身 API 前缀
-  adminManifest: /api/v1/admin/manifest # 管理端清单接口
-  rbac: /api/v1/admin/rbac # RBAC 信息接口
+  basePath: /api/v1
+  adminManifest: /api/v1/admin/manifest
+  rbac: /api/v1/admin/rbac
 
-# 权限定义
+rbac:
+  resources:
+    - resource: base:note
+      actions: [read, create, update, delete]
+    - resource: base:report
+      actions: [read]
+
 permissions:
-  - resource: note:note
+  - resource: base:note
     actions: [read, create, update, delete]
+  - resource: base:report
+    actions: [read]
 
-# 菜单定义
 menus:
-  - id: "note"
-    title: "menu.note"
-    icon: "i-heroicons-clipboard-document-check"
-    path: "/plugins/note"
+  - id: plugins.base
+    title: menu.base
+    icon: i-heroicons-clipboard-document-check
+    path: /plugins/base
     order: 20
+    slot: group.plugins
+    required_policies: [base:note:read]
     children:
-      - id: "note.notes"
-        title: "menu.note.notes"
-        icon: "i-heroicons-list-bullet"
-        path: "/plugins/note/notes"
+      - id: plugins.base.dashboard
+        title: menu.base.dashboard
+        icon: i-heroicons-squares-2x2
+        path: /plugins/base/dashboard
         order: 1
-      # sprint 菜单已移除
+      - id: plugins.base.notes
+        title: menu.base.notes
+        icon: i-heroicons-list-bullet
+        path: /plugins/base/notes
+        order: 2
 
-# 静态资源
-assets:
-  webAdminPath: web-admin/.output # 前端产物路径（可选）
-
-# Agent 能力注册
 agents:
-  - id: "note.assistant"
-    plugin_id: "com.powerx.plugins.note"
-    name: "Note 助理"
-    description: "创建/分配任务，团队协作"
-    default_tools: ["note.note.create", "note.note.query"]
+  - id: base.assistant
+    plugin_id: com.powerx.plugins.base
+    name: Base 助理
+    description: "智能任务助手，协助创建与查询 Note"
+    default_tools:
+      - base.note.create
+      - base.note.query
 
-# 工具注册
+# 工具清单侧重声明接口契约，真实业务参数通过 config.yaml 或环境变量注入
+# 例如 PX_PLUGIN_HTTP_BASE 可在运行时指向宿主反代出来的前缀。
 tools:
-  - id: "note.note.create"
-    plugin_id: "com.powerx.plugins.note"
-    name: "创建任务"
-    description: "创建一个新的 Note 任务"
-    transport: "http"
-    endpoint: "/api/v1/notes"
-    method: "POST"
-    rbac_resource: "note:note"
+  - id: base.note.create
+    plugin_id: com.powerx.plugins.base
+    name: 创建任务
+    description: 创建一个新的 Base 任务
+    transport: http
+    endpoint: ${PX_PLUGIN_HTTP_BASE:-/api/v1}/notes
+    method: POST
+    rbac_resource: base:note
     input_schema:
       type: object
       properties:
         title:
           type: string
-          description: "任务标题"
+          description: 任务标题
         description:
           type: string
-          description: "任务描述"
+          description: 任务描述
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+          default: medium
+          description: 任务优先级
         assignee:
           type: integer
-          description: "分配给的用户ID"
-        status:
-          type: string
-          enum: ["todo", "in_progress", "done"]
-          description: "任务状态"
-      required: ["title"]
+          description: 分配的用户 ID
+        estimate:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: 估算点数
+      required: [title]
     output_schema:
       type: object
       properties:
@@ -87,23 +147,24 @@ tools:
           type: string
           format: date-time
 
-  - id: "note.note.query"
-    plugin_id: "com.powerx.plugins.note"
-    name: "查询任务"
-    description: "查询 Note 任务列表"
-    transport: "http"
-    endpoint: "/api/v1/notes"
-    method: "GET"
-    rbac_resource: "note:note"
+  - id: base.note.query
+    plugin_id: com.powerx.plugins.base
+    name: 查询任务
+    description: 查询 Base 任务列表
+    transport: http
+    endpoint: ${PX_PLUGIN_HTTP_BASE:-/api/v1}/notes
+    method: GET
+    rbac_resource: base:note
     input_schema:
       type: object
       properties:
         status:
           type: string
-          description: "按状态过滤"
+          enum: [todo, in_progress, done]
+          description: 按状态过滤
         assignee:
           type: integer
-          description: "按分配人过滤"
+          description: 按分配人过滤
         page:
           type: integer
           minimum: 1
@@ -131,7 +192,24 @@ tools:
                 type: integer
               created_at:
                 type: string
+                format: date-time
         pagination:
           type: object
 
-# 工作流注册（已移除与 Sprint 相关的工作流）
+assets:
+  public_dir: ./web-admin/public
+  webAdminPath: ./web-admin/.output
+
+checksums:
+  package_sha256: "" # 打包后由 CI/发布流程写入
+
+signature:
+  enabled: false
+
+metadata:
+  author: PowerX Team
+  category: productivity
+  tags: [base, note, task-management]
+  icon: i-heroicons-clipboard-document
+  homepage: https://powerx.dev/plugins/base
+  license: MIT

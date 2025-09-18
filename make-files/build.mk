@@ -34,18 +34,19 @@ release-clean: ## 清理 target 目录
 	rm -rf $(RELEASE_ROOT)
 
 .PHONY: dist
-dist: build ## 生成供 install/local 使用的目录结构
+dist: build frontend-build ## 生成供 install/local 使用的目录结构
 	@echo "准备目录模式安装包..."
 	@rm -rf $(DIST_DIR)
-	@mkdir -p $(DIST_BACKEND_BIN)
+	@mkdir -p $(DIST_BACKEND_BIN) $(DIST_WEBADMIN_DIR)
 	@cp plugin.yaml $(DIST_DIR)/
 	@cp $(BUILD_DIR)/plugin $(DIST_BACKEND_BIN)/
-	@if [ -d "$(FRONTEND_OUTPUT)" ]; then \
+	@if [ -d "$(FRONTEND_OUTPUT)" ] && [ -n "$$(ls -A $(FRONTEND_OUTPUT) 2>/dev/null)" ]; then \
 			echo "复制前端构建产物 -> $(DIST_WEBADMIN_OUTPUT)"; \
-			mkdir -p $(DIST_WEBADMIN_DIR); \
-			cp -R $(FRONTEND_OUTPUT) $(DIST_WEBADMIN_OUTPUT); \
+			mkdir -p $(DIST_WEBADMIN_OUTPUT); \
+			cp -R $(FRONTEND_OUTPUT)/. $(DIST_WEBADMIN_OUTPUT)/; \
 	else \
-			echo "提示: 未找到 $(FRONTEND_OUTPUT)，请先执行 make frontend-build"; \
+			echo "提示: 未找到或前端构建目录为空 ($(FRONTEND_OUTPUT))"; \
+			echo "     请先执行 make frontend-build"; \
 		fi
 	@if [ -f README.md ]; then \
 			cp README.md $(DIST_DIR)/; \
