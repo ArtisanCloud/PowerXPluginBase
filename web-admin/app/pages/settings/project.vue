@@ -23,11 +23,11 @@
         class="space-y-4"
         @submit="saveProjectSettings"
       >
-        <UFormGroup :label="$t('settings.projectName')" name="name">
+        <UFormField :label="$t('settings.projectName')" name="name">
           <UInput v-model="projectForm.name" placeholder="输入项目名称" />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup
+        <UFormField
           :label="$t('settings.projectDescription')"
           name="description"
         >
@@ -36,19 +36,19 @@
             :placeholder="$t('settings.projectDescriptionPlaceholder')"
             rows="3"
           />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup :label="$t('settings.projectKey')" name="key">
+        <UFormField :label="$t('settings.projectKey')" name="key">
           <UInput v-model="projectForm.key" placeholder="PROJECT_KEY" />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup :label="$t('settings.projectLead')" name="lead">
+        <UFormField :label="$t('settings.projectLead')" name="lead">
           <USelectMenu
             v-model="projectForm.lead"
             :options="teamMembers"
             :placeholder="$t('settings.selectProjectLead')"
           />
-        </UFormGroup>
+        </UFormField>
 
         <div class="flex justify-end">
           <UButton type="submit" color="primary">
@@ -67,7 +67,7 @@
       </template>
 
       <UForm :state="sprintForm" class="space-y-4" @submit="saveSprintSettings">
-        <UFormGroup
+        <UFormField
           :label="$t('settings.defaultSprintLength')"
           name="defaultLength"
         >
@@ -76,22 +76,22 @@
             :options="sprintLengthOptions"
             :placeholder="$t('settings.selectSprintLength')"
           />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup :label="$t('settings.sprintStartDay')" name="startDay">
+        <UFormField :label="$t('settings.sprintStartDay')" name="startDay">
           <USelectMenu
             v-model="sprintForm.startDay"
             :options="weekDayOptions"
             :placeholder="$t('settings.selectStartDay')"
           />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup :label="$t('settings.autoCreateNext')" name="autoCreate">
+        <UFormField :label="$t('settings.autoCreateNext')" name="autoCreate">
           <UToggle v-model="sprintForm.autoCreate" />
           <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">
             {{ $t("settings.autoCreateDescription") }}
           </span>
-        </UFormGroup>
+        </UFormField>
 
         <div class="flex justify-end">
           <UButton type="submit" color="primary">

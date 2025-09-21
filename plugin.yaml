@@ -33,60 +33,114 @@ frontend:
   admin:
     kind: static
     static_dir: web-admin/.output/public
+    i18n:
+      dir: web-admin/i18n
+      format: i18next
+      default_namespace: menus
+      namespaces:
+        - menus
+      locales:
+        - zh-CN
+        - en
     menus:
       - id: base
-        title: menu.base
+        title: 基础插件
+        title_i18n:
+          namespace: menus
+          key: menu.base.title
+          default: Base Plugin
         icon: i-heroicons-clipboard-document-check
         path: /plugins/base
+        route: plugins/base
         order: 20
         slot: group.plugins
         required_policies: [base:note:read]
         children:
           - id: base.dashboard
-            title: menu.base.dashboard
+            title: 仪表盘
+            title_i18n:
+              namespace: menus
+              key: menu.base.dashboard
+              default: Dashboard
             icon: i-heroicons-squares-2x2
             path: /plugins/base/dashboard
+            route: plugins/base/dashboard
             order: 1
           - id: base.notes
-            title: menu.base.notes
+            title: 笔记
+            title_i18n:
+              namespace: menus
+              key: menu.base.notes
+              default: Notes
             icon: i-heroicons-list-bullet
             path: /plugins/base/notes
+            route: plugins/base/notes
             order: 2
       - id: base.reports
-        title: menu.base.reports
+        title: 报表
+        title_i18n:
+          namespace: menus
+          key: menu.base.reports.title
+          default: Reports
         icon: i-heroicons-chart-bar
         path: /plugins/base/reports
+        route: plugins/base/reports
         order: 30
         slot: group.plugins
         required_policies: [base:report:read]
         children:
           - id: base.reports.daily
-            title: menu.base.reports.daily
+            title: 日报表
+            title_i18n:
+              namespace: menus
+              key: menu.base.reports.daily
+              default: Daily Report
             icon: i-heroicons-calendar-days
             path: /plugins/base/reports/daily
+            route: plugins/base/reports/daily
             order: 1
           - id: base.reports.monthly
-            title: menu.base.reports.monthly
+            title: 月报表
+            title_i18n:
+              namespace: menus
+              key: menu.base.reports.monthly
+              default: Monthly Report
             icon: i-heroicons-calendar
             path: /plugins/base/reports/monthly
+            route: plugins/base/reports/monthly
             order: 2
       - id: base.settings
-        title: menu.base.settings
+        title: 设置
+        title_i18n:
+          namespace: menus
+          key: menu.base.settings.title
+          default: Settings
         icon: i-heroicons-cog-6-tooth
         path: /plugins/base/settings
+        route: plugins/base/settings
         order: 40
         slot: group.plugins
         required_policies: [base:note:read]
         children:
           - id: base.settings.preferences
-            title: menu.base.settings.preferences
+            title: 偏好设置
+            title_i18n:
+              namespace: menus
+              key: menu.base.settings.preferences
+              default: Preferences
             icon: i-heroicons-adjustments-horizontal
             path: /plugins/base/settings/preferences
+            route: plugins/base/settings/preferences
             order: 1
           - id: base.settings.access
-            title: menu.base.settings.access
+            title: 访问控制
+            title_i18n:
+              namespace: menus
+              key: menu.base.settings.access
+              default: Access Control
             icon: i-heroicons-users
             path: /plugins/base/settings/access
+            route: plugins/base/settings/access
             order: 2
 
 routes:
@@ -109,58 +163,103 @@ permissions:
 
 menus:
   - id: plugins.base
-    title: menu.base
+    title: 基础插件
+    title_i18n:
+      namespace: menus
+      key: menu.base.title
+      default: Base Plugin
     icon: i-heroicons-clipboard-document-check
     path: /plugins/base
+    route: plugins/base
     order: 20
     slot: group.plugins
     required_policies: [base:note:read]
     children:
       - id: plugins.base.dashboard
-        title: menu.base.dashboard
+        title: 仪表盘
+        title_i18n:
+          namespace: menus
+          key: menu.base.dashboard
+          default: Dashboard
         icon: i-heroicons-squares-2x2
         path: /plugins/base/dashboard
+        route: plugins/base/dashboard
         order: 1
       - id: plugins.base.notes
-        title: menu.base.notes
+        title: 笔记
+        title_i18n:
+          namespace: menus
+          key: menu.base.notes
+          default: Notes
         icon: i-heroicons-list-bullet
         path: /plugins/base/notes
+        route: plugins/base/notes
         order: 2
   - id: plugins.base.reports
-    title: menu.base.reports
+    title: 报表
+    title_i18n:
+      namespace: menus
+      key: menu.base.reports.title
+      default: Reports
     icon: i-heroicons-chart-bar
     path: /plugins/base/reports
+    route: plugins/base/reports
     order: 30
     slot: group.plugins
     required_policies: [base:report:read]
     children:
       - id: plugins.base.reports.daily
-        title: menu.base.reports.daily
+        title: 日报表
+        title_i18n:
+          namespace: menus
+          key: menu.base.reports.daily
+          default: Daily Report
         icon: i-heroicons-calendar-days
         path: /plugins/base/reports/daily
+        route: plugins/base/reports/daily
         order: 1
       - id: plugins.base.reports.monthly
-        title: menu.base.reports.monthly
+        title: 月报表
+        title_i18n:
+          namespace: menus
+          key: menu.base.reports.monthly
+          default: Monthly Report
         icon: i-heroicons-calendar
         path: /plugins/base/reports/monthly
+        route: plugins/base/reports/monthly
         order: 2
   - id: plugins.base.settings
-    title: menu.base.settings
+    title: 设置
+    title_i18n:
+      namespace: menus
+      key: menu.base.settings.title
+      default: Settings
     icon: i-heroicons-cog-6-tooth
     path: /plugins/base/settings
+    route: plugins/base/settings
     order: 40
     slot: group.plugins
     required_policies: [base:note:read]
     children:
       - id: plugins.base.settings.preferences
-        title: menu.base.settings.preferences
+        title: 偏好设置
+        title_i18n:
+          namespace: menus
+          key: menu.base.settings.preferences
+          default: Preferences
         icon: i-heroicons-adjustments-horizontal
         path: /plugins/base/settings/preferences
+        route: plugins/base/settings/preferences
         order: 1
       - id: plugins.base.settings.access
-        title: menu.base.settings.access
+        title: 访问控制
+        title_i18n:
+          namespace: menus
+          key: menu.base.settings.access
+          default: Access Control
         icon: i-heroicons-users
         path: /plugins/base/settings/access
+        route: plugins/base/settings/access
         order: 2
 
 agents:

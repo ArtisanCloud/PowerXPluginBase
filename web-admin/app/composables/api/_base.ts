@@ -6,9 +6,16 @@ export function resolveApiBase(pathname?: string): string {
     (typeof window !== "undefined" ? window.location.pathname : "") ??
     "";
 
-  // 识别 PowerX：/_p/<plugin-id>/admin/...
-  const m = p.match(/^\/_p\/([^/]+)\/admin(?:\/|$)/);
-  if (m && m[1]) return `/_p/${m[1]}/api/v1`;
+  // 识别 PowerX：支持 `/<locale>/_p/<plugin-id>/admin/...`
+  const segments = p.split("/").filter(Boolean);
+  const idx = segments.indexOf("_p");
+  if (idx >= 0) {
+    const pluginId = segments[idx + 1];
+    const scope = segments[idx + 2];
+    if (pluginId && scope === "admin") {
+      return `/_p/${pluginId}/api/v1`;
+    }
+  }
 
   // 兜底：runtimeConfig.public.apiBaseUrl
   const cfg =

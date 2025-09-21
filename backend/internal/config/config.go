@@ -195,10 +195,15 @@ func Load() (*Config, error) {
 		logrus.WithError(err).Warn("Failed to load YAML config, using defaults only")
 	}
 
-	// 不再从环境变量覆盖配置
+	// 宿主注入的环境变量优先级最高，用于覆盖敏感配置（例如数据库凭据）
+	loadEnvConfig(cfg)
+
+	// 统一归一化配置值，避免大小写/空白差异导致校验失败
+	normalizeConfig(cfg)
 
 	// 同步向后兼容字段
 	syncBackwardCompatibility(cfg)
+	overrideBindAddrFromEnv(cfg)
 
 	// 验证配置
 	if err := cfg.Validate(); err != nil {
@@ -325,15 +330,18 @@ func loadYAMLConfig(cfg *Config) error {
 func resolveConfigCandidates() []string {
 	var candidates []string
 
-	if configPath := os.Getenv("CONFIG_PATH"); configPath != "" {
-		ext := strings.ToLower(filepath.Ext(configPath))
-		if ext == ".yaml" || ext == ".yml" {
-			candidates = append(candidates, configPath)
-		} else {
-			candidates = append(candidates,
-				filepath.Join(configPath, "host-values.yaml"),
-				filepath.Join(configPath, "config.yaml"),
-			)
+	if rawConfigPath := os.Getenv("CONFIG_PATH"); rawConfigPath != "" {
+		configPath := resolveConfigValue(rawConfigPath)
+		if configPath != "" {
+			ext := strings.ToLower(filepath.Ext(configPath))
+			if ext == ".yaml" || ext == ".yml" {
+				candidates = append(candidates, configPath)
+			} else {
+				candidates = append(candidates,
+					filepath.Join(configPath, "host-values.yaml"),
+					filepath.Join(configPath, "config.yaml"),
+				)
+			}
 		}
 	}
 
@@ -367,110 +375,111 @@ func uniqueNonEmptyStrings(values []string) []string {
 	return result
 }
 
-// loadEnvConfig 从环境变量加载配置（已弃用，不再调用）
+// loadEnvConfig 从环境变量加载配置，作为 YAML 的覆盖层
 func loadEnvConfig(cfg *Config) {
 	// 服务配置
-	if addr := os.Getenv("PX_BIND_ADDR"); addr != "" {
+	if addr := resolveConfigValue(os.Getenv("PX_BIND_ADDR")); addr != "" {
 		cfg.Server.BindAddr = addr
 	}
-	if level := os.Getenv("PX_LOG_LEVEL"); level != "" {
-		cfg.Server.LogLevel = level
-		cfg.Logging.Level = level
+	if level := resolveConfigValue(os.Getenv("PX_LOG_LEVEL")); level != "" {
+		normalized := strings.ToLower(level)
+		cfg.Server.LogLevel = normalized
+		cfg.Logging.Level = normalized
 	}
-	if devMode := os.Getenv("PX_DEV_MODE"); devMode != "" {
-		cfg.Server.DevMode = (devMode == "1" || devMode == "true")
+	if devMode := resolveConfigValue(os.Getenv("PX_DEV_MODE")); devMode != "" {
+		cfg.Server.DevMode = (devMode == "1" || strings.EqualFold(devMode, "true"))
 	}
-	if sec := os.Getenv("PX_SERVER_SECRET_KEY"); sec != "" {
+	if sec := resolveConfigValue(os.Getenv("PX_SERVER_SECRET_KEY")); sec != "" {
 		cfg.Server.SecretKey = sec
 	}
 
 	// 数据库配置
-	if dsn := os.Getenv("PX_DB_DSN"); dsn != "" {
+	if dsn := resolveConfigValue(os.Getenv("PX_DB_DSN")); dsn != "" {
 		cfg.Database.DSN = dsn
 	}
-	if schema := os.Getenv("PX_DB_SCHEMA"); schema != "" {
+	if schema := resolveConfigValue(os.Getenv("PX_DB_SCHEMA")); schema != "" {
 		cfg.Database.Schema = schema
 	}
 
 	// 运行时配置
-	if runMigrate := os.Getenv("PX_RUN_MIGRATE"); runMigrate == "true" {
+	if runMigrate := resolveConfigValue(os.Getenv("PX_RUN_MIGRATE")); strings.EqualFold(runMigrate, "true") {
 		cfg.Runtime.RunMigrate = true
 	}
 
 	// 上下文配置
-	if hmacSecret := os.Getenv("PLUGIN_CTX_HMAC_SECRET"); hmacSecret != "" {
+	if hmacSecret := resolveConfigValue(os.Getenv("PLUGIN_CTX_HMAC_SECRET")); hmacSecret != "" {
 		cfg.Context.HMACSecret = hmacSecret
 	}
-	if keyID := os.Getenv("PLUGIN_CTX_KID"); keyID != "" {
+	if keyID := resolveConfigValue(os.Getenv("PLUGIN_CTX_KID")); keyID != "" {
 		cfg.Context.KeyID = keyID
 	}
-	if jwksURL := os.Getenv("PX_CTX_JWKS_URL"); jwksURL != "" {
+	if jwksURL := resolveConfigValue(os.Getenv("PX_CTX_JWKS_URL")); jwksURL != "" {
 		cfg.Context.JWKSURL = jwksURL
 	}
-	if issuer := os.Getenv("PX_CTX_ISSUER"); issuer != "" {
+	if issuer := resolveConfigValue(os.Getenv("PX_CTX_ISSUER")); issuer != "" {
 		cfg.Context.Issuer = issuer
 	}
-	if audience := os.Getenv("PX_CTX_AUDIENCE"); audience != "" {
+	if audience := resolveConfigValue(os.Getenv("PX_CTX_AUDIENCE")); audience != "" {
 		cfg.Context.Audience = audience
 	}
-	if ttlStr := os.Getenv("PX_CTX_TTL"); ttlStr != "" {
+	if ttlStr := resolveConfigValue(os.Getenv("PX_CTX_TTL")); ttlStr != "" {
 		if ttl, err := time.ParseDuration(ttlStr); err == nil {
 			cfg.Context.TTL = ttl
 		}
 	}
 
 	// gRPC 上游配置
-	if grpcAddr := os.Getenv("PX_GRPC_UPSTREAM_ADDRESS"); grpcAddr != "" {
+	if grpcAddr := resolveConfigValue(os.Getenv("PX_GRPC_UPSTREAM_ADDRESS")); grpcAddr != "" {
 		cfg.GRPCUpstream.Address = grpcAddr
 	}
-	if grpcToken := os.Getenv("PX_GRPC_UPSTREAM_TOKEN"); grpcToken != "" {
+	if grpcToken := resolveConfigValue(os.Getenv("PX_GRPC_UPSTREAM_TOKEN")); grpcToken != "" {
 		cfg.GRPCUpstream.Token = grpcToken
 	}
-	if grpcTenantID := os.Getenv("PX_GRPC_UPSTREAM_TENANT_ID"); grpcTenantID != "" {
+	if grpcTenantID := resolveConfigValue(os.Getenv("PX_GRPC_UPSTREAM_TENANT_ID")); grpcTenantID != "" {
 		if tenantID, err := strconv.ParseInt(grpcTenantID, 10, 64); err == nil {
 			cfg.GRPCUpstream.TenantID = tenantID
 		}
 	}
-	if grpcUseTLS := os.Getenv("PX_GRPC_UPSTREAM_USE_TLS"); grpcUseTLS == "true" {
+	if grpcUseTLS := resolveConfigValue(os.Getenv("PX_GRPC_UPSTREAM_USE_TLS")); strings.EqualFold(grpcUseTLS, "true") {
 		cfg.GRPCUpstream.UseTLS = true
 	}
-	if grpcCACert := os.Getenv("PX_GRPC_UPSTREAM_CA_CERT"); grpcCACert != "" {
+	if grpcCACert := resolveConfigValue(os.Getenv("PX_GRPC_UPSTREAM_CA_CERT")); grpcCACert != "" {
 		cfg.GRPCUpstream.CACert = grpcCACert
 	}
 
 	// STS 相关环境变量（可选）
-	if v := os.Getenv("PX_STS_CLIENT_ID"); v != "" {
+	if v := resolveConfigValue(os.Getenv("PX_STS_CLIENT_ID")); v != "" {
 		cfg.GRPCUpstream.STSClientID = v
 	}
-	if v := os.Getenv("PX_STS_CLIENT_SECRET"); v != "" {
+	if v := resolveConfigValue(os.Getenv("PX_STS_CLIENT_SECRET")); v != "" {
 		cfg.GRPCUpstream.STSClientSecret = v
 	}
-	if v := os.Getenv("PX_STS_AUDIENCE"); v != "" {
+	if v := resolveConfigValue(os.Getenv("PX_STS_AUDIENCE")); v != "" {
 		cfg.GRPCUpstream.STSAudience = v
 	}
-	if v := os.Getenv("PX_STS_SCOPE"); v != "" {
+	if v := resolveConfigValue(os.Getenv("PX_STS_SCOPE")); v != "" {
 		cfg.GRPCUpstream.STSScope = v
 	}
-	if v := os.Getenv("PX_STS_TTL"); v != "" {
+	if v := resolveConfigValue(os.Getenv("PX_STS_TTL")); v != "" {
 		if d, err := time.ParseDuration(v); err == nil {
 			cfg.GRPCUpstream.STSTTL = d
 		}
 	}
 
 	// gRPC 服务器配置
-	if grpcServerEnable := os.Getenv("PX_GRPC_SERVER_ENABLE"); grpcServerEnable == "false" {
+	if grpcServerEnable := resolveConfigValue(os.Getenv("PX_GRPC_SERVER_ENABLE")); strings.EqualFold(grpcServerEnable, "false") {
 		cfg.GRPCServer.Enable = false
 	}
-	if grpcServerAddr := os.Getenv("PX_GRPC_SERVER_ADDR"); grpcServerAddr != "" {
+	if grpcServerAddr := resolveConfigValue(os.Getenv("PX_GRPC_SERVER_ADDR")); grpcServerAddr != "" {
 		cfg.GRPCServer.Addr = grpcServerAddr
 	}
-	if grpcServerUseTLS := os.Getenv("PX_GRPC_SERVER_USE_TLS"); grpcServerUseTLS == "true" {
+	if grpcServerUseTLS := resolveConfigValue(os.Getenv("PX_GRPC_SERVER_USE_TLS")); strings.EqualFold(grpcServerUseTLS, "true") {
 		cfg.GRPCServer.UseTLS = true
 	}
-	if grpcServerCert := os.Getenv("PX_GRPC_SERVER_CERT"); grpcServerCert != "" {
+	if grpcServerCert := resolveConfigValue(os.Getenv("PX_GRPC_SERVER_CERT")); grpcServerCert != "" {
 		cfg.GRPCServer.Cert = grpcServerCert
 	}
-	if grpcServerKey := os.Getenv("PX_GRPC_SERVER_KEY"); grpcServerKey != "" {
+	if grpcServerKey := resolveConfigValue(os.Getenv("PX_GRPC_SERVER_KEY")); grpcServerKey != "" {
 		cfg.GRPCServer.Key = grpcServerKey
 	}
 }
@@ -483,6 +492,97 @@ func syncBackwardCompatibility(cfg *Config) {
 	cfg.DBDSN = cfg.Database.DSN
 	cfg.DBSchema = cfg.Database.Schema
 	cfg.RunMigrate = cfg.Runtime.RunMigrate
+}
+
+func overrideBindAddrFromEnv(cfg *Config) {
+	if cfg == nil {
+		return
+	}
+	addr := strings.TrimSpace(os.Getenv("PX_BIND_ADDR"))
+	if addr == "" {
+		if port := strings.TrimSpace(os.Getenv("PORT")); port != "" {
+			if !strings.Contains(port, ":") {
+				addr = ":" + port
+			} else {
+				addr = port
+			}
+		}
+	}
+	if addr == "" {
+		return
+	}
+	if cfg.Server == nil {
+		cfg.Server = &ServerConfig{}
+	}
+	cfg.Server.BindAddr = addr
+	cfg.BindAddr = addr
+}
+
+func normalizeConfig(cfg *Config) {
+	if cfg == nil {
+		return
+	}
+	if cfg.Server != nil {
+		cfg.Server.BindAddr = resolveConfigValue(cfg.Server.BindAddr)
+		cfg.Server.LogLevel = strings.ToLower(resolveConfigValue(cfg.Server.LogLevel))
+	}
+	if cfg.Logging != nil {
+		cfg.Logging.Level = strings.ToLower(resolveConfigValue(cfg.Logging.Level))
+		cfg.Logging.Format = strings.ToLower(resolveConfigValue(cfg.Logging.Format))
+		cfg.Logging.Output = strings.ToLower(resolveConfigValue(cfg.Logging.Output))
+	}
+}
+
+func resolveConfigValue(value string) string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return ""
+	}
+	const maxDepth = 4
+	resolved, _ := resolvePlaceholder(trimmed, 0, maxDepth)
+	return resolved
+}
+
+func resolvePlaceholder(value string, depth, maxDepth int) (string, bool) {
+	if depth > maxDepth {
+		return value, false
+	}
+	if !strings.HasPrefix(value, "${") || !strings.HasSuffix(value, "}") {
+		return value, false
+	}
+	inner := strings.TrimSpace(strings.TrimSuffix(strings.TrimPrefix(value, "${"), "}"))
+	if inner == "" {
+		return "", true
+	}
+	varName := inner
+	defaultVal := ""
+	if idx := strings.Index(inner, ":-"); idx >= 0 {
+		varName = inner[:idx]
+		defaultVal = inner[idx+2:]
+	}
+	varName = strings.TrimSpace(varName)
+	if varName == "" {
+		return strings.TrimSpace(defaultVal), true
+	}
+	if envVal, ok := os.LookupEnv(varName); ok {
+		envVal = strings.TrimSpace(envVal)
+		if envVal != "" && envVal != value {
+			return resolveConfigValueWithDepth(envVal, depth+1, maxDepth), true
+		}
+	}
+	return strings.TrimSpace(defaultVal), true
+}
+
+func resolveConfigValueWithDepth(value string, depth, maxDepth int) string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return ""
+	}
+	if !strings.HasPrefix(trimmed, "${") || !strings.HasSuffix(trimmed, "}") {
+		return trimmed
+	}
+	resolved, _ := resolvePlaceholder(trimmed, depth, maxDepth)
+	return resolved
 }
 
 // GetString 获取字符串配置，支持默认值

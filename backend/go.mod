@@ -2,7 +2,7 @@ module github.com/ArtisanCloud/PowerXPlugin
 
 go 1.24.0
 
-replace github.com/ArtisanCloud/PowerX/api/grpc/gen/go => ../../../PowerX/api/grpc/gen/go
+//replace github.com/ArtisanCloud/PowerX/api/grpc/gen/go => ../../../PowerX/api/grpc/gen/go
 
 require (
 	github.com/gin-gonic/gin v1.10.1
@@ -17,7 +17,7 @@ require (
 )
 
 require (
-	github.com/ArtisanCloud/PowerX/api/grpc/gen/go v0.0.0-00010101000000-000000000000
+	github.com/ArtisanCloud/PowerX/api/grpc/gen/go v0.1.0-alpha
 	google.golang.org/protobuf v1.36.9
 )
 

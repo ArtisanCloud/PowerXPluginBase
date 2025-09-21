@@ -1,4 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const pluginId = "com.powerx.plugins.base";
+const pluginAdminBase = `/_p/${pluginId}/admin/`;
+const pluginApiBase = `/_p/${pluginId}/api/v1`;
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
@@ -27,12 +31,6 @@ export default defineNuxtConfig({
     "@nuxt/test-utils",
   ],
 
-  nitro: {
-    experimental: {
-      websocket: true, // ✅ 开启 Nitro 原生 WS
-    },
-  },
-
   // CSS configuration
   css: ["~/assets/css/main.css", "@/assets/scss/main.scss"],
 
@@ -56,14 +54,15 @@ export default defineNuxtConfig({
   // Base path for PowerX plugin integration
   app: {
     baseURL:
-      process.env.NODE_ENV === "production"
-        ? "/_p/com.powerx.plugins.note/admin/"
-        : "/",
+      process.env.NODE_ENV === "production" ? pluginAdminBase : "/",
     buildAssetsDir: "/assets/",
   },
 
   // Nitro build configuration for plugin deployment
   nitro: {
+    experimental: {
+      websocket: true, // ✅ 开启 Nitro 原生 WS
+    },
     output: {
       dir: ".output",
       publicDir: ".output/public",
@@ -75,7 +74,7 @@ export default defineNuxtConfig({
     public: {
       apiBaseUrl:
         process.env.NODE_ENV === "production"
-          ? "/_p/com.powerx.plugin.base/api/v1"
+          ? pluginApiBase
           : "/api/v1", // 改为相对路径，交给 vite 代理，避免 CORS
     },
   },
@@ -107,7 +106,8 @@ export default defineNuxtConfig({
       { code: "en", name: "English", file: "en.json" },
     ],
     langDir: "locales",
-    strategy: "no_prefix",
+    strategy: "prefix_except_default",
+    lazy: true,
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: "i18n_redirected",

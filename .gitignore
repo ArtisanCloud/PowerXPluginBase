@@ -90,3 +90,5 @@ uploads/
 logs/
 
 dist/
+.cache/
+.gocache/

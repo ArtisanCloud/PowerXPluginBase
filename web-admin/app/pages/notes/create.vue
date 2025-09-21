@@ -17,7 +17,7 @@
     </div>
 
     <!-- 创建表单 -->
-    <form @submit.prevent="handleSubmit" class="space-y-6">
+    <form class="space-y-6" @submit.prevent="handleSubmit">
       <!-- 基本信息 -->
       <UCard>
         <template #header>
@@ -28,36 +28,36 @@
 
         <div class="space-y-4">
           <!-- 标题 -->
-          <UFormGroup :label="$t('notes.noteTitle')" required>
+          <UFormField :label="$t('notes.noteTitle')" required>
             <UInput
               v-model="form.title"
               :placeholder="$t('notes.noteTitle')"
               size="lg"
               :error="errors.title"
             />
-          </UFormGroup>
+          </UFormField>
 
           <!-- 分类和优先级 -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <UFormGroup :label="$t('notes.category')">
+            <UFormField :label="$t('notes.category')">
               <USelect
                 v-model="form.category"
                 :options="categoryOptions"
                 placeholder="选择分类"
               />
-            </UFormGroup>
+            </UFormField>
 
-            <UFormGroup :label="$t('notes.priority')">
+            <UFormField :label="$t('notes.priority')">
               <USelect
                 v-model="form.priority"
                 :options="priorityOptions"
                 placeholder="选择优先级"
               />
-            </UFormGroup>
+            </UFormField>
           </div>
 
           <!-- 标签 -->
-          <UFormGroup :label="$t('notes.tags')">
+          <UFormField :label="$t('notes.tags')">
             <div class="space-y-2">
               <UInput
                 v-model="tagInput"
@@ -78,7 +78,7 @@
                 </UBadge>
               </div>
             </div>
-          </UFormGroup>
+          </UFormField>
         </div>
       </UCard>
 
@@ -140,21 +140,21 @@
         </template>
 
         <div class="space-y-4">
-          <UFormGroup label="状态">
+          <UFormField label="状态">
             <USelect
               v-model="form.status"
               :options="statusOptions"
               placeholder="选择状态"
             />
-          </UFormGroup>
+          </UFormField>
 
-          <UFormGroup label="发布时间">
+          <UFormField label="发布时间">
             <UInput
               v-model="form.publishAt"
               type="datetime-local"
               :min="new Date().toISOString().slice(0, 16)"
             />
-          </UFormGroup>
+          </UFormField>
         </div>
       </UCard>
 
@@ -167,7 +167,7 @@
         </UButton>
 
         <div class="flex items-center gap-3">
-          <UButton variant="outline" @click="saveDraft" :loading="saving">
+          <UButton variant="outline" :loading="saving" @click="saveDraft">
             保存草稿
           </UButton>
           <UButton type="submit" color="primary" :loading="publishing">

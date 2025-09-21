@@ -1,25 +1,25 @@
 package main
 
 import (
-    "context"
-    "errors"
-    "fmt"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/bootstrap"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/config"
-    dbpkg "github.com/ArtisanCloud/PowerXPlugin/internal/db"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/grpc/server"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/logger"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/router"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
-    agent "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent"
-    repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/plugin"
-    "net/http"
-    "os"
-    "os/signal"
-    "syscall"
-    "time"
+	"context"
+	"errors"
+	"fmt"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/bootstrap"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
+	dbpkg "github.com/ArtisanCloud/PowerXPlugin/internal/db"
+	repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/plugin"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/grpc/server"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/router"
+	agent "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-    "golang.org/x/sync/errgroup"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -58,12 +58,12 @@ func main() {
 	// 初始化 PowerX gRPC Client 客户端
 	pxc := bootstrap.BootstrapGRPCClient(ctx, cfg.GRPCUpstream)
 
-    deps := &app.Deps{
-        DB:           queryDB,
-        Ctx:          &ctx,
-        PowerXClient: pxc,
-        Config:       cfg,
-    }
+	deps := &app.Deps{
+		DB:           queryDB,
+		Ctx:          &ctx,
+		PowerXClient: pxc,
+		Config:       cfg,
+	}
 
 	// 设置 gin engine 路由
 	r := router.NewRouter(cfg, deps)
@@ -125,13 +125,12 @@ func main() {
 			logger.Info("HTTP server shutdown completed")
 		}
 
-
 		// 关闭数据库连接
-        if err := dbpkg.Close(); err != nil {
-            logger.WithError(err).Error("DB close error")
-        } else {
-            logger.Info("Database connection closed")
-        }
+		if err := dbpkg.Close(); err != nil {
+			logger.WithError(err).Error("DB close error")
+		} else {
+			logger.Info("Database connection closed")
+		}
 
 		// gRPC 服务器会通过 context 取消自动关闭
 	}()

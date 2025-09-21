@@ -1,0 +1,19 @@
+{
+  "menu": {
+    "base": {
+      "title": "基础插件",
+      "dashboard": "仪表盘",
+      "notes": "笔记",
+      "reports": {
+        "title": "报表",
+        "daily": "日报表",
+        "monthly": "月报表"
+      },
+      "settings": {
+        "title": "设置",
+        "preferences": "偏好设置",
+        "access": "访问控制"
+      }
+    }
+  }
+}
