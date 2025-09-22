@@ -32,7 +32,10 @@
     "permissions": "权限管理",
     "profile": "个人资料",
     "help": "帮助",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "reports": "报表",
+    "reportsDaily": "日报表",
+    "reportsMonthly": "月报表"
   },
   "notes": {
     "title": "笔记管理",
@@ -84,7 +87,15 @@
     "cumulativeFlow": "累积流图",
     "sprintReport": "笔记报告",
     "teamPerformance": "团队绩效",
-    "productivity": "生产力分析"
+    "productivity": "生产力分析",
+    "overviewHint": "查看插件内置的报表概览，后续可对接真实数据。",
+    "placeholder": "报表数据准备中，请连接数据源后查看详细分析。",
+    "daily": {
+      "overviewHint": "掌握今日核心指标和任务进展。"
+    },
+    "monthly": {
+      "overviewHint": "总结本月的关键趋势与阶段成果。"
+    }
   },
   "settings": {
     "roleManagement": "角色管理",

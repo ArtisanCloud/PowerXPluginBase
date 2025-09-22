@@ -32,7 +32,10 @@
     "permissions": "Permissions",
     "profile": "Profile",
     "help": "Help",
-    "logout": "Logout"
+    "logout": "Logout",
+    "reports": "Reports",
+    "reportsDaily": "Daily Reports",
+    "reportsMonthly": "Monthly Reports"
   },
   "notes": {
     "title": "Notes Management",
@@ -100,5 +103,15 @@
     "noData": "No data available",
     "networkError": "Network error, please check your connection",
     "noteCreated": "Note created successfully"
+  },
+  "reports": {
+    "overviewHint": "Monitor overall performance with the latest report summaries.",
+    "placeholder": "Report data is being prepared. Connect your data sources to see insights here soon.",
+    "daily": {
+      "overviewHint": "Review today's performance metrics, highlights, and outstanding tasks."
+    },
+    "monthly": {
+      "overviewHint": "Track month-over-month trends and summarize key achievements."
+    }
   }
 }
