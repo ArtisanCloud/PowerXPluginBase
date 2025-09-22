@@ -1,9 +1,14 @@
 {
   "menu": {
     "base": {
-      "title": "基础插件",
+      "note": "基础插件",
       "dashboard": "仪表盘",
-      "notes": "笔记",
+      "notes": {
+        "title": "笔记",
+        "overview": "笔记总览",
+        "active": "活跃笔记",
+        "create": "新建笔记"
+      },
       "reports": {
         "title": "报表",
         "daily": "日报表",

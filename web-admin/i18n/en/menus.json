@@ -1,9 +1,14 @@
 {
   "menu": {
     "base": {
-      "title": "Base Plugin",
+      "note": "Base Plugin",
       "dashboard": "Dashboard",
-      "notes": "Notes",
+      "notes": {
+        "title": "Notes",
+        "overview": "Notes Overview",
+        "active": "Active Notes",
+        "create": "Create Note"
+      },
       "reports": {
         "title": "Reports",
         "daily": "Daily Report",

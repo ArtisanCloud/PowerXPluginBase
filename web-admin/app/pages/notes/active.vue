@@ -13,8 +13,8 @@
       <UButton
         color="primary"
         size="lg"
-        to="/notes/create"
         class="flex items-center gap-2"
+        @click="openCreateModal"
       >
         <UIcon name="i-heroicons-plus" class="w-4 h-4" />
         {{ $t("notes.createNote") }}
@@ -76,7 +76,7 @@
       <p class="text-gray-500 dark:text-gray-400 mb-6">
         开始创建您的第一个笔记吧
       </p>
-      <UButton color="primary" to="/notes/create">
+      <UButton color="primary" @click="openCreateModal">
         {{ $t("notes.createNote") }}
       </UButton>
     </div>
@@ -241,10 +241,12 @@
         :total="filteredNotes.length"
       />
     </div>
+    <NoteCreateModal v-model="showCreateModal" @created="handleCreateSuccess" />
   </div>
 </template>
 
 <script setup lang="ts">
+import NoteCreateModal from "~/components/notes/NoteCreateModal.vue";
 const { t } = useI18n();
 
 // 页面元数据
@@ -254,6 +256,7 @@ definePageMeta({
 });
 
 // 响应式数据
+const showCreateModal = ref(false);
 const searchQuery = ref("");
 const selectedCategory = ref("");
 const selectedPriority = ref("");
@@ -387,6 +390,14 @@ const paginatedNotes = computed(() => {
 });
 
 // 方法
+const openCreateModal = () => {
+  showCreateModal.value = true;
+};
+
+const handleCreateSuccess = () => {
+  showCreateModal.value = false;
+};
+
 const toggleView = () => {
   viewMode.value = viewMode.value === "grid" ? "list" : "grid";
 };

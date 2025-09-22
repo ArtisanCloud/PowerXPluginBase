@@ -54,7 +54,7 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 		Menus: []contracts.MenuConfig{
 			{
 				ID:    "base",
-				Title: "menu.base",
+				Title: "menu.base.note",
 				Icon:  "i-heroicons-clipboard-document-check",
 				Path:  "/plugins/base",
 				Order: 20,
@@ -68,10 +68,50 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 					},
 					{
 						ID:    "base.notes",
-						Title: "menu.base.notes",
-						Icon:  "i-heroicons-list-bullet",
+						Title: "menu.base.notes.title",
+						Icon:  "i-heroicons-clipboard-document-list",
 						Path:  "/plugins/base/notes",
 						Order: 2,
+						Children: []contracts.MenuConfig{
+							{
+								ID:    "base.notes.overview",
+								Title: "menu.base.notes.overview",
+								Icon:  "i-heroicons-document-text",
+								Path:  "/plugins/base/notes",
+								Order: 1,
+							},
+							{
+								ID:    "base.notes.active",
+								Title: "menu.base.notes.active",
+								Icon:  "i-heroicons-play-circle",
+								Path:  "/plugins/base/notes/active",
+								Order: 2,
+							},
+						},
+					},
+					{
+						ID:    "base.reports",
+						Title: "menu.base.reports.title",
+						Icon:  "i-heroicons-chart-bar",
+						Path:  "/plugins/base/reports",
+						Order: 3,
+						Children: []contracts.MenuConfig{
+							{
+								ID:    "base.reports.daily",
+								Title: "menu.base.reports.daily",
+								Icon:  "i-heroicons-calendar-days",
+								Path:  "/plugins/base/reports/daily",
+								Order: 1,
+							},
+							{
+								ID:    "base.reports.monthly",
+								Title: "menu.base.reports.monthly",
+								Icon:  "i-heroicons-calendar",
+								Path:  "/plugins/base/reports/monthly",
+								Order: 2,
+							},
+						},
+						RequiredPermissions: []string{"base:report:read"},
 					},
 				},
 				RequiredPermissions: []string{"base:note:read"},

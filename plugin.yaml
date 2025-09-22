@@ -47,7 +47,7 @@ frontend:
         title: 基础插件
         title_i18n:
           namespace: menus
-          key: menu.base.title
+          key: menu.base.note
           default: Base Plugin
         icon: i-heroicons-clipboard-document-check
         path: /plugins/base
@@ -70,7 +70,7 @@ frontend:
             title: 笔记
             title_i18n:
               namespace: menus
-              key: menu.base.notes
+              key: menu.base.notes.title
               default: Notes
             icon: i-heroicons-clipboard-document-list
             path: /plugins/base/notes
@@ -97,16 +97,6 @@ frontend:
                 path: /plugins/base/notes/active
                 route: plugins/base/notes/active
                 order: 2
-              - id: base.notes.create
-                title: 新建笔记
-                title_i18n:
-                  namespace: menus
-                  key: menu.base.notes.create
-                  default: Create Note
-                icon: i-heroicons-plus-circle
-                path: /plugins/base/notes/create
-                route: plugins/base/notes/create
-                order: 3
           - id: base.reports
             title: 报表
             title_i18n:
@@ -117,6 +107,7 @@ frontend:
             path: /plugins/base/reports
             route: plugins/base/reports
             order: 3
+            required_policies: [base:report:read]
             children:
               - id: base.reports.daily
                 title: 日报表
@@ -162,7 +153,7 @@ menus:
     title: 基础插件
     title_i18n:
       namespace: menus
-      key: menu.base.title
+      key: menu.base.note
       default: Base Plugin
     icon: i-heroicons-clipboard-document-check
     path: /plugins/base
@@ -185,7 +176,7 @@ menus:
         title: 笔记
         title_i18n:
           namespace: menus
-          key: menu.base.notes
+          key: menu.base.notes.title
           default: Notes
         icon: i-heroicons-clipboard-document-list
         path: /plugins/base/notes
@@ -212,16 +203,6 @@ menus:
             path: /plugins/base/notes/active
             route: plugins/base/notes/active
             order: 2
-          - id: plugins.base.notes.create
-            title: 新建笔记
-            title_i18n:
-              namespace: menus
-              key: menu.base.notes.create
-              default: Create Note
-            icon: i-heroicons-plus-circle
-            path: /plugins/base/notes/create
-            route: plugins/base/notes/create
-            order: 3
       - id: plugins.base.reports
         title: 报表
         title_i18n:

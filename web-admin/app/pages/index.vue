@@ -202,19 +202,24 @@
         </div>
       </div>
     </UCard>
+    <NoteCreateModal v-model="showCreateModal" @created="handleModalCreated" />
   </div>
 </template>
 
 <script setup lang="ts">
+import NoteCreateModal from "~/components/notes/NoteCreateModal.vue";
+
 const { t } = useI18n();
 
 // 页面元数据
 definePageMeta({
   title: "笔记概览",
   layout: "default",
+  alias: ["/dashboard"],
 });
 
 // 响应式数据
+const showCreateModal = ref(false);
 const searchQuery = ref("");
 const selectedCategory = ref("");
 const selectedStatus = ref("");
@@ -364,8 +369,11 @@ const filteredNotes = computed(() => {
 
 // 方法
 const createNote = () => {
-  // 跳转到创建笔记页面
-  navigateTo("/notes/create");
+  showCreateModal.value = true;
+};
+
+const handleModalCreated = () => {
+  showCreateModal.value = false;
 };
 
 const viewNote = (note: any) => {

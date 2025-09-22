@@ -19,10 +19,10 @@ const normalizePath = (value: string) => {
 const resolveAlias = (internalPath: string): string | null => {
   // 首页 / Dashboard
   if (internalPath === "/" || internalPath === "") {
-    return "/";
+    return "/dashboard";
   }
   if (internalPath === "/plugins/base" || internalPath === "/plugins/base/dashboard") {
-    return "/";
+    return "/dashboard";
   }
 
   // 笔记模块：/plugins/base/notes/... -> /notes/...
@@ -30,6 +30,13 @@ const resolveAlias = (internalPath: string): string | null => {
   if (notesMatch) {
     const suffix = notesMatch[1] ? `/${notesMatch[1]}` : "";
     return `/notes${suffix}`;
+  }
+
+  // 报表模块：/plugins/base/reports/... -> /reports/...
+  const reportsMatch = internalPath.match(/^\/plugins\/base\/reports(?:\/(.*))?$/);
+  if (reportsMatch) {
+    const suffix = reportsMatch[1] ? `/${reportsMatch[1]}` : "";
+    return `/reports${suffix}`;
   }
 
   // 设置模块：/plugins/base/settings -> /settings/project，子路由保持相对路径

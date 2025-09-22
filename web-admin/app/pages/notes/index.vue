@@ -2,20 +2,20 @@
   <div class="space-y-6">
     <!-- 页面头部 -->
     <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-      <div class="flex justify-between items-center">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            {{ $t("navigation.notesList") }}
-          </h1>
-          <p class="text-gray-600 dark:text-gray-400 mt-1">
-            管理和查看所有笔记内容
-          </p>
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              {{ $t("navigation.notesList") }}
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">
+              管理和查看所有笔记内容
+            </p>
+          </div>
+          <UButton color="primary" @click="createNote">
+            <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-2" />
+            {{ $t("notes.createNote") }}
+          </UButton>
         </div>
-        <UButton color="primary" @click="createNote">
-          <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-2" />
-          {{ $t("notes.createNote") }}
-        </UButton>
-      </div>
     </div>
 
     <!-- API 基础信息 -->
@@ -367,10 +367,12 @@
         </div>
       </UCard>
     </template>
+    <NoteCreateModal v-model="showCreateModal" @created="handleNoteCreated" />
   </div>
 </template>
 
 <script setup lang="ts">
+import NoteCreateModal from "~/components/notes/NoteCreateModal.vue";
 import { useNoteApi, type Note, type Page } from "~/composables/api";
 
 // 页面元数据
@@ -379,9 +381,8 @@ definePageMeta({
 });
 
 // API 实例
-const {
+const { 
   listNotes,
-  createNote: createNoteApi,
   deleteNote: deleteNoteApi,
   archiveNote,
   publishNote,
@@ -390,6 +391,7 @@ const {
 } = useNoteApi();
 
 // 响应式数据
+const showCreateModal = ref(false);
 const searchQuery = ref("");
 const selectedCategory = ref("all");
 const selectedStatus = ref("all");
@@ -618,7 +620,12 @@ const getNoteActions = (note: Note) => [
 ];
 
 const createNote = () => {
-  navigateTo("/notes/create");
+  showCreateModal.value = true;
+};
+
+const handleNoteCreated = () => {
+  showCreateModal.value = false;
+  fetchNotes();
 };
 
 const viewNote = (note: Note) => {
