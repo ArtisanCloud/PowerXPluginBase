@@ -18,11 +18,23 @@
 </template>
 
 <script setup>
+import { isPluginAdminPath } from "~/utils/powerx-bridge";
+
 // 获取运行时配置
 const runtimeConfig = useRuntimeConfig();
+const route = useRoute();
+
+// 是否处于 PowerX 宿主的插件嵌入路径下
+const isEmbeddedInPowerX = computed(() => {
+  return isPluginAdminPath(route.path);
+});
 
 // 控制导航显示的环境变量
 const showNavigation = computed(() => {
+  if (isEmbeddedInPowerX.value) {
+    return false;
+  }
+
   // 优先检查环境变量 NUXT_PUBLIC_SHOW_NAVIGATION
   const envShowNav = runtimeConfig.public.showNavigation;
 
