@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
+	"strings"
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
 
@@ -31,7 +33,14 @@ func NewGRPCServer(ctx context.Context, c *cfgpkg.GRPCServer) (*Server, error) {
 		return nil, nil
 	}
 
-	lis, err := net.Listen("tcp", c.Addr)
+	addr := os.Getenv("PX_GRPC_ADDR")
+	if strings.TrimSpace(addr) == "" {
+		addr = os.Getenv("GRPC_ADDR")
+	}
+	if strings.TrimSpace(addr) == "" {
+		addr = ":9101" // 兜底
+	}
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to listen on %s: %w", c.Addr, err)
 	}

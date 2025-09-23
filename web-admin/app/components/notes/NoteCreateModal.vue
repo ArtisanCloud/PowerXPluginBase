@@ -327,6 +327,8 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
+@reference "@/assets/css/main.css";
+
 .prose {
   @apply text-gray-900 dark:text-gray-100;
 }
