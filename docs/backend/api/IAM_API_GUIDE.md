@@ -312,14 +312,14 @@ curl http://localhost:8086/api/v1/admin/iam/status
 
 ```bash
 # PowerX gRPC 配置
-export PX_GRPC_UPSTREAM_ADDRESS="localhost:9001"
-export PX_GRPC_UPSTREAM_TOKEN="your_capability_token"
-export PX_GRPC_UPSTREAM_TENANT_ID="1"
+export POWERX_GRPC_UPSTREAM_ADDRESS="localhost:9001"
+export POWERX_GRPC_UPSTREAM_TOKEN="your_capability_token"
+export POWERX_GRPC_UPSTREAM_TENANT_ID="1"
 
 # 应用配置
-export PX_BIND_ADDR=":8086"
-export PX_LOG_LEVEL="debug"
-export PX_DB_DSN="postgres://user:pass@localhost:5432/powerx_plugin_note?sslmode=disable"
+export POWERX_BIND_ADDR=":8086"
+export POWERX_LOG_LEVEL="debug"
+export POWERX_DB_DSN="postgres://user:pass@localhost:5432/powerx_plugin_note?sslmode=disable"
 ```
 
 ### YAML 配置 (`backend/etc/config.yaml`)

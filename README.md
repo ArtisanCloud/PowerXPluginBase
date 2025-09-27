@@ -209,14 +209,14 @@ make docker-run
 1. **数据库连接失败**
 
    ```bash
-   echo $PX_DB_DSN
-   psql $PX_DB_DSN -c "SELECT 1"
+   echo $POWERX_DB_DSN
+   psql $POWERX_DB_DSN -c "SELECT 1"
    ```
 
 2. **权限错误**
 
    ```bash
-   export PX_DEV_MODE=1
+   export POWERX_DEV_MODE=1
    ```
 
 3. **RLS 策略问题**

@@ -4,10 +4,10 @@
 run: ## 启动后端服务（开发模式）
 	@echo "启动后端服务..."
 	cd $(BACKEND_DIR) && \
-		PX_BIND_ADDR=":8091" \
-		PX_DB_SCHEMA="note" \
-		PX_LOG_LEVEL="debug" \
-		PX_DEV_MODE=1 \
+		POWERX_BIND_ADDR=":8091" \
+		POWERX_DB_SCHEMA="note" \
+		POWERX_LOG_LEVEL="debug" \
+		POWERX_DEV_MODE=1 \
 		go run ./cmd/plugin
 
 .PHONY: dev

@@ -12,10 +12,10 @@ func TestLoadAppliesEnvOverrides(t *testing.T) {
 		schema = "px_override"
 	)
 
-	t.Setenv("PX_DB_DSN", dsn)
-	t.Setenv("PX_DB_SCHEMA", schema)
-	t.Setenv("PX_DEV_MODE", "true")
-	t.Setenv("PX_LOG_LEVEL", "INFO")
+	t.Setenv("POWERX_DB_DSN", dsn)
+	t.Setenv("POWERX_DB_SCHEMA", schema)
+	t.Setenv("POWERX_DEV_MODE", "true")
+	t.Setenv("POWERX_LOG_LEVEL", "INFO")
 
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "config.yaml")
@@ -34,13 +34,13 @@ func TestLoadAppliesEnvOverrides(t *testing.T) {
 		t.Fatal("Database 配置未初始化")
 	}
 	if cfg.Database.DSN != dsn {
-		t.Fatalf("PX_DB_DSN 未生效，期望 %q 实际 %q", dsn, cfg.Database.DSN)
+		t.Fatalf("POWERX_DB_DSN 未生效，期望 %q 实际 %q", dsn, cfg.Database.DSN)
 	}
 	if cfg.Database.Schema != schema {
-		t.Fatalf("PX_DB_SCHEMA 未生效，期望 %q 实际 %q", schema, cfg.Database.Schema)
+		t.Fatalf("POWERX_DB_SCHEMA 未生效，期望 %q 实际 %q", schema, cfg.Database.Schema)
 	}
 	if cfg.Logging.Level != "info" || cfg.Server.LogLevel != "info" {
-		t.Fatalf("PX_LOG_LEVEL 未归一化为小写 info, server=%q logging=%q", cfg.Server.LogLevel, cfg.Logging.Level)
+		t.Fatalf("POWERX_LOG_LEVEL 未归一化为小写 info, server=%q logging=%q", cfg.Server.LogLevel, cfg.Logging.Level)
 	}
 	if cfg.Logging.Format != "text" || cfg.Logging.Output != "stdout" {
 		t.Fatalf("日志配置未归一化: format=%q output=%q", cfg.Logging.Format, cfg.Logging.Output)
@@ -55,9 +55,9 @@ func TestLoadNormalizesLoggingFromYAML(t *testing.T) {
 		t.Fatalf("写入测试配置失败: %v", err)
 	}
 	t.Setenv("CONFIG_PATH", tempDir)
-	t.Setenv("PX_DEV_MODE", "true")
-	t.Setenv("PX_DB_DSN", "postgres://user:pass@127.0.0.1:5432/test?sslmode=disable")
-	t.Setenv("PX_DB_SCHEMA", "px_test")
+	t.Setenv("POWERX_DEV_MODE", "true")
+	t.Setenv("POWERX_DB_DSN", "postgres://user:pass@127.0.0.1:5432/test?sslmode=disable")
+	t.Setenv("POWERX_DB_SCHEMA", "px_test")
 
 	cfg, err := Load()
 	if err != nil {
@@ -70,15 +70,15 @@ func TestLoadNormalizesLoggingFromYAML(t *testing.T) {
 
 func TestLoadResolvesPlaceholderDefaults(t *testing.T) {
 	tempDir := t.TempDir()
-	configContent := "server:\n  bind_addr: \"${PX_BIND_ADDR:-:9000}\"\nlogging:\n  level: \"${PX_LOG_LEVEL:-INFO}\"\n  format: \"${PX_LOG_FORMAT:-JSON}\"\n  output: \"${PX_LOG_OUTPUT:-STDOUT}\"\n"
+	configContent := "server:\n  bind_addr: \"${POWERX_BIND_ADDR:-:9000}\"\nlogging:\n  level: \"${POWERX_LOG_LEVEL:-INFO}\"\n  format: \"${POWERX_LOG_FORMAT:-JSON}\"\n  output: \"${POWERX_LOG_OUTPUT:-STDOUT}\"\n"
 	configFile := filepath.Join(tempDir, "config.yaml")
 	if err := os.WriteFile(configFile, []byte(configContent), 0644); err != nil {
 		t.Fatalf("写入测试配置失败: %v", err)
 	}
 	t.Setenv("CONFIG_PATH", tempDir)
-	t.Setenv("PX_DEV_MODE", "true")
-	t.Setenv("PX_DB_DSN", "postgres://user:pass@127.0.0.1:5432/test?sslmode=disable")
-	t.Setenv("PX_DB_SCHEMA", "px_test")
+	t.Setenv("POWERX_DEV_MODE", "true")
+	t.Setenv("POWERX_DB_DSN", "postgres://user:pass@127.0.0.1:5432/test?sslmode=disable")
+	t.Setenv("POWERX_DB_SCHEMA", "px_test")
 
 	cfg, err := Load()
 	if err != nil {
@@ -106,9 +106,9 @@ func TestLoadUsesConfigPathPlaceholder(t *testing.T) {
 	if err := os.WriteFile(configFile, []byte(configContent), 0o644); err != nil {
 		t.Fatalf("写入 host-values 配置失败: %v", err)
 	}
-	t.Setenv("PX_PLUGIN_CONFIG_DIR", configDir)
-	t.Setenv("CONFIG_PATH", "${PX_PLUGIN_CONFIG_DIR:-./backend/etc}")
-	t.Setenv("PX_DEV_MODE", "true")
+	t.Setenv("POWERX_PLUGIN_CONFIG_DIR", configDir)
+	t.Setenv("CONFIG_PATH", "${POWERX_PLUGIN_CONFIG_DIR:-./backend/etc}")
+	t.Setenv("POWERX_DEV_MODE", "true")
 
 	cfg, err := Load()
 	if err != nil {

@@ -9,9 +9,9 @@ docker-build: ## 构建 Docker 镜像
 docker-run: ## 使用 Docker 运行插件
 	@echo "运行 Docker 容器..."
 	docker run --rm -p 8091:8091 \
-		-e PX_BIND_ADDR=":8091" \
-		-e PX_DB_SCHEMA="note" \
-		-e PX_LOG_LEVEL="debug" \
+		-e POWERX_BIND_ADDR=":8091" \
+		-e POWERX_DB_SCHEMA="note" \
+		-e POWERX_LOG_LEVEL="debug" \
 		$(DOCKER_IMAGE)
 
 .PHONY: docker-push

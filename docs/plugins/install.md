@@ -98,7 +98,7 @@ dist/0.1.0/
 - **前端打包报 Tailwind Unknown Utility**
   - 确保在带 `scoped` 的样式中使用 `@reference "@/assets/css/main.css";` 引入 Tailwind 基础层。
 - **端口冲突**
-  - 生产场景由 PowerX 自动在运行时分配端口；本地运行可通过 `PX_BIND_ADDR` 或配置文件修改。
+  - 生产场景由 PowerX 自动在运行时分配端口；本地运行可通过 `POWERX_BIND_ADDR` 或配置文件修改。
 
 ## 进一步操作
 

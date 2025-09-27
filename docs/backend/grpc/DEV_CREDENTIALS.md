@@ -15,12 +15,12 @@
 ## 入库与加密
 - 表：`plugin_credentials`
 - 字段：`tenant_id`、`plugin_id` 唯一；`client_id` 明文；`secret_ciphertext`/`iv_nonce` 为 AES-GCM 密文/随机向量；`key_version` 轮换版本
-- 主密钥：`server.secret_key`（或环境变量 `PX_SERVER_SECRET_KEY`）；通过 SHA-256 导出 32 字节密钥
+- 主密钥：`server.secret_key`（或环境变量 `POWERX_SERVER_SECRET_KEY`）；通过 SHA-256 导出 32 字节密钥
 - AAD：`tenant_id|plugin_id|client_id` 绑定，防止密文移植
 
 ## 启动加载
-- 启动时若 `PX_GRPC_UPSTREAM_TENANT_ID` 已配置，则优先从 DB 解密载入 `client_id/client_secret` 注入 STS；
-- 若 DB 无记录且配置/环境变量提供了 `PX_STS_CLIENT_ID`/`PX_STS_CLIENT_SECRET`，则使用配置值。
+- 启动时若 `POWERX_GRPC_UPSTREAM_TENANT_ID` 已配置，则优先从 DB 解密载入 `client_id/client_secret` 注入 STS；
+- 若 DB 无记录且配置/环境变量提供了 `POWERX_STS_CLIENT_ID`/`POWERX_STS_CLIENT_SECRET`，则使用配置值。
 
 ## curl 示例
 

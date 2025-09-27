@@ -33,7 +33,7 @@ func NewGRPCServer(ctx context.Context, c *cfgpkg.GRPCServer) (*Server, error) {
 		return nil, nil
 	}
 
-	addr := os.Getenv("PX_GRPC_ADDR")
+	addr := os.Getenv("POWERX_GRPC_ADDR")
 	if strings.TrimSpace(addr) == "" {
 		addr = os.Getenv("GRPC_ADDR")
 	}

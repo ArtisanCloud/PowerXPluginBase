@@ -10,10 +10,7 @@ runtime:
   kind: process
   entry: backend/bin/plugin
   env:
-    CONFIG_PATH: ${PX_PLUGIN_CONFIG_DIR:-./backend/etc} # 告诉插件进程到何处加载 config.yaml/host-values.yaml
-    PX_BIND_ADDR: ${PX_BIND_ADDR:-:8091}
-    PX_LOG_LEVEL: ${PX_LOG_LEVEL:-info}
-    PX_DEV_MODE: ${PX_DEV_MODE:-0}
+    POWERX_BIND_ADDR: ${POWERX_BIND_ADDR:-:8091}
   health:
     http: /healthz
     interval: 10s
@@ -26,13 +23,22 @@ backend:
 
 endpoints:
   http_base_path: /api/v1
-  grpc:
-    enabled: false
 
 frontend:
   admin:
-    kind: static
-    static_dir: web-admin/.output/public
+    kind: process
+    process:
+      entry: node
+      args: ["./web-admin/.output/server/index.mjs"]
+      env:
+        NODE_ENV: production
+        NITRO_HOST: 127.0.0.1     # 可省略，Enable 会补
+        POWERX_PROXY: "1"         # 可省略，Enable 会补
+      health:
+        http: /healthz            # 推荐在 Nuxt 里加 app/server/routes/healthz.ts 返回 'ok'
+        interval: 5s
+        timeout: 2s
+    static_dir: web-admin/.output/public   # 可选兜底（Nuxt 挂了仍能喂文件）
     i18n:
       dir: web-admin/i18n
       format: i18next
@@ -246,14 +252,14 @@ agents:
       - base.note.query
 
 # 工具清单侧重声明接口契约，真实业务参数通过 config.yaml 或环境变量注入
-# 例如 PX_PLUGIN_HTTP_BASE 可在运行时指向宿主反代出来的前缀。
+# 例如 POWERX_PLUGIN_HTTP_BASE 可在运行时指向宿主反代出来的前缀。
 tools:
   - id: base.note.create
     plugin_id: com.powerx.plugins.base
     name: 创建任务
     description: 创建一个新的 Base 任务
     transport: http
-    endpoint: ${PX_PLUGIN_HTTP_BASE:-/api/v1}/notes
+    endpoint: ${POWERX_PLUGIN_HTTP_BASE:-/api/v1}/notes
     method: POST
     rbac_resource: base:note
     input_schema:
@@ -297,7 +303,7 @@ tools:
     name: 查询任务
     description: 查询 Base 任务列表
     transport: http
-    endpoint: ${PX_PLUGIN_HTTP_BASE:-/api/v1}/notes
+    endpoint: ${POWERX_PLUGIN_HTTP_BASE:-/api/v1}/notes
     method: GET
     rbac_resource: base:note
     input_schema:

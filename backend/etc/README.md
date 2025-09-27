@@ -4,7 +4,7 @@
 
 Base 插件的配置来源按照以下优先级生效：
 
-1. **PowerX 宿主注入的环境变量**（如 `PX_BIND_ADDR`、`PX_LOG_LEVEL`）
+1. **PowerX 宿主注入的环境变量**（如 `POWERX_BIND_ADDR`、`POWERX_LOG_LEVEL`）
 2. **YAML 配置文件**（`config/host-values.yaml` 或 `config.yaml`）
 3. **内置默认值**（`backend/internal/config/getDefaultConfig`）
 
@@ -34,7 +34,7 @@ Base 插件的配置来源按照以下优先级生效：
 2. 将生成结果写入插件安装目录，例如 `plugins/installed/<id>/<version>/config/host-values.yaml`。
 3. 启动插件进程前设置：
    - `CONFIG_PATH=/path/to/plugins/<id>/<version>/config`
-   - `PX_BIND_ADDR`、`PX_PLUGIN_PORT` 等运行时变量（端口由宿主分配）。
+   - `POWERX_BIND_ADDR`、`POWERX_PLUGIN_PORT` 等运行时变量（端口由宿主分配）。
 4. 重新启用插件即可让新配置生效。
 
 ## 本地开发流程
@@ -63,14 +63,14 @@ Base 插件的配置来源按照以下优先级生效：
 | 变量名 | 说明 |
 | ------ | ---- |
 | `CONFIG_PATH` | 指定配置目录，优先读取 `host-values.yaml` |
-| `PX_BIND_ADDR` | HTTP 监听地址（宿主自动分配端口） |
-| `PX_LOG_LEVEL` | 覆盖日志级别，默认 `info` |
-| `PX_DEV_MODE` | 是否启用开发模式，`true/false` |
-| `PX_DB_DSN` | 若需要从环境层覆盖数据库连接，可设置该变量 |
-| `PX_DB_SCHEMA` | 覆盖数据库 Schema 名称 |
-| `PX_RUN_MIGRATE` | 设置为 `true` 时强制执行数据库迁移 |
+| `POWERX_BIND_ADDR` | HTTP 监听地址（宿主自动分配端口） |
+| `POWERX_LOG_LEVEL` | 覆盖日志级别，默认 `info` |
+| `POWERX_DEV_MODE` | 是否启用开发模式，`true/false` |
+| `POWERX_DB_DSN` | 若需要从环境层覆盖数据库连接，可设置该变量 |
+| `POWERX_DB_SCHEMA` | 覆盖数据库 Schema 名称 |
+| `POWERX_RUN_MIGRATE` | 设置为 `true` 时强制执行数据库迁移 |
 | `PLUGIN_CTX_HMAC_SECRET` | PowerX 下发的 HMAC 签名密钥 |
-| `PX_CTX_JWKS_URL` | JWT 模式下的 JWKS 地址 |
+| `POWERX_CTX_JWKS_URL` | JWT 模式下的 JWKS 地址 |
 
 > ✅ 建议在生产环境通过 `config/host-values.yaml` 写入敏感配置，仅在必要时才用环境变量覆盖。
 

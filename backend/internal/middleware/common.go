@@ -3,6 +3,7 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"runtime/debug"
 	"time"
 
@@ -18,7 +19,11 @@ func CORS() gin.HandlerFunc {
 		// 在生产环境中应该配置具体的允许域名
 		c.Header("Access-Control-Allow-Origin", origin)
 		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, X-PowerX-CTX, X-PowerX-CTX-JWT")
+		c.Header("Access-Control-Allow-Headers",
+			"Content-Type, Content-Length, Accept-Encoding, "+
+				"X-CSRF-Token, Authorization, accept, origin, Cache-Control, "+
+				"X-Requested-With, X-PowerX-CTX, X-PowerX-CTX-SIG, X-PowerX-CTX-JWT",
+		)
 		c.Header("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
 
 		if c.Request.Method == "OPTIONS" {
@@ -183,8 +188,14 @@ func RateLimiter(maxRequests int, window time.Duration) gin.HandlerFunc {
 // SecurityHeaders 安全头部中间件
 func SecurityHeaders() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 防止点击劫持
-		c.Header("X-Frame-Options", "DENY")
+		// 在 PowerX 宿主内允许同源嵌入；本地/独立运行仍然 DENY
+		if os.Getenv("POWERX_PROXY") == "1" {
+			c.Header("X-Frame-Options", "SAMEORIGIN")
+			c.Header("Content-Security-Policy", "frame-ancestors 'self'; default-src 'self'")
+		} else {
+			c.Header("X-Frame-Options", "DENY")
+			c.Header("Content-Security-Policy", "default-src 'self'")
+		}
 
 		// 防止 MIME 类型嗅探
 		c.Header("X-Content-Type-Options", "nosniff")
@@ -194,9 +205,6 @@ func SecurityHeaders() gin.HandlerFunc {
 
 		// 引用策略
 		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
-
-		// 内容安全策略（根据实际需求调整）
-		c.Header("Content-Security-Policy", "default-src 'self'")
 
 		c.Next()
 	}

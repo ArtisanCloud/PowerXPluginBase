@@ -3,21 +3,27 @@ const pluginId = "com.powerx.plugins.base";
 const pluginAdminBase = `/_p/${pluginId}/admin/`;
 const pluginApiBase = `/_p/${pluginId}/api/v1`;
 
+// 标识当前是否被 PowerX 反代（建议在 PowerX lifecycle 启动插件进程时注入 POWERX_PROXY=1）
+const INSIDE_POWERX = process.env.POWERX_PROXY === '1'
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  devtools: { enabled: true },
 
-  // PowerX Plugin Configuration
-  ssr: false, // 纯前端SPA模式
-  srcDir: "app", // Nuxt 4 规范：所有源码在app目录下
+  // ✅ 被 PowerX 反代时关闭 DevTools，避免注入 __up 等开发端点
+  devtools: { enabled: !INSIDE_POWERX },
 
-  // Development server configuration
+  // ✅ 你选择的是纯前端 SPA（可以，Nuxt 会用 Nitro 提供 history fallback）
+  ssr: false,
+
+  // 规范：源码目录
+  srcDir: "app",
+
+  // 开发服务器（仅直连本地开发用；被 PowerX 反代时不生效）
   devServer: {
     port: 3036,
     host: "0.0.0.0",
   },
 
-  // Modules configuration
   modules: [
     "@nuxt/ui",
     "@nuxt/icon",
@@ -31,18 +37,13 @@ export default defineNuxtConfig({
     "@nuxt/test-utils",
   ],
 
-  // CSS configuration
   css: ["~/assets/css/main.css", "@/assets/scss/main.scss"],
 
-  // UI configuration
-  ui: {
-    fonts: false,
-  },
+  ui: { fonts: false },
 
-  // Color mode configuration
   colorMode: {
-    preference: "system", // default value of $colorMode.preference
-    fallback: "light", // fallback value if not system preference found
+    preference: "system",
+    fallback: "light",
     hid: "nuxt-color-mode-script",
     globalName: "__NUXT_COLOR_MODE__",
     componentName: "ColorScheme",
@@ -51,35 +52,47 @@ export default defineNuxtConfig({
     storageKey: "nuxt-color-mode",
   },
 
-  // Base path for PowerX plugin integration
+  // ✅ 基础路径
+  // - 直连开发（INSIDE_POWERX=false）：保持 "/"，便于 http://127.0.0.1:3036 直接访问
+  // - 被 PowerX 反代（INSIDE_POWERX=true）：必须固定到 /_p/<id>/admin/，避免跳回根 "/"
   app: {
-    baseURL:
-      process.env.NODE_ENV === "production" ? pluginAdminBase : "/",
+    baseURL: INSIDE_POWERX ? pluginAdminBase : "/",
     buildAssetsDir: "/assets/",
   },
 
-  // Nitro build configuration for plugin deployment
+  // ✅ Nitro（即使 ssr:false 也会生成 Node 服务，负责 history fallback 与静态资源）
   nitro: {
-    experimental: {
-      websocket: true, // ✅ 开启 Nitro 原生 WS
+    preset: "node-server",
+    serveStatic: true,
+    experimental: { websocket: true },
+
+    // ✅ 统一下发允许被同源 iframe 嵌入（双保险；反代里也会改写响应头）
+    routeRules: {
+      "/**": {
+        headers: {
+          "X-Frame-Options": "SAMEORIGIN",
+          "Content-Security-Policy": "frame-ancestors 'self'",
+        },
+      },
     },
+
+    // 产出目录（保持你原来）
     output: {
       dir: ".output",
       publicDir: ".output/public",
     },
   },
 
-  // Runtime config for API integration
+  // ✅ API 基址
+  // - 直连开发：走本地 Vite 代理（见下）
+  // - 被 PowerX 反代：走插件 API 前缀 /_p/<id>/api/...
   runtimeConfig: {
     public: {
-      apiBaseUrl:
-        process.env.NODE_ENV === "production"
-          ? pluginApiBase
-          : "/api/v1", // 改为相对路径，交给 vite 代理，避免 CORS
+      apiBaseUrl: INSIDE_POWERX ? pluginApiBase : "/api/v1",
     },
   },
 
-  // Vite 配置 - 开发环境代理
+  // ✅ Vite 代理（仅直连开发用；被 PowerX 反代时不会触发）
   vite: {
     server: {
       proxy: {
@@ -90,29 +103,40 @@ export default defineNuxtConfig({
           rewrite: (p: string) => p.replace(/^\/api/, ""),
         },
         "/ws": {
-          target: "ws://127.0.0.1:4000", // 修改为你的 WebSocket 服务地址
+          target: "ws://127.0.0.1:4000",
           changeOrigin: true,
-          ws: true, // 启用 WebSocket 代理
+          ws: true,
         },
       },
     },
   },
 
-  // Internationalization configuration
+  // ✅ i18n 调整
+  // - 仍保留 prefix_except_default（/en/...）
+  // - 但被 PowerX 反代时，Nuxt 生成链接会相对 baseURL，不会跑到根 "/"
   i18n: {
     defaultLocale: "zh",
+    strategy: "prefix_except_default",
     locales: [
       { code: "zh", name: "简体中文", file: "zh.json" },
       { code: "en", name: "English", file: "en.json" },
     ],
     langDir: "locales",
-    strategy: "prefix_except_default",
-    lazy: true,
+    pages: {
+      "_p/com.powerx.plugins.base/admin/plugins/base/[...internal]": {
+        zh: "/_p/com.powerx.plugins.base/admin/plugins/base/:internal(.*)*",
+        en: "/en/_p/com.powerx.plugins.base/admin/plugins/base/:internal(.*)*",
+      },
+    },
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: "i18n_redirected",
       alwaysRedirect: false,
       fallbackLocale: "zh",
+      // 避免因为语言检测而把你从 pluginAdminBase 重定向到根路径
+      redirectOn: "no_prefix",
     },
+    // 可选：SEO base，用于拼绝对 URL（不影响前端路由）
+    // baseUrl: INSIDE_POWERX ? pluginAdminBase : "/",
   },
 });

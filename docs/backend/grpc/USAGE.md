@@ -51,15 +51,15 @@ grpc_server:
 
 ```bash
 # PowerX gRPC 上游配置
-export PX_GRPC_UPSTREAM_ADDRESS="localhost:9001"
-export PX_GRPC_UPSTREAM_TOKEN="your_capability_token"
-export PX_GRPC_UPSTREAM_TENANT_ID="1"
-export PX_GRPC_UPSTREAM_USE_TLS="false"
+export POWERX_GRPC_UPSTREAM_ADDRESS="localhost:9001"
+export POWERX_GRPC_UPSTREAM_TOKEN="your_capability_token"
+export POWERX_GRPC_UPSTREAM_TENANT_ID="1"
+export POWERX_GRPC_UPSTREAM_USE_TLS="false"
 
 # 插件 gRPC 服务器配置
-export PX_GRPC_SERVER_ENABLE="true"
-export PX_GRPC_SERVER_ADDR=":9101"
-export PX_GRPC_SERVER_USE_TLS="false"
+export POWERX_GRPC_SERVER_ENABLE="true"
+export POWERX_GRPC_SERVER_ADDR=":9101"
+export POWERX_GRPC_SERVER_USE_TLS="false"
 ```
 
 ## 功能特性
@@ -217,7 +217,7 @@ cd backend
 go run ./cmd/plugin | grep grpc
 
 # 调试模式运行
-PX_LOG_LEVEL=debug go run ./cmd/plugin
+POWERX_LOG_LEVEL=debug go run ./cmd/plugin
 ```
 
 ## 完成状态

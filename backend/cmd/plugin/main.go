@@ -13,6 +13,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/router"
 	agent "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/utils"
 	"net/http"
 	"os"
 	"os/signal"
@@ -26,11 +27,25 @@ func main() {
 
 	ctx := context.Background()
 
+	if os.Getenv("CONFIG_PATH") == "" && os.Getenv("POWERX_PLUGIN_CONFIG_DIR") != "" {
+		os.Setenv("CONFIG_PATH", os.Getenv("POWERX_PLUGIN_CONFIG_DIR"))
+	}
+
 	// 加载配置
 	cfg, err := config.Load()
 	if err != nil {
 		fmt.Printf("Failed to load config: %v\n", err)
 		os.Exit(1)
+	}
+
+	// ★ 在这里把 HTTP/GRPC 的占位符先解析掉（一定要在起服务之前）
+	//   - HTTP 用 PORT（由 PowerX 的 supervisor 注入）
+	cfg.Server.BindAddr = utils.ResolveDynamicAddr(cfg.Server.BindAddr, "PORT")
+
+	//   - gRPC 用 POWERX_GRPC_PORT（由 PowerX 的 Enable 阶段注入）
+	if cfg.GRPCServer != nil {
+		// 如果你的字段叫 Addr，就把下一行改成：cfg.GRPCServer.Addr = resolveDynamicAddr(cfg.GRPCServer.Addr, "POWERX_GRPC_PORT")
+		cfg.GRPCServer.Addr = utils.ResolveDynamicAddr(cfg.GRPCServer.Addr, "POWERX_GRPC_PORT")
 	}
 
 	// 初始化插件
@@ -77,7 +92,7 @@ func main() {
 
 	// 创建 HTTP 服务器
 	httpServer := &http.Server{
-		Addr:    cfg.BindAddr,
+		Addr:    cfg.Server.BindAddr, // ★ 这里已经是解析后的地址了
 		Handler: engine,
 
 		// 超时配置
@@ -95,7 +110,7 @@ func main() {
 
 	// 启动 HTTP 服务器
 	g.Go(func() error {
-		logger.WithField("addr", cfg.BindAddr).Info("Starting HTTP server...")
+		logger.WithField("addr", cfg.Server.BindAddr).Info("Starting HTTP server...")
 		return httpServer.ListenAndServe()
 	})
 

@@ -11,7 +11,7 @@ additionalProperties: false
 properties:
   server:
     type: object
-    description: "插件 HTTP 服务相关配置，端口会由宿主通过 PX_BIND_ADDR 环境变量覆盖。"
+    description: "插件 HTTP 服务相关配置，端口会由宿主通过 POWERX_BIND_ADDR 环境变量覆盖。"
     additionalProperties: false
     properties:
       bind_addr:

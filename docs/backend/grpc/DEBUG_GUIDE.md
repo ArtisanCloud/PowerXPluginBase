@@ -181,14 +181,14 @@ curl http://localhost:8086/api/v1/demo/grpc/debug
 
 ```bash
 # PowerX gRPC 服务配置
-export PX_GRPC_UPSTREAM_ADDRESS="localhost:9001"
-export PX_GRPC_UPSTREAM_TOKEN="your_capability_token"
-export PX_GRPC_UPSTREAM_TENANT_ID="1"
-export PX_GRPC_UPSTREAM_USE_TLS="false"
+export POWERX_GRPC_UPSTREAM_ADDRESS="localhost:9001"
+export POWERX_GRPC_UPSTREAM_TOKEN="your_capability_token"
+export POWERX_GRPC_UPSTREAM_TENANT_ID="1"
+export POWERX_GRPC_UPSTREAM_USE_TLS="false"
 
 # 插件配置
-export PX_BIND_ADDR=":8086"
-export PX_LOG_LEVEL="debug"
+export POWERX_BIND_ADDR=":8086"
+export POWERX_LOG_LEVEL="debug"
 ```
 
 ### YAML 配置文件 (`backend/etc/config.yaml`)
@@ -273,7 +273,7 @@ http GET localhost:8086/api/v1/demo/grpc/teams keyword==dev
 
 ```bash
 # 启用调试日志
-PX_LOG_LEVEL=debug go run ./cmd/plugin
+POWERX_LOG_LEVEL=debug go run ./cmd/plugin
 
 # 日志示例
 INFO[2024-01-15T10:00:00Z] Calling PowerX gRPC service method=ListMembers service="powerx.organization.v1.MemberService"
@@ -304,8 +304,8 @@ INFO[2024-01-15T10:00:00Z] Starting gRPC server addr=":9101"
 }
 ```
 
-- 检查 `PX_GRPC_UPSTREAM_TOKEN` 是否设置正确
-- 检查 `PX_GRPC_UPSTREAM_TENANT_ID` 是否正确
+- 检查 `POWERX_GRPC_UPSTREAM_TOKEN` 是否设置正确
+- 检查 `POWERX_GRPC_UPSTREAM_TENANT_ID` 是否正确
 
 ## 🚀 切换到真实 PowerX 服务
 

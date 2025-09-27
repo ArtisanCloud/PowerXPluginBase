@@ -4,7 +4,7 @@
 migrate: ## 运行数据库迁移（通过主进程）
 	@echo "运行数据库迁移..."
 	cd $(BACKEND_DIR) && \
-		PX_RUN_MIGRATE=true \
+		POWERX_RUN_MIGRATE=true \
 		go run ./cmd/plugin
 
 .PHONY: migrate-cmd

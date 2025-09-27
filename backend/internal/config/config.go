@@ -378,31 +378,31 @@ func uniqueNonEmptyStrings(values []string) []string {
 // loadEnvConfig 从环境变量加载配置，作为 YAML 的覆盖层
 func loadEnvConfig(cfg *Config) {
 	// 服务配置
-	if addr := resolveConfigValue(os.Getenv("PX_BIND_ADDR")); addr != "" {
+	if addr := resolveConfigValue(os.Getenv("POWERX_BIND_ADDR")); addr != "" {
 		cfg.Server.BindAddr = addr
 	}
-	if level := resolveConfigValue(os.Getenv("PX_LOG_LEVEL")); level != "" {
+	if level := resolveConfigValue(os.Getenv("POWERX_LOG_LEVEL")); level != "" {
 		normalized := strings.ToLower(level)
 		cfg.Server.LogLevel = normalized
 		cfg.Logging.Level = normalized
 	}
-	if devMode := resolveConfigValue(os.Getenv("PX_DEV_MODE")); devMode != "" {
+	if devMode := resolveConfigValue(os.Getenv("POWERX_DEV_MODE")); devMode != "" {
 		cfg.Server.DevMode = (devMode == "1" || strings.EqualFold(devMode, "true"))
 	}
-	if sec := resolveConfigValue(os.Getenv("PX_SERVER_SECRET_KEY")); sec != "" {
+	if sec := resolveConfigValue(os.Getenv("POWERX_SERVER_SECRET_KEY")); sec != "" {
 		cfg.Server.SecretKey = sec
 	}
 
 	// 数据库配置
-	if dsn := resolveConfigValue(os.Getenv("PX_DB_DSN")); dsn != "" {
+	if dsn := resolveConfigValue(os.Getenv("POWERX_DB_DSN")); dsn != "" {
 		cfg.Database.DSN = dsn
 	}
-	if schema := resolveConfigValue(os.Getenv("PX_DB_SCHEMA")); schema != "" {
+	if schema := resolveConfigValue(os.Getenv("POWERX_DB_SCHEMA")); schema != "" {
 		cfg.Database.Schema = schema
 	}
 
 	// 运行时配置
-	if runMigrate := resolveConfigValue(os.Getenv("PX_RUN_MIGRATE")); strings.EqualFold(runMigrate, "true") {
+	if runMigrate := resolveConfigValue(os.Getenv("POWERX_RUN_MIGRATE")); strings.EqualFold(runMigrate, "true") {
 		cfg.Runtime.RunMigrate = true
 	}
 
@@ -413,73 +413,73 @@ func loadEnvConfig(cfg *Config) {
 	if keyID := resolveConfigValue(os.Getenv("PLUGIN_CTX_KID")); keyID != "" {
 		cfg.Context.KeyID = keyID
 	}
-	if jwksURL := resolveConfigValue(os.Getenv("PX_CTX_JWKS_URL")); jwksURL != "" {
+	if jwksURL := resolveConfigValue(os.Getenv("POWERX_CTX_JWKS_URL")); jwksURL != "" {
 		cfg.Context.JWKSURL = jwksURL
 	}
-	if issuer := resolveConfigValue(os.Getenv("PX_CTX_ISSUER")); issuer != "" {
+	if issuer := resolveConfigValue(os.Getenv("POWERX_CTX_ISSUER")); issuer != "" {
 		cfg.Context.Issuer = issuer
 	}
-	if audience := resolveConfigValue(os.Getenv("PX_CTX_AUDIENCE")); audience != "" {
+	if audience := resolveConfigValue(os.Getenv("POWERX_CTX_AUDIENCE")); audience != "" {
 		cfg.Context.Audience = audience
 	}
-	if ttlStr := resolveConfigValue(os.Getenv("PX_CTX_TTL")); ttlStr != "" {
+	if ttlStr := resolveConfigValue(os.Getenv("POWERX_CTX_TTL")); ttlStr != "" {
 		if ttl, err := time.ParseDuration(ttlStr); err == nil {
 			cfg.Context.TTL = ttl
 		}
 	}
 
 	// gRPC 上游配置
-	if grpcAddr := resolveConfigValue(os.Getenv("PX_GRPC_UPSTREAM_ADDRESS")); grpcAddr != "" {
+	if grpcAddr := resolveConfigValue(os.Getenv("POWERX_GRPC_UPSTREAM_ADDRESS")); grpcAddr != "" {
 		cfg.GRPCUpstream.Address = grpcAddr
 	}
-	if grpcToken := resolveConfigValue(os.Getenv("PX_GRPC_UPSTREAM_TOKEN")); grpcToken != "" {
+	if grpcToken := resolveConfigValue(os.Getenv("POWERX_GRPC_UPSTREAM_TOKEN")); grpcToken != "" {
 		cfg.GRPCUpstream.Token = grpcToken
 	}
-	if grpcTenantID := resolveConfigValue(os.Getenv("PX_GRPC_UPSTREAM_TENANT_ID")); grpcTenantID != "" {
+	if grpcTenantID := resolveConfigValue(os.Getenv("POWERX_GRPC_UPSTREAM_TENANT_ID")); grpcTenantID != "" {
 		if tenantID, err := strconv.ParseInt(grpcTenantID, 10, 64); err == nil {
 			cfg.GRPCUpstream.TenantID = tenantID
 		}
 	}
-	if grpcUseTLS := resolveConfigValue(os.Getenv("PX_GRPC_UPSTREAM_USE_TLS")); strings.EqualFold(grpcUseTLS, "true") {
+	if grpcUseTLS := resolveConfigValue(os.Getenv("POWERX_GRPC_UPSTREAM_USE_TLS")); strings.EqualFold(grpcUseTLS, "true") {
 		cfg.GRPCUpstream.UseTLS = true
 	}
-	if grpcCACert := resolveConfigValue(os.Getenv("PX_GRPC_UPSTREAM_CA_CERT")); grpcCACert != "" {
+	if grpcCACert := resolveConfigValue(os.Getenv("POWERX_GRPC_UPSTREAM_CA_CERT")); grpcCACert != "" {
 		cfg.GRPCUpstream.CACert = grpcCACert
 	}
 
 	// STS 相关环境变量（可选）
-	if v := resolveConfigValue(os.Getenv("PX_STS_CLIENT_ID")); v != "" {
+	if v := resolveConfigValue(os.Getenv("POWERX_STS_CLIENT_ID")); v != "" {
 		cfg.GRPCUpstream.STSClientID = v
 	}
-	if v := resolveConfigValue(os.Getenv("PX_STS_CLIENT_SECRET")); v != "" {
+	if v := resolveConfigValue(os.Getenv("POWERX_STS_CLIENT_SECRET")); v != "" {
 		cfg.GRPCUpstream.STSClientSecret = v
 	}
-	if v := resolveConfigValue(os.Getenv("PX_STS_AUDIENCE")); v != "" {
+	if v := resolveConfigValue(os.Getenv("POWERX_STS_AUDIENCE")); v != "" {
 		cfg.GRPCUpstream.STSAudience = v
 	}
-	if v := resolveConfigValue(os.Getenv("PX_STS_SCOPE")); v != "" {
+	if v := resolveConfigValue(os.Getenv("POWERX_STS_SCOPE")); v != "" {
 		cfg.GRPCUpstream.STSScope = v
 	}
-	if v := resolveConfigValue(os.Getenv("PX_STS_TTL")); v != "" {
+	if v := resolveConfigValue(os.Getenv("POWERX_STS_TTL")); v != "" {
 		if d, err := time.ParseDuration(v); err == nil {
 			cfg.GRPCUpstream.STSTTL = d
 		}
 	}
 
 	// gRPC 服务器配置
-	if grpcServerEnable := resolveConfigValue(os.Getenv("PX_GRPC_SERVER_ENABLE")); strings.EqualFold(grpcServerEnable, "false") {
+	if grpcServerEnable := resolveConfigValue(os.Getenv("POWERX_GRPC_SERVER_ENABLE")); strings.EqualFold(grpcServerEnable, "false") {
 		cfg.GRPCServer.Enable = false
 	}
-	if grpcServerAddr := resolveConfigValue(os.Getenv("PX_GRPC_SERVER_ADDR")); grpcServerAddr != "" {
+	if grpcServerAddr := resolveConfigValue(os.Getenv("POWERX_GRPC_SERVER_ADDR")); grpcServerAddr != "" {
 		cfg.GRPCServer.Addr = grpcServerAddr
 	}
-	if grpcServerUseTLS := resolveConfigValue(os.Getenv("PX_GRPC_SERVER_USE_TLS")); strings.EqualFold(grpcServerUseTLS, "true") {
+	if grpcServerUseTLS := resolveConfigValue(os.Getenv("POWERX_GRPC_SERVER_USE_TLS")); strings.EqualFold(grpcServerUseTLS, "true") {
 		cfg.GRPCServer.UseTLS = true
 	}
-	if grpcServerCert := resolveConfigValue(os.Getenv("PX_GRPC_SERVER_CERT")); grpcServerCert != "" {
+	if grpcServerCert := resolveConfigValue(os.Getenv("POWERX_GRPC_SERVER_CERT")); grpcServerCert != "" {
 		cfg.GRPCServer.Cert = grpcServerCert
 	}
-	if grpcServerKey := resolveConfigValue(os.Getenv("PX_GRPC_SERVER_KEY")); grpcServerKey != "" {
+	if grpcServerKey := resolveConfigValue(os.Getenv("POWERX_GRPC_SERVER_KEY")); grpcServerKey != "" {
 		cfg.GRPCServer.Key = grpcServerKey
 	}
 }
@@ -498,24 +498,33 @@ func overrideBindAddrFromEnv(cfg *Config) {
 	if cfg == nil {
 		return
 	}
-	addr := strings.TrimSpace(os.Getenv("PX_BIND_ADDR"))
+	// 优先使用宿主明确下发的完整地址
+	addr := strings.TrimSpace(os.Getenv("POWERX_HTTP_ADDR"))
+
+	// 其次使用宿主注入的动态端口（拼成 :<port>）
 	if addr == "" {
-		if port := strings.TrimSpace(os.Getenv("PORT")); port != "" {
-			if !strings.Contains(port, ":") {
-				addr = ":" + port
-			} else {
-				addr = port
-			}
+		if v := strings.TrimSpace(os.Getenv("POWERX_DYNAMIC_PORT")); v != "" {
+			addr = ":" + v
 		}
 	}
+
+	// 兜底：常见 PaaS 的 PORT
 	if addr == "" {
-		return
+		if v := strings.TrimSpace(os.Getenv("PORT")); v != "" {
+			addr = ":" + v
+		}
 	}
-	if cfg.Server == nil {
-		cfg.Server = &ServerConfig{}
+
+	if addr != "" {
+		if cfg.Server == nil {
+			cfg.Server = &ServerConfig{}
+		}
+		cfg.Server.BindAddr = addr
+		cfg.BindAddr = addr
+	} else {
+		// 至少保持一致
+		cfg.BindAddr = cfg.Server.BindAddr
 	}
-	cfg.Server.BindAddr = addr
-	cfg.BindAddr = addr
 }
 
 func normalizeConfig(cfg *Config) {

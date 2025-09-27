@@ -8,7 +8,7 @@
 
 ## Build, Test, and Development
 - Backend
-  - `make dev`: Run DB migrate then start backend (`PX_*` envs set).
+  - `make dev`: Run DB migrate then start backend (`POWERX_*` envs set).
   - `make run`: Start backend locally on `:8091`.
   - `make build` / `make build-linux`: Compile backend binary to `backend/bin/plugin`.
   - `make migrate` / `make migrate-cmd`: Apply migrations.
@@ -33,10 +33,10 @@
 
 ## Commit & Pull Requests
 - Commits: small, descriptive, imperative (“Add team routes”). Group logical changes; avoid mixed backend/frontend in one commit when possible.
-- PRs: include summary, screenshots for UI, steps to validate, and any schema or config changes (`PX_*`). Link issues. Passing CI, lint, and coverage required.
+- PRs: include summary, screenshots for UI, steps to validate, and any schema or config changes (`POWERX_*`). Link issues. Passing CI, lint, and coverage required.
 
 ## Security & Config
-- Sensitive config via env: `PX_BIND_ADDR`, `PX_DB_SCHEMA`, `PX_LOG_LEVEL`, `PX_DEV_MODE`. Do not hardcode secrets.
+- Sensitive config via env: `POWERX_BIND_ADDR`, `POWERX_DB_SCHEMA`, `POWERX_LOG_LEVEL`, `POWERX_DEV_MODE`. Do not hardcode secrets.
 - Validate inputs at transport layer; use centralized error/response helpers for consistency.
 
 ## Agent-Specific Notes

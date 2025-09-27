@@ -1,13 +1,16 @@
 package router
 
 import (
-    "github.com/ArtisanCloud/PowerXPlugin/internal/config"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/logger"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http"
-    middleware2 "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/middleware"
-    "time"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http"
+	middleware2 "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,7 +45,7 @@ func (r *Router) Setup() *gin.Engine {
 	// 设置全局中间件
 	r.setupGlobalMiddleware()
 
-	// 设置路由
+	// 设置业务路由
 	r.setupRoutes()
 
 	logger.Info("Router setup completed")
@@ -51,73 +54,80 @@ func (r *Router) Setup() *gin.Engine {
 
 // setupGlobalMiddleware 设置全局中间件
 func (r *Router) setupGlobalMiddleware() {
-	// 恢复中间件
+
+	// 健康检查（在其它中间件前放行 /healthz）
+	r.engine.Use(middleware.HealthCheck("/healthz"))
+
+	// 恢复
 	r.engine.Use(middleware.Recovery())
 
-	// 请求日志中间件
+	// 请求日志
 	r.engine.Use(middleware.RequestLogger())
 
-	// 安全头部中间件
+	// 安全头
 	r.engine.Use(middleware.SecurityHeaders())
 
-	// CORS 中间件
+	// CORS
 	r.engine.Use(middleware.CORS())
 
-	// 请求 ID 中间件
+	// 请求 ID
 	r.engine.Use(middleware.RequestID())
 
-	// 超时中间件（30秒）
+	// 超时（30 秒）
 	r.engine.Use(middleware.Timeout(30 * time.Second))
 
-    // 速率限制中间件（每分钟最多 100 个请求）
-    r.engine.Use(middleware.RateLimiter(100, time.Minute))
+	// 速率限制（每分钟最多 100 个请求）
+	r.engine.Use(middleware.RateLimiter(100, time.Minute))
 
-    // 健康检查中间件（在其他中间件之前）
-    r.engine.Use(middleware.HealthCheck("/healthz"))
-
-    // 开发模式：若未鉴权，则注入一个默认 TenantContext，便于本地无 PowerX 时调试
-    if !r.cfg.IsProduction() {
-        tenantID := int64(1)
-        if r.cfg.GRPCUpstream != nil && r.cfg.GRPCUpstream.TenantID > 0 {
-            tenantID = r.cfg.GRPCUpstream.TenantID
-        }
-        r.engine.Use(middleware2.DevSwitch(true, middleware.TenantContext{
-            TenantID:    tenantID,
-            UserID:      0,
-            Roles:       []string{"superadmin"},
-            Permissions: []string{"*"},
-        }))
-    }
+	// —— 仅在“不在 PowerX 宿主内”且“非生产”时，才启用 DevSwitch —— //
+	// 避免 PowerX 模式被 DevSwitch 绕过鉴权。
+	if !r.cfg.IsProduction() && os.Getenv("POWERX_PROXY") != "1" {
+		tenantID := int64(1)
+		if r.cfg.GRPCUpstream != nil && r.cfg.GRPCUpstream.TenantID > 0 {
+			tenantID = r.cfg.GRPCUpstream.TenantID
+		}
+		r.engine.Use(middleware2.DevSwitch(true, middleware.TenantContext{
+			TenantID:    tenantID,
+			UserID:      0,
+			Roles:       []string{"superadmin"},
+			Permissions: []string{"*"},
+		}))
+	}
 }
 
 // setupRoutes 设置路由
 func (r *Router) setupRoutes() {
-	// 设置租户认证中间件
+	// —— API 前缀：默认 /api/v1，并确保带前导斜杠 —— //
 	prefix := r.cfg.Server.APIPrefix
-	if prefix == "" {
-		prefix = "api/v1"
+	if strings.TrimSpace(prefix) == "" {
+		prefix = "/api/v1"
+	}
+	if !strings.HasPrefix(prefix, "/") {
+		prefix = "/" + prefix
 	}
 
+	// 鉴权/权限组件
 	jwtCfg := r.buildJWT()
 	rbacCfg := r.buildRBAC()
 	abacClient := r.buildABAC()
 
+	// API 分组 + 鉴权 + RBAC
 	gApi := r.engine.Group(prefix)
 	gApi.Use(middleware2.JWTAuth(jwtCfg))
 	gApi.Use(middleware2.RBAC(rbacCfg, abacClient, func(m, path string) (bool, map[string]any) {
-		// 标记需要 ABAC 的路由（可换成表驱动/装饰器）
+		// 示例：某些路由需要 ABAC，把 path 参数传给 PDP
 		if path == "/api/v1/notes/:id" && m == "GET" {
 			return true, map[string]any{"note_id": "{id}"}
 		}
 		return false, nil
 	}))
 
-	// 使用 API 注册器注册所有路由
+	// 使用 API 注册器注册所有路由（保持你现有的注册逻辑）
 	apiRegistry := http.NewRegistry(r.engine, r.deps)
 	apiRegistry.RegisterAPIRoutes(gApi)
 
-	// 记录已注册的路由表
-	//apiRegistry.PrintRegisteredRoutes()
+	// 如需调试：打印已注册路由
+	// apiRegistry.PrintRegisteredRoutes()
 }
 
 // GetEngine 获取 Gin 引擎
@@ -133,49 +143,75 @@ func (r *Router) RegisterCustomRoutes(fn func(*gin.Engine)) {
 }
 
 // RegisterMiddleware 注册中间件
-func (r *Router) RegisterMiddleware(middleware gin.HandlerFunc) {
+func (r *Router) RegisterMiddleware(m gin.HandlerFunc) {
 	if r.engine != nil {
-		r.engine.Use(middleware)
+		r.engine.Use(m)
 	}
 }
 
-// —— 从配置构造 JWT 配置 —— //
+// —— 从配置构造 JWT 配置（自动区分 PowerX 宿主/本地直连） —— //
 func (r *Router) buildJWT() middleware.JWTAuthConfig {
+	inPX := os.Getenv("POWERX_PROXY") == "1"
+	if inPX {
+		// PowerX 网关严格模式：使用宿主注入的安全参数
+		pid := strings.TrimSpace(os.Getenv("POWERX_PLUGIN_ID"))
+		aud := strings.TrimSpace(os.Getenv("POWERX_SECURITY_JWT_AUDIENCE"))
+		if aud == "" && pid != "" {
+			aud = "plugin:" + pid
+		}
+		return middleware.JWTAuthConfig{
+			Issuer:             strings.TrimSpace(os.Getenv("POWERX_SECURITY_JWT_ISSUER")),
+			AcceptAudiences:    []string{aud},
+			HMACSecret:         strings.TrimSpace(os.Getenv("POWERX_SECURITY_JWT_SECRET")), // 可为空：只走签名上下文
+			ContextHMACSecret:  strings.TrimSpace(os.Getenv("POWERX_SECURITY_CTX_HMAC_SECRET")),
+			AllowSignedContext: true,  // 允许 X-PowerX-CTX / X-PowerX-CTX-SIG
+			Optional:           false, // 严格：失败即 401
+			ClockSkewSeconds:   60,
+			MaxCtxAgeSeconds:   300,
+		}
+	}
+
+	// 本地直连开发：可放宽（Optional 由配置/环境决定）
 	prod := r.cfg.IsProduction()
 	cfg := middleware.JWTAuthConfig{
-		Issuer:             "powerx",
-		AcceptAudiences:    []string{"plugin:note"},
-		HMACSecret:         "change-me",
-		ClockSkewSeconds:   60,
-		Optional:           !prod,
-		AllowSignedContext: !prod,
-		ContextHMACSecret:  "change-me",
+		Issuer:           "powerx",
+		AcceptAudiences:  []string{"powerx:admin", "powerx:api"},
+		HMACSecret:       "", // 如需本地校验 HS256，可在 config.Context.HMACSecret 配置
+		ClockSkewSeconds: 60,
+		// 非生产环境可以 Optional=true，这样配合 DevSwitch 可免鉴权调试
+		Optional:           !prod || (r.cfg.Server.DevMode),
+		AllowSignedContext: false, // 本地通常不走签名上下文；如要测试，置 true 并填 ContextHMACSecret
+		ContextHMACSecret:  "",
 		MaxCtxAgeSeconds:   300,
 	}
-	// TODO: 下面把你的真实配置字段映射进来（示例）：
-	// if r.cfg.Auth != nil {
-	//     cfg.Issuer = r.cfg.Auth.Issuer
-	//     cfg.AcceptAudiences = r.cfg.Auth.Audiences
-	//     cfg.HMACSecret = r.cfg.Auth.HMACSecret
-	//     cfg.AllowSignedContext = r.cfg.Auth.AllowSignedContext
-	//     cfg.ContextHMACSecret = r.cfg.Auth.ContextHMACSecret
-	//     cfg.Optional = r.cfg.Auth.Optional && !prod
-	// }
+
+	// 如果你的 config 里有上下文字段，这里做一次覆盖（可选）
+	if r.cfg.Context != nil {
+		if v := strings.TrimSpace(r.cfg.Context.HMACSecret); v != "" {
+			cfg.HMACSecret = v
+		}
+		// 若需要本地也测签名上下文，在 config.Context 里提供同一把 HMAC
+		if v := strings.TrimSpace(r.cfg.Context.HMACSecret); v != "" {
+			cfg.ContextHMACSecret = v
+		}
+	}
+
 	return cfg
 }
 
 // —— 从配置构造 RBAC 配置 —— //
 func (r *Router) buildRBAC() *middleware.RBACConfig {
-    cfg := &middleware.RBACConfig{
-        Enabled:         true,
-        // 开发模式默认放行未配置的路由；生产环境默认拒绝
-        DefaultDeny:     r.cfg.IsProduction(),
-        SuperAdminRoles: []string{"superadmin"},
-        RoutePermissions: map[string]middleware.Permission{
-            "GET:/api/v1/notes/:id": {Resource: "note", Action: "read"},
-        },
-    }
-	// TODO: 若你有 RBAC 目录/配置文件，在这里加载并覆盖 cfg.RoutePermissions
+	cfg := &middleware.RBACConfig{
+		Enabled: true,
+		// 生产默认拒绝未声明的路由；开发默认放行
+		DefaultDeny:     r.cfg.IsProduction(),
+		SuperAdminRoles: []string{"superadmin", "admin"},
+		RoutePermissions: map[string]middleware.Permission{
+			"GET:/api/v1/notes/:id": {Resource: "note", Action: "read"},
+			// 根据需要继续补……
+		},
+	}
+	// TODO: 若你有 RBAC 配置文件/表，这里加载并合并到 cfg.RoutePermissions
 	return cfg
 }
 
@@ -185,7 +221,7 @@ func (r *Router) buildABAC() middleware.ABACClient {
 	if r.cfg.IsProduction() {
 		endpoint = "http://pdp.powerx.svc/check"
 	}
-	// TODO: 如果 r.cfg 里有 PDP 地址，从配置读：
+	// TODO: 如果 r.cfg 有 PDP 地址，从配置覆盖：
 	// if r.cfg.Auth != nil && r.cfg.Auth.PDP != "" { endpoint = r.cfg.Auth.PDP }
 	return middleware.NewHTTPABACClient(endpoint)
 }
