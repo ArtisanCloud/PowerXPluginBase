@@ -56,8 +56,8 @@ frontend:
           key: menu.base.note
           default: Base Plugin
         icon: i-heroicons-clipboard-document-check
-        path: /plugins/base
-        route: plugins/base
+        path: /dashboard
+        route: dashboard
         order: 20
         slot: group.plugins
         required_policies: [base:note:read]
@@ -69,8 +69,8 @@ frontend:
               key: menu.base.dashboard
               default: Dashboard
             icon: i-heroicons-squares-2x2
-            path: /plugins/base/dashboard
-            route: plugins/base/dashboard
+            path: /dashboard
+            route: dashboard
             order: 1
           - id: base.notes
             title: 笔记
@@ -79,8 +79,8 @@ frontend:
               key: menu.base.notes.title
               default: Notes
             icon: i-heroicons-clipboard-document-list
-            path: /plugins/base/notes
-            route: plugins/base/notes
+            path: /notes
+            route: notes
             order: 2
             children:
               - id: base.notes.overview
@@ -90,8 +90,8 @@ frontend:
                   key: menu.base.notes.overview
                   default: Notes Overview
                 icon: i-heroicons-document-text
-                path: /plugins/base/notes
-                route: plugins/base/notes
+                path: /notes
+                route: notes
                 order: 1
               - id: base.notes.active
                 title: 活跃笔记
@@ -100,8 +100,8 @@ frontend:
                   key: menu.base.notes.active
                   default: Active Notes
                 icon: i-heroicons-play-circle
-                path: /plugins/base/notes/active
-                route: plugins/base/notes/active
+                path: /notes/active
+                route: notes/active
                 order: 2
           - id: base.reports
             title: 报表
@@ -110,8 +110,8 @@ frontend:
               key: menu.base.reports.title
               default: Reports
             icon: i-heroicons-chart-bar
-            path: /plugins/base/reports
-            route: plugins/base/reports
+            path: /reports
+            route: reports
             order: 3
             required_policies: [base:report:read]
             children:
@@ -122,8 +122,8 @@ frontend:
                   key: menu.base.reports.daily
                   default: Daily Report
                 icon: i-heroicons-calendar-days
-                path: /plugins/base/reports/daily
-                route: plugins/base/reports/daily
+                path: /reports/daily
+                route: reports/daily
                 order: 1
               - id: base.reports.monthly
                 title: 月报表
@@ -132,8 +132,8 @@ frontend:
                   key: menu.base.reports.monthly
                   default: Monthly Report
                 icon: i-heroicons-calendar
-                path: /plugins/base/reports/monthly
-                route: plugins/base/reports/monthly
+                path: /reports/monthly
+                route: reports/monthly
                 order: 2
 
 routes:
@@ -162,8 +162,8 @@ menus:
       key: menu.base.note
       default: Base Plugin
     icon: i-heroicons-clipboard-document-check
-    path: /plugins/base
-    route: plugins/base
+    path: /dashboard
+    route: dashboard
     order: 20
     slot: group.plugins
     required_policies: [base:note:read]
@@ -175,8 +175,8 @@ menus:
           key: menu.base.dashboard
           default: Dashboard
         icon: i-heroicons-squares-2x2
-        path: /plugins/base/dashboard
-        route: plugins/base/dashboard
+        path: /dashboard
+        route: dashboard
         order: 1
       - id: plugins.base.notes
         title: 笔记
@@ -185,8 +185,8 @@ menus:
           key: menu.base.notes.title
           default: Notes
         icon: i-heroicons-clipboard-document-list
-        path: /plugins/base/notes
-        route: plugins/base/notes
+        path: /notes
+        route: notes
         order: 2
         children:
           - id: plugins.base.notes.overview
@@ -196,8 +196,8 @@ menus:
               key: menu.base.notes.overview
               default: Notes Overview
             icon: i-heroicons-document-text
-            path: /plugins/base/notes
-            route: plugins/base/notes
+            path: /notes
+            route: notes
             order: 1
           - id: plugins.base.notes.active
             title: 活跃笔记
@@ -206,8 +206,8 @@ menus:
               key: menu.base.notes.active
               default: Active Notes
             icon: i-heroicons-play-circle
-            path: /plugins/base/notes/active
-            route: plugins/base/notes/active
+            path: /notes/active
+            route: notes/active
             order: 2
       - id: plugins.base.reports
         title: 报表
@@ -216,8 +216,8 @@ menus:
           key: menu.base.reports.title
           default: Reports
         icon: i-heroicons-chart-bar
-        path: /plugins/base/reports
-        route: plugins/base/reports
+        path: /reports
+        route: reports
         order: 3
         required_policies: [base:report:read]
         children:
@@ -228,8 +228,8 @@ menus:
               key: menu.base.reports.daily
               default: Daily Report
             icon: i-heroicons-calendar-days
-            path: /plugins/base/reports/daily
-            route: plugins/base/reports/daily
+            path: /reports/daily
+            route: reports/daily
             order: 1
           - id: plugins.base.reports.monthly
             title: 月报表
@@ -238,8 +238,8 @@ menus:
               key: menu.base.reports.monthly
               default: Monthly Report
             icon: i-heroicons-calendar
-            path: /plugins/base/reports/monthly
-            route: plugins/base/reports/monthly
+            path: /reports/monthly
+            route: reports/monthly
             order: 2
 
 agents:

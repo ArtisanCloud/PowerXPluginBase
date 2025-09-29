@@ -1,143 +1,208 @@
-# build.mk 仅负责构建与打包相关的目标
-# 固定插件 ID（你说不需要搞动态）
-PLUGIN_ID           = com.powerx.plugins.base
-POWERX_ADMIN_BASE   = /_p/$(PLUGIN_ID)/admin/
-FRONTEND_DIR        = web-admin
-FRONTEND_OUTPUT     = $(FRONTEND_DIR)/.output
-CHECK_PORT          = 4100
-CHECK_URL           = http://127.0.0.1:$(CHECK_PORT)$(POWERX_ADMIN_BASE)
+# =========================
+# build.mk （完整版本）
+# 支持：
+#  - Host（被 PowerX 反代运行）：POWERX_PROXY=1, baseURL=/_p/<pluginId>/admin/
+#  - Standalone（独立部署/本地预览）：POWERX_PROXY=0, baseURL=/
+#  - 前后端构建、运行、打包、检查
+# =========================
 
+# ===== 基础信息 =====
+PLUGIN_ID           ?= com.powerx.plugins.base
+# 从 plugin.yaml 读取版本（若失败则默认 0.1.0）
+VERSION             ?= $(shell awk -F': *' '/^version:/ {print $$2; exit}' plugin.yaml 2>/dev/null || echo "0.1.0")
+
+# ===== 目录结构（可按项目调整）=====
+# 后端代码在仓库根；如你的 cmd/plugin 在 repo/cmd/plugin，请保持 BACKEND_DIR = .
+BACKEND_DIR         ?= .
+BUILD_DIR           ?= $(BACKEND_DIR)/bin
+
+FRONTEND_DIR        ?= web-admin
+FRONTEND_OUTPUT     ?= $(FRONTEND_DIR)/.output
+
+# Dist（install/local 用）
+DIST_ROOT           ?= dist
+DIST_DIR            ?= $(DIST_ROOT)/$(VERSION)
+DIST_BACKEND_BIN    ?= $(DIST_DIR)/bin
+DIST_WEBADMIN_DIR   ?= $(DIST_DIR)/web-admin
+DIST_WEBADMIN_OUTPUT?= $(DIST_WEBADMIN_DIR)/.output
+
+# Release（完整发布包）
+RELEASE_ROOT        ?= target
+RELEASE_DIR         ?= $(RELEASE_ROOT)/$(VERSION)
+RELEASE_BACKEND_BIN ?= $(RELEASE_DIR)/bin
+RELEASE_WEBADMIN_DIR?= $(RELEASE_DIR)/web-admin
+RELEASE_WEBADMIN_OUTPUT ?= $(RELEASE_WEBADMIN_DIR)/.output
+
+# ===== URL / 端口 =====
+POWERX_ADMIN_BASE   ?= /_p/$(PLUGIN_ID)/admin/    # Host 构建时写入到前端 baseURL
+HOST_PORT           ?= 4100                       # 运行 Host 产物时的本地端口
+STANDALONE_PORT     ?= 4200                       # 运行 Standalone 产物时的本地端口
+CHECK_PORT          ?= 4999                       # 临时检查端口（不要和上面冲突）
+
+# ===== Go 构建（如不需要可删）=====
 .PHONY: build
-build: ## 构建后端二进制文件
-	@echo "构建后端二进制文件..."
+build: ## 构建后端（本机平台）
+	@echo "==> 构建后端二进制（本机平台）..."
 	@mkdir -p $(BUILD_DIR)
-	cd $(BACKEND_DIR) && go build -o bin/plugin ./cmd/plugin
-	cd $(BACKEND_DIR) && go build -o bin/migrate ./cmd/database
+	cd $(BACKEND_DIR) && go build -o $(BUILD_DIR)/plugin ./cmd/plugin
+	@if [ -d "$(BACKEND_DIR)/cmd/database" ]; then \
+	  echo "   构建 migrate（如存在）..."; \
+	  cd $(BACKEND_DIR) && go build -o $(BUILD_DIR)/migrate ./cmd/database; \
+	else \
+	  echo "   跳过 migrate（未找到 cmd/database）"; \
+	fi
 
 .PHONY: build-linux
-build-linux: ## 构建 Linux 版本的后端二进制
-	@echo "构建 Linux 版本的后端二进制..."
+build-linux: ## 构建后端（Linux amd64）
+	@echo "==> 构建后端二进制（Linux/amd64）..."
 	@mkdir -p $(BUILD_DIR)
-	cd $(BACKEND_DIR) && GOOS=linux GOARCH=amd64 go build -o bin/plugin ./cmd/plugin
-	cd $(BACKEND_DIR) && GOOS=linux GOARCH=amd64 go build -o bin/migrate ./cmd/database
+	cd $(BACKEND_DIR) && GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/plugin ./cmd/plugin
+	@if [ -d "$(BACKEND_DIR)/cmd/database" ]; then \
+	  echo "   构建 migrate（Linux/amd64）..."; \
+	  cd $(BACKEND_DIR) && GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/migrate ./cmd/database; \
+	else \
+	  echo "   跳过 migrate（未找到 cmd/database）"; \
+	fi
 
-
+# ===== 前端构建（Host / 被 PowerX 反代）=====
 .PHONY: frontend-build
-frontend-build:
-	@echo "构建 web-admin 前端产物（写入 baseURL=$(POWERX_ADMIN_BASE)）..."
+frontend-build: ## 构建 Host 包（POWERX_PROXY=1, baseURL=$(POWERX_ADMIN_BASE)）
+	@echo "==> 构建 web-admin（Host 包） POWERX_PROXY=1 baseURL=$(POWERX_ADMIN_BASE)"
 	cd $(FRONTEND_DIR) && \
-		POWERX_PROXY=1 \
-		POWERX_ADMIN_BASE="$(POWERX_ADMIN_BASE)" \
-		NODE_ENV=production \
-		npx nuxi build
+	  POWERX_PROXY=1 \
+	  POWERX_ADMIN_BASE="$(POWERX_ADMIN_BASE)" \
+	  NODE_ENV=production \
+	  npx nuxi build
 
+# ===== 前端构建（Standalone / 独立部署）=====
+.PHONY: frontend-build-standalone
+frontend-build-standalone: ## 构建 Standalone 包（POWERX_PROXY=0, baseURL=/）
+	@echo "==> 构建 web-admin（Standalone 包） POWERX_PROXY=0 baseURL=/"
+	cd $(FRONTEND_DIR) && \
+	  POWERX_PROXY=0 \
+	  NODE_ENV=production \
+	  npx nuxi build
+
+# ===== 运行已编译的前端产物（Host）=====
 .PHONY: run-frontend
-run-frontend: ## 仅运行已编译的 Nitro server（前台）
-	@echo "启动 Nitro: $(CHECK_URL)"
+run-frontend: ## 启动 Host 产物（默认端口 $(HOST_PORT)）
+	@if [ ! -f "$(FRONTEND_OUTPUT)/server/index.mjs" ]; then \
+	  echo "❌ 未找到 $(FRONTEND_OUTPUT)/server/index.mjs"; \
+	  echo "   请先执行: make frontend-build"; \
+	  exit 1; \
+	fi
+	@if [ -z "$(HOST_PORT)" ]; then echo "❌ HOST_PORT 为空"; exit 1; fi
+	@echo "==> 启动 Host 产物： http://127.0.0.1:$(HOST_PORT)$(POWERX_ADMIN_BASE)"
+	cd $(FRONTEND_OUTPUT) && PORT=$(HOST_PORT) NODE_ENV=production node server/index.mjs
+
+# ===== 运行已编译的前端产物（Standalone）=====
+.PHONY: run-frontend-standalone
+run-frontend-standalone: ## 启动 Standalone 产物（默认端口 $(STANDALONE_PORT)）
+	@if [ ! -f "$(FRONTEND_OUTPUT)/server/index.mjs" ]; then \
+	  echo "❌ 未找到 $(FRONTEND_OUTPUT)/server/index.mjs"; \
+	  echo "   请先执行: make frontend-build-standalone"; \
+	  exit 1; \
+	fi
+	@if [ -z "$(STANDALONE_PORT)" ]; then echo "❌ STANDALONE_PORT 为空"; exit 1; fi
+	@echo "==> 启动 Standalone 产物： http://127.0.0.1:$(STANDALONE_PORT)/"
+	cd $(FRONTEND_OUTPUT) && PORT=$(STANDALONE_PORT) NODE_ENV=production node server/index.mjs
+
+# ===== 校验产物中的 baseURL（Host 构建）=====
+.PHONY: check-base-host
+check-base-host: frontend-build ## 构建后临时起 Nitro，抓首页里的 app.baseURL
+	@echo "==> 检查 Host 产物 baseURL..."
+	@if [ ! -f "$(FRONTEND_OUTPUT)/server/index.mjs" ]; then \
+	  echo "❌ 未找到 $(FRONTEND_OUTPUT)/server/index.mjs"; exit 1; fi
 	cd $(FRONTEND_OUTPUT) && \
-		PORT=$(CHECK_PORT) NODE_ENV=production node server/index.mjs
+	  PORT=$(CHECK_PORT) NODE_ENV=production node server/index.mjs & echo $$! > .nuxt_pid; \
+	  for i in `seq 1 40`; do \
+	    sleep 0.25; curl -fsS "http://127.0.0.1:$(CHECK_PORT)$(POWERX_ADMIN_BASE)" >/dev/null 2>&1 && break; \
+	    if [ $$i -eq 40 ]; then echo "Nitro 未就绪"; kill $$(cat .nuxt_pid) 2>/dev/null || true; exit 1; fi; \
+	  done; \
+	  echo -n "HTML 中的 "; \
+	  curl -s "http://127.0.0.1:$(CHECK_PORT)$(POWERX_ADMIN_BASE)" | grep -o 'app:{baseURL:"[^"]*"}' | head -1 || true; \
+	  kill $$(cat .nuxt_pid) 2>/dev/null || true; rm -f .nuxt_pid
 
-.PHONY: check-base
-check-base: frontend-build ## 构建后拉起 Nitro，抓首页 HTML 验证 baseURL
-	@echo "启动 Nitro 并检查 baseURL..."
+# ===== 校验产物中的 baseURL（Standalone 构建）=====
+.PHONY: check-base-standalone
+check-base-standalone: frontend-build-standalone
+	@echo "==> 检查 Standalone 产物 baseURL..."
+	@if [ ! -f "$(FRONTEND_OUTPUT)/server/index.mjs" ]; then \
+	  echo "❌ 未找到 $(FRONTEND_OUTPUT)/server/index.mjs"; exit 1; fi
 	cd $(FRONTEND_OUTPUT) && \
-		PORT=$(CHECK_PORT) NODE_ENV=production node server/index.mjs & echo $$! > .nuxt_pid; \
-		for i in $$(seq 1 40); do \
-			sleep 0.25; \
-			curl -fsS "$(CHECK_URL)" >/dev/null 2>&1 && break; \
-			if [ $$i -eq 40 ]; then echo "Nitro 未就绪"; kill $$(cat .nuxt_pid) 2>/dev/null || true; exit 1; fi; \
-		done; \
-		echo -n "HTML 中的 "; \
-		curl -s "$(CHECK_URL)" | grep -o 'app:{baseURL:"[^"]*"}' | head -1 || true; \
-		kill $$(cat .nuxt_pid) 2>/dev/null || true; rm -f .nuxt_pid
+	  PORT=$(CHECK_PORT) NODE_ENV=production node server/index.mjs & echo $$! > .nuxt_pid; \
+	  for i in `seq 1 40`; do \
+	    sleep 0.25; curl -fsS "http://127.0.0.1:$(CHECK_PORT)/" >/dev/null 2>&1 && break; \
+	    if [ $$i -eq 40 ]; then echo "Nitro 未就绪"; kill $$(cat .nuxt_pid) 2>/dev/null || true; exit 1; fi; \
+	  done; \
+	  echo -n "HTML 中的 "; \
+	  curl -s "http://127.0.0.1:$(CHECK_PORT)/" | grep -o 'app:{baseURL:"[^"]*"}' | head -1 || true; \
+	  kill $$(cat .nuxt_pid) 2>/dev/null || true; rm -f .nuxt_pid
 
-
-.PHONY: clean
-clean: ## 清理构建产物
-	@echo "清理构建产物..."
-	rm -rf $(BUILD_DIR)
-	rm -f $(BACKEND_DIR)/coverage.out $(BACKEND_DIR)/coverage.html
-
-.PHONY: dist-clean
-dist-clean: ## 清理 dist 目录
-	@echo "清理 dist 目录..."
-	rm -rf $(DIST_ROOT)
-
-.PHONY: release-clean
-release-clean: ## 清理 target 目录
-	@echo "清理 target 目录..."
-	rm -rf $(RELEASE_ROOT)
-
+# ===== 生成 dist（目录安装包，给 PowerX 的 install/local 用）=====
 .PHONY: dist
-dist: build frontend-build ## 生成供 install/local 使用的目录结构
-	@echo "准备目录模式安装包..."
+dist: build frontend-build
+	@echo "==> 生成 dist 安装包目录：$(DIST_DIR)"
 	@rm -rf $(DIST_DIR)
-	@mkdir -p $(DIST_BACKEND_BIN) $(DIST_WEBADMIN_DIR)
+	@mkdir -p $(DIST_BACKEND_BIN) $(DIST_WEBADMIN_OUTPUT)
 	@cp plugin.yaml $(DIST_DIR)/
 	@cp $(BUILD_DIR)/plugin $(DIST_BACKEND_BIN)/
-	@if [ -f $(BUILD_DIR)/migrate ]; then \
-		cp $(BUILD_DIR)/migrate $(DIST_BACKEND_BIN)/; \
-	fi
-	@if [ -d config ]; then \
-		mkdir -p $(DIST_DIR)/config; \
-		for f in schema.yaml values.example.yaml; do \
-			if [ -f config/$$f ]; then cp config/$$f $(DIST_DIR)/config/; fi; \
-		done; \
-	fi
-	@rm -f $(DIST_DIR)/config/host-values.yaml
+	@if [ -f "$(BUILD_DIR)/migrate" ]; then cp $(BUILD_DIR)/migrate $(DIST_BACKEND_BIN)/; fi
 	@if [ -d "$(FRONTEND_OUTPUT)" ] && [ -n "$$(ls -A $(FRONTEND_OUTPUT) 2>/dev/null)" ]; then \
-			echo "复制前端构建产物 -> $(DIST_WEBADMIN_OUTPUT)"; \
-			mkdir -p $(DIST_WEBADMIN_OUTPUT); \
-			cp -R $(FRONTEND_OUTPUT)/. $(DIST_WEBADMIN_OUTPUT)/; \
+	  echo "复制前端构建产物 -> $(DIST_WEBADMIN_OUTPUT)"; \
+	  cp -R $(FRONTEND_OUTPUT)/. $(DIST_WEBADMIN_OUTPUT)/; \
 	else \
-			echo "提示: 未找到或前端构建目录为空 ($(FRONTEND_OUTPUT))"; \
-			echo "     请先执行 make frontend-build"; \
-		fi
-	@if [ -d $(FRONTEND_DIR)/i18n ]; then \
-			echo "复制前端语言资源 -> $(DIST_WEBADMIN_DIR)/i18n"; \
-			mkdir -p $(DIST_WEBADMIN_DIR)/i18n; \
-			cp -R $(FRONTEND_DIR)/i18n/. $(DIST_WEBADMIN_DIR)/i18n/; \
+	  echo "⚠️  未找到前端构建产物：$(FRONTEND_OUTPUT)"; \
 	fi
-	@if [ -f README.md ]; then \
-			cp README.md $(DIST_DIR)/; \
-		fi
+	@if [ -d "$(FRONTEND_DIR)/i18n" ]; then \
+	  mkdir -p $(DIST_WEBADMIN_DIR)/i18n; \
+	  cp -R $(FRONTEND_DIR)/i18n/. $(DIST_WEBADMIN_DIR)/i18n/; \
+	fi
+	@if [ -f README.md ]; then cp README.md $(DIST_DIR)/; fi
 
+# ===== 生成 release（完整发布包）=====
 .PHONY: release
-release: build frontend-build ## 生成 target/<version> 发布目录（包含前后端产物）
-	@echo "准备发布目录 $(RELEASE_DIR)..."
+release: build frontend-build
+	@echo "==> 生成 release 发布目录：$(RELEASE_DIR)"
 	@rm -rf $(RELEASE_DIR)
-	@mkdir -p $(RELEASE_BACKEND_BIN)
+	@mkdir -p $(RELEASE_BACKEND_BIN) $(RELEASE_WEBADMIN_OUTPUT)
 	@cp plugin.yaml $(RELEASE_DIR)/
 	@cp $(BUILD_DIR)/plugin $(RELEASE_BACKEND_BIN)/
-	@if [ -f $(BUILD_DIR)/migrate ]; then \
-		cp $(BUILD_DIR)/migrate $(RELEASE_BACKEND_BIN)/; \
+	@if [ -f "$(BUILD_DIR)/migrate" ]; then cp $(BUILD_DIR)/migrate $(RELEASE_BACKEND_BIN)/; fi
+	@cp -R $(FRONTEND_OUTPUT)/. $(RELEASE_WEBADMIN_OUTPUT)/
+	@if [ -d "$(FRONTEND_DIR)/i18n" ]; then \
+	  mkdir -p $(RELEASE_WEBADMIN_DIR)/i18n; \
+	  cp -R $(FRONTEND_DIR)/i18n/. $(RELEASE_WEBADMIN_DIR)/i18n/; \
 	fi
-	@if [ -d config ]; then \
-		mkdir -p $(RELEASE_DIR)/config; \
-		for f in schema.yaml values.example.yaml; do \
-			if [ -f config/$$f ]; then cp config/$$f $(RELEASE_DIR)/config/; fi; \
-		done; \
-	fi
-	@rm -f $(RELEASE_DIR)/config/host-values.yaml
-	@mkdir -p $(RELEASE_WEBADMIN_DIR)
-	@cp -R $(FRONTEND_OUTPUT) $(RELEASE_WEBADMIN_OUTPUT)
-	@if [ -d $(FRONTEND_DIR)/i18n ]; then \
-			echo "复制前端语言资源 -> $(RELEASE_WEBADMIN_DIR)/i18n"; \
-			mkdir -p $(RELEASE_WEBADMIN_DIR)/i18n; \
-			cp -R $(FRONTEND_DIR)/i18n/. $(RELEASE_WEBADMIN_DIR)/i18n/; \
-	fi
-	@if [ -f README.md ]; then \
-			cp README.md $(RELEASE_DIR)/; \
-		fi
+	@if [ -f README.md ]; then cp README.md $(RELEASE_DIR)/; fi
 
+# ===== 打包 zip =====
 .PHONY: package
-package: dist ## 打包 dist 目录为 zip（用于远程安装）
-	@echo "打包插件压缩包..."
-	@rm -f $(APP_NAME)-$(VERSION).zip
-	@cd $(DIST_ROOT) && zip -r ../$(APP_NAME)-$(VERSION).zip $(VERSION)
+package: dist
+	@echo "==> 打包 dist 为 zip（install/local 用）..."
+	@rm -f $(PLUGIN_ID)-$(VERSION).zip
+	@cd $(DIST_ROOT) && zip -r ../$(PLUGIN_ID)-$(VERSION).zip $(VERSION)
+	@echo "✅ 输出：$(PLUGIN_ID)-$(VERSION).zip"
 
 .PHONY: package-release
-package-release: release ## 将 target/<version> 打包为 zip
-	@echo "打包发布压缩包..."
-	@rm -f $(APP_NAME)-$(VERSION)-release.zip
-	@cd $(RELEASE_ROOT) && zip -r ../$(APP_NAME)-$(VERSION)-release.zip $(VERSION)
+package-release: release
+	@echo "==> 打包 release 为 zip（发布包）..."
+	@rm -f $(PLUGIN_ID)-$(VERSION)-release.zip
+	@cd $(RELEASE_ROOT) && zip -r ../$(PLUGIN_ID)-$(VERSION)-release.zip $(VERSION)
+	@echo "✅ 输出：$(PLUGIN_ID)-$(VERSION)-release.zip"
+
+# ===== 清理 =====
+.PHONY: clean
+clean:
+	@echo "==> 清理 build 产物..."
+	@rm -rf $(BUILD_DIR)
+
+.PHONY: dist-clean
+dist-clean:
+	@echo "==> 清理 dist..."
+	@rm -rf $(DIST_ROOT)
+
+.PHONY: release-clean
+release-clean:
+	@echo "==> 清理 target..."
+	@rm -rf $(RELEASE_ROOT)

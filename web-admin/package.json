@@ -7,6 +7,7 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
+    "build:bridge": "esbuild app/bridge/  --bundle --format=esm --outfile=public/bridge-dev/js/powerx-bridge-client.js",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",

@@ -92,3 +92,4 @@ logs/
 dist/
 .cache/
 .gocache/
+.nuxt_pid

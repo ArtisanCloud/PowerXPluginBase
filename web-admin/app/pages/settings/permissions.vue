@@ -159,7 +159,7 @@
                 <td
                   class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
                 >
-                  <UDropdown :items="getUserActions(user)">
+                  <UDropdownMenu :items="getUserActions(user)">
                     <UButton variant="ghost" size="xs">
                       {{ $t("common.actions") }}
                       <UIcon
@@ -167,7 +167,7 @@
                         class="w-4 h-4 ml-1"
                       />
                     </UButton>
-                  </UDropdown>
+                  </UDropdownMenu>
                 </td>
               </tr>
             </tbody>

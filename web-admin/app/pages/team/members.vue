@@ -182,7 +182,7 @@
               <td
                 class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
               >
-                <UDropdown :items="getMemberActions(member)">
+                <UDropdownMenu :items="getMemberActions(member)">
                   <UButton variant="ghost" size="xs">
                     操作
                     <UIcon
@@ -190,7 +190,7 @@
                       class="w-4 h-4 ml-1"
                     />
                   </UButton>
-                </UDropdown>
+                </UDropdownMenu>
               </td>
             </tr>
           </tbody>

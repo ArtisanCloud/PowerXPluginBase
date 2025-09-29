@@ -113,13 +113,13 @@
                 </UBadge>
               </div>
             </div>
-            <UDropdown :items="getDropdownItems(note)">
+            <UDropdownMenu :items="getDropdownItems(note)">
               <UButton
                 variant="ghost"
                 size="sm"
                 icon="i-heroicons-ellipsis-vertical"
               />
-            </UDropdown>
+            </UDropdownMenu>
           </div>
         </template>
 
@@ -244,16 +244,12 @@
     <NoteCreateModal v-model="showCreateModal" @created="handleCreateSuccess" />
   </div>
 </template>
-
 <script setup lang="ts">
 import NoteCreateModal from "~/components/notes/NoteCreateModal.vue";
+import { useHead } from '#imports'
 const { t } = useI18n();
 
-// 页面元数据
-definePageMeta({
-  title: "活跃笔记",
-  layout: "default",
-});
+useHead({ title: '活跃笔记' })
 
 // 响应式数据
 const showCreateModal = ref(false);

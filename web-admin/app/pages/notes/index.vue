@@ -183,11 +183,11 @@
               >
                 {{ note.title }}
               </h3>
-              <UDropdown :items="getNoteActions(note)">
+              <UDropdownMenu :items="getNoteActions(note)">
                 <UButton variant="ghost" size="xs" @click.stop>
                   <UIcon name="i-heroicons-ellipsis-vertical" class="w-4 h-4" />
                 </UButton>
-              </UDropdown>
+              </UDropdownMenu>
             </div>
 
             <p
@@ -337,7 +337,7 @@
                 <td
                   class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
                 >
-                  <UDropdown :items="getNoteActions(note)">
+                  <UDropdownMenu :items="getNoteActions(note)">
                     <UButton variant="ghost" size="xs" @click.stop>
                       操作
                       <UIcon
@@ -345,7 +345,7 @@
                         class="w-4 h-4 ml-1"
                       />
                     </UButton>
-                  </UDropdown>
+                  </UDropdownMenu>
                 </td>
               </tr>
             </tbody>
@@ -381,7 +381,7 @@ definePageMeta({
 });
 
 // API 实例
-const { 
+const {
   listNotes,
   deleteNote: deleteNoteApi,
   archiveNote,
