@@ -5,6 +5,10 @@ const pluginApiBase   = `/_p/${pluginId}/api/v1`;
 
 // Host（被 PowerX 反代）用 1；独立/开发用 0
 const INSIDE_POWERX = process.env.POWERX_PROXY === '1';
+const rawBridgeDebug = process.env.NUXT_PUBLIC_BRIDGE_DEBUG ?? process.env.BRIDGE_DEBUG;
+const BRIDGE_DEBUG = rawBridgeDebug !== undefined
+  ? /^(1|true)$/i.test(rawBridgeDebug)
+  : !INSIDE_POWERX;
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -66,6 +70,7 @@ export default defineNuxtConfig({
       apiBaseUrl: INSIDE_POWERX ? pluginApiBase : "/api/v1",
       insidePowerX: INSIDE_POWERX,
       pluginAdminBase,
+      bridgeDebug: BRIDGE_DEBUG,
     },
   },
 

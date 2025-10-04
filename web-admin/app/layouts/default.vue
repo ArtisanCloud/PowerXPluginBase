@@ -18,14 +18,26 @@
 </template>
 
 <script setup>
-import { isPluginAdminPath } from "~/utils/powerx-bridge";
+import { watch } from "vue";
+import { setupHostBridgeAdapter } from "~/composables/useHostBridgeAdapter";
+import { useTheme } from "~/composables/useTheme";
+import { PLUGIN_ID, isPluginAdminPath } from "~/utils/powerx-bridge";
 
 // 获取运行时配置
 const runtimeConfig = useRuntimeConfig();
 const route = useRoute();
+const theme = useTheme();
 
 // 是否处于 PowerX 宿主的插件嵌入路径下
+const insidePowerX = computed(() => {
+  const value = runtimeConfig.public.insidePowerX;
+  return value === true || value === 'true';
+});
+
 const isEmbeddedInPowerX = computed(() => {
+  if (insidePowerX.value) {
+    return true;
+  }
   return isPluginAdminPath(route.path);
 });
 
@@ -51,4 +63,63 @@ const showNavigation = computed(() => {
 const mainContentClass = computed(() => {
   return showNavigation.value ? "flex-1 p-6" : "w-full p-6";
 });
+
+const getAdapterRegistry = (win) => {
+  if (!win.__PX_ADAPTERS__) {
+    win.__PX_ADAPTERS__ = {};
+  }
+  return win.__PX_ADAPTERS__;
+};
+
+const mountBridgeIfNeeded = () => {
+  if (!process.client) {
+    return;
+  }
+
+  const win = window;
+  if (!isEmbeddedInPowerX.value) {
+    return;
+  }
+
+  try {
+    theme.initTheme?.();
+  } catch {}
+
+  const pluginId = typeof route.query.pluginId === "string" ? route.query.pluginId : PLUGIN_ID;
+  const instanceId = typeof route.query.instanceId === "string" ? route.query.instanceId : route.fullPath;
+  const registry = getAdapterRegistry(win);
+  const adapterKey = `${pluginId}::${instanceId}`;
+
+  if (registry[adapterKey]) {
+    console.info("[Bridge][Plugin] adapter already mounted, reuse existing instance.", {
+      pluginId,
+      instanceId,
+    });
+    return;
+  }
+
+  const { bridge } = setupHostBridgeAdapter({
+    pluginId,
+    instanceId,
+  });
+
+  bridge.start?.();
+  console.info("[Bridge][Plugin] adapter mounted.");
+  registry[adapterKey] = { bridge };
+  win.__PX_ADAPTER_BOUND__ = true;
+  win.__PX_ADAPTER__ = registry[adapterKey];
+  console.info("[embedded] Host bridge adapter mounted.", { pluginId, instanceId });
+};
+
+if (process.client) {
+  watch(
+    () => isEmbeddedInPowerX.value,
+    (value) => {
+      if (value) {
+        mountBridgeIfNeeded();
+      }
+    },
+    { immediate: true }
+  );
+}
 </script>

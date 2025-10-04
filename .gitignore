@@ -93,3 +93,5 @@ dist/
 .cache/
 .gocache/
 .nuxt_pid
+backend/backend/bin/migrate
+backend/backend/bin/plugin

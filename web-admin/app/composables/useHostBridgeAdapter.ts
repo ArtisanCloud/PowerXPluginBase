@@ -1,6 +1,6 @@
 // app/composables/useHostBridgeAdapter.ts
 import { initPowerXBridge } from '~/bridge/powerx-bridge-client'
-import { useI18n } from '#imports'
+import { useI18n, useRuntimeConfig } from '#imports'
 import { useTheme } from '~/composables/useTheme'
 
 type BridgeOptions = { pluginId?: string; instanceId?: string; debug?: boolean }
@@ -9,6 +9,7 @@ type BridgeOptions = { pluginId?: string; instanceId?: string; debug?: boolean }
 export function setupHostBridgeAdapter(opts: BridgeOptions = {}) {
   const { setLocale, locale } = useI18n()
   const { setTheme } = useTheme() // ← 不再解构 currentTheme
+  const runtimeConfig = useRuntimeConfig()
 
   // 宿主 'system' ↔ 本地 'auto'
   const fromHostTheme = (t: string) => (t === 'system' ? 'auto' : t)
@@ -22,8 +23,13 @@ export function setupHostBridgeAdapter(opts: BridgeOptions = {}) {
     setTheme(fromHostTheme(t) as any)
   }
 
+  const defaultDebug =
+    typeof runtimeConfig.public?.bridgeDebug === 'boolean'
+      ? runtimeConfig.public.bridgeDebug
+      : import.meta.dev
+
   const bridge = initPowerXBridge({
-    debug: opts.debug ?? true,
+    debug: typeof opts.debug === 'boolean' ? opts.debug : defaultDebug,
     pluginId: opts.pluginId ?? 'com.powerx.plugins.base',
     instanceId: opts.instanceId ?? 'dev-bridge',
     allowedOrigins: ['*'],
