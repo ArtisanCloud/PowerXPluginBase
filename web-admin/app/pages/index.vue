@@ -454,7 +454,7 @@ const getPriorityText = (priority: string) => {
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString("zh-CN", {
+  return date.toLocaleDateString("zh", {
     year: "numeric",
     month: "short",
     day: "numeric",

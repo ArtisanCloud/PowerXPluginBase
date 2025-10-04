@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const locale = ref('zh-CN')
+definePageMeta({ layout: 'embedded', title: 'Host Simulator' })
+
+const locale = ref('zh')
 const theme  = ref<'light'|'dark'|'system'>('light')
 const iframeRef = ref<HTMLIFrameElement | null>(null)
 const log = ref<string>('')
