@@ -1,128 +1,309 @@
-// ~/lib/bridge/powerx-bridge-client.ts
-export type PowerXIncomingMessage =
-  | { source: 'powerx'; type: 'sync';   locale: string; theme: string; hostOrigin?: string; pluginId?: string; instanceId?: string }
-  | { source: 'powerx'; type: 'locale'; locale: string }
-  | { source: 'powerx'; type: 'theme';  theme: string };
+// powerx-bridge-client.ts
+// Drop-in 插件侧 Bridge 客户端（带调试日志）
+// 仅用于 iframe 内（插件页）
+// ------------------------------------------------------------
 
-export type PowerXOutgoingMessage =
-  | { source: 'plugin'; type: 'ready'; pluginId?: string; instanceId?: string }
-  | { source: 'plugin'; type: 'request-sync' }
-  | { source: 'plugin'; type: 'ping'; ts: number };
+export type ThemeKey = 'light' | 'dark' | 'system'
 
-export type BridgeOptions = {
-  allowedOrigins?: string[];
-  debug?: boolean;
-  pluginId?: string;
-  instanceId?: string;
-  onLocale?: (locale: string) => void;
-  onTheme?: (theme: string) => void;
-  onSync?: (p: { locale: string; theme: string; pluginId?: string; instanceId?: string }) => void;
-};
+export interface PowerXSyncPayload {
+  source: 'powerx'
+  type: 'sync'
+  locale: string
+  theme: ThemeKey
+  hostOrigin?: string
+  pluginId?: string
+  instanceId?: string
+}
 
-function guessHostOrigin(): string | null {
-  try { if (document.referrer) return new URL(document.referrer).origin; } catch {}
-  try {
-    const u = new URL(window.location.href);
-    const px = u.searchParams.get('px_host');
-    if (px) return new URL(px).origin;
-  } catch {}
-  return null;
+export interface PowerXThemePayload {
+  source: 'powerx'
+  type: 'theme'
+  theme: ThemeKey
+}
+
+export interface PowerXLocalePayload {
+  source: 'powerx'
+  type: 'locale'
+  locale: string
+}
+
+export type PowerXMessage = PowerXSyncPayload | PowerXThemePayload | PowerXLocalePayload
+
+export interface PluginReadyPayload {
+  source: 'plugin'
+  type: 'ready'
+  pluginId?: string
+  instanceId?: string
+}
+
+export interface PluginRequestSyncPayload {
+  source: 'plugin'
+  type: 'request-sync'
+}
+
+export interface PluginPingPayload {
+  source: 'plugin'
+  type: 'ping'
+  ts: number
+}
+
+export type PluginToHost = PluginReadyPayload | PluginRequestSyncPayload | PluginPingPayload
+
+export interface BridgeOptions {
+  pluginId?: string
+  instanceId?: string
+  debug?: boolean
+  /** 允许的宿主来源列表（精确 origin，如 http://127.0.0.1:3036） */
+  allowedOrigins?: string[]
+  /** 回调：接到主题变化 */
+  onTheme?: (theme: ThemeKey) => void
+  /** 回调：接到语言变化 */
+  onLocale?: (locale: string) => void
+  /** 回调：接到同步包（包含 locale、theme、hostOrigin 等） */
+  onSync?: (payload: PowerXSyncPayload) => void
 }
 
 export class PowerXBridgeClient {
-  private allowed = new Set<string>();
-  private debug: boolean;
-  private onLocale?: (locale: string) => void;
-  private onTheme?: (theme: string) => void;
-  private onSync?: (p: { locale: string; theme: string; pluginId?: string; instanceId?: string }) => void;
-  private boundHandler: (e: MessageEvent) => void;
-  private pluginId?: string;
-  private instanceId?: string;
+  public pluginId?: string
+  public instanceId?: string
+  public debug: boolean
+  public onTheme?: (t: ThemeKey) => void
+  public onLocale?: (l: string) => void
+  public onSync?: (p: PowerXSyncPayload) => void
+
+  private allowedOrigins: Set<string>
+  private _bound = false
+  private _stopped = false
+  private _lastHostOrigin?: string
 
   constructor(opts: BridgeOptions = {}) {
-    this.debug = !!opts.debug;
-    this.onLocale = opts.onLocale;
-    this.onTheme = opts.onTheme;
-    this.onSync = opts.onSync;
-    this.pluginId = opts.pluginId;
-    this.instanceId = opts.instanceId;
+    this.pluginId = opts.pluginId
+    this.instanceId = opts.instanceId
+    this.debug = !!opts.debug
+    this.onTheme = opts.onTheme
+    this.onLocale = opts.onLocale
+    this.onSync = opts.onSync
 
-    const initial = (opts.allowedOrigins && opts.allowedOrigins.length > 0)
-      ? opts.allowedOrigins
-      : (guessHostOrigin() ? [guessHostOrigin() as string] : []);
-    initial.forEach(o => this.allowed.add(o));
+    const defaultAllow = this._defaultAllowedOrigins()
+    const extra = (opts.allowedOrigins || []).filter(Boolean)
+    this.allowedOrigins = new Set([...defaultAllow, ...extra])
 
-    this.boundHandler = (e: MessageEvent) => this.handleMessage(e);
+    this._log('init', {
+      pluginId: this.pluginId,
+      instanceId: this.instanceId,
+      allowedOrigins: Array.from(this.allowedOrigins),
+      location: window.location.origin,
+      referrer: document.referrer,
+      mode: import.meta.env.MODE
+    })
   }
 
+  /** 启动监听（幂等） */
   start() {
-    window.addEventListener('message', this.boundHandler, false);
-    this.post({ source: 'plugin', type: 'ready', pluginId: this.pluginId, instanceId: this.instanceId });
-    this.requestSync();
-    if (this.debug) console.log('[PowerXBridge] started. allowed=', Array.from(this.allowed));
+    console.log('[Bridge][Plugin] start() called, binding message listener')
+    if (this._bound || this._stopped) return
+    this._bound = true
+
+    // 原始消息“回显”（仅调试用）
+    window.addEventListener(
+      'message',
+      (e) => {
+        if (!this.debug) return
+        const data = (e as MessageEvent<any>).data
+        if (!data || (data.source !== 'powerx' && data.source !== 'plugin')) return
+        const brief =
+          data?.type === 'sync'
+            ? { type: data.type, locale: data.locale, theme: data.theme }
+            : data?.type === 'locale'
+              ? { type: data.type, locale: data.locale }
+              : data?.type === 'theme'
+                ? { type: data.type, theme: data.theme }
+                : { type: data?.type }
+        this._log('raw message', { origin: (e as MessageEvent).origin, data: brief })
+      },
+      false
+    )
+
+    // 业务监听
+    window.addEventListener('message', this._handle, false)
+
+    // 启动即汇报一次 ready
+    this.ready()
   }
 
+  /** 停止监听 */
   stop() {
-    window.removeEventListener('message', this.boundHandler, false);
-    if (this.debug) console.log('[PowerXBridge] stopped');
+    if (!this._bound) return
+    this._stopped = true
+    this._bound = false
+    window.removeEventListener('message', this._handle, false)
+    this._log('stopped')
   }
 
+  /** 告知宿主：插件就绪 */
+  ready() {
+    const payload: PluginReadyPayload = {
+      source: 'plugin',
+      type: 'ready',
+      pluginId: this.pluginId,
+      instanceId: this.instanceId
+    }
+    this._sendToParent(payload)
+  }
+
+  /** 主动请求一次同步（让宿主回发 sync） */
   requestSync() {
-    this.post({ source: 'plugin', type: 'request-sync' });
-    if (this.debug) console.log('[PowerXBridge] request-sync sent');
+    const payload: PluginRequestSyncPayload = { source: 'plugin', type: 'request-sync' }
+    this._sendToParent(payload)
   }
 
+  /** 发送心跳（调试用） */
   ping() {
-    this.post({ source: 'plugin', type: 'ping', ts: Date.now() });
+    const payload: PluginPingPayload = { source: 'plugin', type: 'ping', ts: Date.now() }
+    this._sendToParent(payload)
   }
 
-  addAllowedOrigin(origin: string) {
-    if (!origin) return;
-    this.allowed.add(origin);
-    if (this.debug) console.log('[PowerXBridge] allow origin:', origin);
-  }
+  // ----------------- 内部实现 -----------------
 
-  private post(msg: PowerXOutgoingMessage) {
-    try { window.parent?.postMessage(msg, '*'); } catch {}
-  }
+  private _handle = (e: MessageEvent<any>) => {
+    const data = e.data as PowerXMessage
+    if (!data || data.source !== 'powerx') return
 
-  private handleMessage(e: MessageEvent) {
-    const origin = e.origin;
-    const data = e.data as PowerXIncomingMessage | undefined;
-    if (!data || data.source !== 'powerx') return;
-
-    if (data.type === 'sync' && data.hostOrigin) {
-      this.allowed = new Set([data.hostOrigin]);
-      if (this.debug) console.log('[PowerXBridge] synced host origin ->', data.hostOrigin);
+    // 校验 origin
+    if (!this._isAllowedOrigin(e.origin)) {
+      this._log('drop message: origin not allowed', { origin: e.origin, type: data.type })
+      return
     }
-
-    if (this.allowed.size && !this.allowed.has(origin)) {
-      if (this.debug) console.warn('[PowerXBridge] blocked message from', origin, data);
-      return;
-    }
-
-    if (this.debug) console.log('[PowerXBridge] <=', origin, data);
 
     switch (data.type) {
-      case 'sync':
-        this.onSync?.({ locale: data.locale, theme: data.theme, pluginId: data.pluginId, instanceId: data.instanceId });
-        this.onLocale?.(data.locale);
-        this.onTheme?.(data.theme);
-        break;
-      case 'locale':
-        this.onLocale?.(data.locale);
-        break;
-      case 'theme':
-        this.onTheme?.(data.theme);
-        break;
+      case 'sync': {
+        // 记住宿主 origin，便于之后上行对齐
+        this._lastHostOrigin = data.hostOrigin || e.origin
+        this._log('onSync <-', {
+          locale: data.locale,
+          theme: data.theme,
+          hostOrigin: data.hostOrigin || e.origin
+        })
+        try {
+          this.onSync?.(data)
+        } catch (err) {
+          this._log('onSync error', err)
+        }
+        break
+      }
+      case 'locale': {
+        this._log('onLocale <-', data.locale)
+        try {
+          this.onLocale?.(data.locale)
+        } catch (err) {
+          this._log('onLocale error', err)
+        }
+        break
+      }
+      case 'theme': {
+        this._log('onTheme  <-', data.theme)
+        try {
+          this.onTheme?.(data.theme)
+        } catch (err) {
+          this._log('onTheme error', err)
+        }
+        break
+      }
+    }
+  }
+
+  private _sendToParent(payload: PluginToHost) {
+    const target = window.parent || window.top
+    if (!target || target === window) {
+      this._log('no parent window; skip postMessage', payload)
+      return
+    }
+    // 调试打印：我们把“目标”尽量标注出来
+    this._log('-> postMessage', {
+      to: 'parent',
+      targetOrigin: this._lastHostOrigin || '(unknown until sync)',
+      payload
+    })
+    try {
+      // 安全策略：在未收到 sync 之前，无法准确知道 host 的 origin，这里用 '*' 纯调试；
+      // 一旦收到 sync（带 hostOrigin），你可以替换为那个精确 origin，进一步收紧。
+      target.postMessage(payload, this._lastHostOrigin || '*')
+    } catch (err) {
+      this._log('postMessage error', err)
+    }
+  }
+
+  private _isAllowedOrigin(origin: string): boolean {
+    // 如果开发者显式传了 '*'，直接放行（仅调试场景）
+    if (this.allowedOrigins.has('*')) return true
+    // 允许 list 中的 origin
+    if (this.allowedOrigins.has(origin)) return true
+    // 某些浏览器在 file/特殊协议下会给空字符串，这里保守拒绝
+    return false
+  }
+
+  private _defaultAllowedOrigins(): string[] {
+    const res: string[] = []
+    // 1) 来自 referrer 的 origin（大多数 iframe 都会带）
+    try {
+      if (document.referrer) res.push(new URL(document.referrer).origin)
+    } catch {}
+    // 2) 若插件与宿主同域嵌入，允许自身
+    try {
+      res.push(window.location.origin)
+    } catch {}
+    // 3) 开发环境自动放宽
+    if (import.meta.env.DEV) res.push('*')
+    return Array.from(new Set(res.filter(Boolean)))
+  }
+
+  private _log(...args: any[]) {
+    if (this.debug) {
+      // eslint-disable-next-line no-console
+      console.info('[DBG][Plugin]', ...args)
     }
   }
 }
 
+// ------------------------------------------------------------
+// 工具方法：初始化并启动（常用入口）
+// ------------------------------------------------------------
 export function initPowerXBridge(opts: BridgeOptions = {}) {
-  const client = new PowerXBridgeClient(opts);
-  // @ts-expect-error: expose for console debug
-  (window as any).PowerXBridge = client;
-  client.start();
-  return client;
+  // 单例防重复（HMR 场景）
+  const k = '__POWERX_BRIDGE__'
+  const g = window as any
+  if (g[k]) {
+    if (opts.debug) console.info('[DBG][Plugin] reuse existing bridge instance')
+    const client = g[k] as PowerXBridgeClient
+    // 更新回调/配置（可选）
+    client.onLocale = opts.onLocale || client.onLocale
+    client.onTheme = opts.onTheme || client.onTheme
+    client.onSync = opts.onSync || client.onSync
+    return client
+  }
+
+  const client = new PowerXBridgeClient(opts)
+  client.start()
+  g[k] = client
+
+  if (opts.debug) {
+    // 暴露一些调试入口
+    g.__PX_DEBUG__ = {
+      info: () => ({
+        location: window.location.origin,
+        referrer: document.referrer,
+        lastHostOrigin: (client as any)._lastHostOrigin,
+        allowedOrigins: 'hidden in client.allowedOrigins (Set)',
+        pluginId: client.pluginId,
+        instanceId: client.instanceId
+      }),
+      ready: () => client.ready(),
+      sync: () => client.requestSync(),
+      ping: () => client.ping()
+    }
+    // eslint-disable-next-line no-console
+    console.info('[DBG][Plugin] debug helpers available: __PX_DEBUG__')
+  }
+
+  return client
 }
