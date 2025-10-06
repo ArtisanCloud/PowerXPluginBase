@@ -42,6 +42,7 @@ vendor/
 
 # YAML 配置文件（实际配置）
 backend/bin/*
+backend/.gopath
 backend/etc/config.yaml
 config/host-values.yaml
 config.yaml
@@ -94,5 +95,6 @@ dist/
 .cache/
 .gocache/
 .nuxt_pid
+*.bin
 
 
