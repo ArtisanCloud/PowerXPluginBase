@@ -1,32 +1,42 @@
 package middleware
 
 import (
-    authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
-    "net/http"
-    "strings"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"log"
+	"net/http"
+	"strings"
 
-    "github.com/gin-gonic/gin"
+	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+	"github.com/gin-gonic/gin"
 )
 
-// NeedABACFn：可选的 ABAC 触发回调（返回是否需要 ABAC 以及附加属性）
-type NeedABACFn func(method, route string) (need bool, attrs map[string]any)
+// RBAC 仅做粗粒度权限判定；在 DelegateToPowerX 模式下只校验令牌来源
+func RBAC(cfg *authx.RBACConfig, _ authx.ABACClient, _ func(string, string) (bool, map[string]any)) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if cfg == nil || !cfg.Enabled || c.Request.Method == http.MethodOptions {
+			c.Next()
+			return
+		}
+		// 内部回调放行（仍建议结合网络/签名防护）
+		if strings.HasPrefix(c.Request.URL.Path, "/api/v1/internal/") || strings.HasPrefix(c.Request.URL.Path, "/api/v1/agent/") {
+			c.Next()
+			return
+		}
 
-// RBAC：粗粒度 RBAC；命中需要 ABAC 的路由时，调用 PDP 在线校验
-func RBAC(cfg *authx.RBACConfig, abac authx.ABACClient, needABAC NeedABACFn) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        // 预检查
-        if cfg == nil || !cfg.Enabled || c.Request.Method == http.MethodOptions {
-            c.Next()
-            return
-        }
-        // 内部回调路径（用于宿主→插件推送），跳过 RBAC（生产应结合网络/签名层控制）
-        if strings.HasPrefix(c.Request.URL.Path, "/api/v1/internal/") || strings.HasPrefix(c.Request.URL.Path, "/api/v1/agent/") {
-            c.Next()
-            return
-        }
+		if cfg.DelegateToPowerX {
+			if allowPowerXDelegate(c, cfg) {
+				c.Next()
+			} else {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Role unauthorized"})
+			}
+			return
+		}
+
 		tc, ok := authx.GetTenantContext(c)
 		if !ok {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Role Authentication required"})
 			return
 		}
 		if authx.IsSuperAdmin(tc.Roles, cfg.SuperAdminRoles) {
@@ -36,11 +46,9 @@ func RBAC(cfg *authx.RBACConfig, abac authx.ABACClient, needABAC NeedABACFn) gin
 
 		full := c.FullPath()
 		if full == "" {
-			full = c.Request.URL.Path // 非路由表命中的场景
+			full = c.Request.URL.Path
 		}
 		perm, has := authx.MatchRoute(c.Request.Method, full, cfg.RoutePermissions)
-
-		// 粗粒度判定
 		passRBAC := (!has && !cfg.DefaultDeny) || (has && authx.HasPerm(tc.Permissions, perm))
 		if !passRBAC {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
@@ -51,27 +59,73 @@ func RBAC(cfg *authx.RBACConfig, abac authx.ABACClient, needABAC NeedABACFn) gin
 			return
 		}
 
-		// 是否需要触发 ABAC（可选）
-		if needABAC != nil && abac != nil {
-			if yes, attrs := needABAC(c.Request.Method, full); yes {
-				dec, err := abac.Check(c.Request.Context(), authx.ABACInput{
-					Subject:  tc,
-					Resource: perm.Resource,
-					Action:   perm.Action,
-					Attrs:    attrs,
-				})
-				if err != nil {
-					// PDP 不可用：按建议返回 503 让上游重试
-					c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": "PDP unavailable"})
-					return
-				}
-				if !dec.Allowed {
-					c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "ABAC denied", "reason": dec.Reason})
-					return
-				}
-			}
-		}
-
 		c.Next()
 	}
 }
+
+func allowPowerXDelegate(c *gin.Context, cfg *authx.RBACConfig) bool {
+	if cfg == nil {
+		return false
+	}
+	log.Printf("[PLUGIN-RBAC] delegate check: need{iss=%s aud=%s}", cfg.PowerXIssuer, cfg.PowerXAudience)
+	if _, ok := authx.GetTenantContext(c); !ok {
+		return false
+	}
+	raw, ok := authx.GetRawBearerToken(c)
+	if !ok || strings.TrimSpace(raw) == "" {
+		return false
+	}
+	claims, err := decodeJWTClaims(raw)
+	if err != nil {
+		return false
+	}
+	log.Printf("[PLUGIN-RBAC] delegate token: iss=%v aud=%v", claims["iss"], claims["aud"])
+
+	if cfg.PowerXIssuer != "" {
+		if iss, _ := claims["iss"].(string); iss != cfg.PowerXIssuer {
+			return false
+		}
+	}
+	if cfg.PowerXAudience != "" && !audienceMatches(claims["aud"], cfg.PowerXAudience) {
+		return false
+	}
+	return true
+}
+
+func decodeJWTClaims(raw string) (map[string]any, error) {
+	parts := strings.Split(raw, ".")
+	if len(parts) < 2 {
+		return nil, errInvalidToken
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return nil, err
+	}
+	var claims map[string]any
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		return nil, err
+	}
+	return claims, nil
+}
+
+func audienceMatches(aud any, expected string) bool {
+	switch v := aud.(type) {
+	case string:
+		return v == expected
+	case []any:
+		for _, item := range v {
+			if s, ok := item.(string); ok && s == expected {
+				return true
+			}
+		}
+	case []string:
+		for _, s := range v {
+			if s == expected {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+var errInvalidToken = errors.New("invalid token")

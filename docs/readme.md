@@ -97,7 +97,7 @@ powerx-plugin-note/
 
 ```bash
 export POWERX_DB_DSN='postgres://user:pass@127.0.0.1:5432/powerx?sslmode=disable'
-export POWERX_DB_SCHEMA='note'
+export POWERX_DB_SCHEMA='px_com_powerx_plugins_base'
 ```
 
 ### 2) 迁移与种子
@@ -302,7 +302,7 @@ docker build -t powerx-plugin-note:0.1.0 .
 docker run --rm -p 8091:8091 \
   -e POWERX_BIND_ADDR=":8091" \
   -e POWERX_DB_DSN="postgres://user:pwd@host:5432/powerx?sslmode=disable" \
-  -e POWERX_DB_SCHEMA="note" \
+  -e POWERX_DB_SCHEMA="px_com_powerx_plugins_base" \
   -e POWERX_CTX_JWKS_URL="http://powerx/_p/_internal/jwks" \
   -e POWERX_CTX_ISSUER="powerx-auth" \
   -e POWERX_CTX_AUDIENCE="powerx-plugin" \

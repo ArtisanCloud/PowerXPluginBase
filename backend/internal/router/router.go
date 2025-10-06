@@ -109,21 +109,16 @@ func (r *Router) setupRoutes() {
 	// 鉴权/权限组件
 	jwtCfg := r.buildJWT()
 	rbacCfg := r.buildRBAC()
-	abacClient := r.buildABAC()
-
-	// API 分组 + 鉴权 + RBAC
-	gApi := r.engine.Group(prefix)
-	gApi.Use(middleware2.JWTAuth(jwtCfg))
-	gApi.Use(middleware2.RBAC(rbacCfg, abacClient, func(m, path string) (bool, map[string]any) {
-		// 示例：某些路由需要 ABAC，把 path 参数传给 PDP
-		if path == "/api/v1/notes/:id" && m == "GET" {
-			return true, map[string]any{"note_id": "{id}"}
-		}
-		return false, nil
-	}))
 
 	// 使用 API 注册器注册所有路由（保持你现有的注册逻辑）
 	apiRegistry := http.NewRegistry(r.engine, r.deps)
+	r.injectRBACFromRegistry(rbacCfg, apiRegistry)
+
+	// API 分组 + 鉴权 + RBAC
+	gApi := r.engine.Group(prefix)
+	gApi.Use(middleware2.RequestTrace())
+	gApi.Use(middleware2.JWTAuth(jwtCfg))
+	gApi.Use(middleware2.RBAC(rbacCfg, nil, nil))
 	apiRegistry.RegisterAPIRoutes(gApi)
 
 	// 如需调试：打印已注册路由
@@ -133,6 +128,19 @@ func (r *Router) setupRoutes() {
 // GetEngine 获取 Gin 引擎
 func (r *Router) GetEngine() *gin.Engine {
 	return r.engine
+}
+
+// injectRBACFromRegistry 将各模块声明的 RBAC 合并到配置中。
+func (r *Router) injectRBACFromRegistry(rbacCfg *middleware.RBACConfig, reg *http.Registry) {
+	if rbacCfg == nil || reg == nil {
+		return
+	}
+	if rbacCfg.DelegateToPowerX {
+		return
+	}
+	for route, perm := range reg.RBACMap() {
+		rbacCfg.RoutePermissions[route] = perm
+	}
 }
 
 // RegisterCustomRoutes 注册自定义路由
@@ -201,27 +209,32 @@ func (r *Router) buildJWT() middleware.JWTAuthConfig {
 
 // —— 从配置构造 RBAC 配置 —— //
 func (r *Router) buildRBAC() *middleware.RBACConfig {
-	cfg := &middleware.RBACConfig{
-		Enabled: true,
-		// 生产默认拒绝未声明的路由；开发默认放行
-		DefaultDeny:     r.cfg.IsProduction(),
-		SuperAdminRoles: []string{"superadmin", "admin"},
-		RoutePermissions: map[string]middleware.Permission{
-			"GET:/api/v1/notes/:id": {Resource: "note", Action: "read"},
-			// 根据需要继续补……
-		},
+	delegate := shouldDelegateToPowerX()
+	issuer := strings.TrimSpace(os.Getenv("POWERX_SECURITY_JWT_ISSUER"))
+	aud := strings.TrimSpace(os.Getenv("POWERX_SECURITY_JWT_AUDIENCE"))
+	if aud == "" {
+		if pid := strings.TrimSpace(os.Getenv("POWERX_PLUGIN_ID")); pid != "" {
+			aud = "plugin:" + pid
+		}
 	}
-	// TODO: 若你有 RBAC 配置文件/表，这里加载并合并到 cfg.RoutePermissions
-	return cfg
+	return &middleware.RBACConfig{
+		Enabled:          true,
+		DefaultDeny:      false,
+		SuperAdminRoles:  []string{"superadmin", "admin"},
+		RoutePermissions: map[string]middleware.Permission{},
+		DelegateToPowerX: delegate,
+		PowerXIssuer:     issuer,
+		PowerXAudience:   aud,
+	}
 }
 
-// —— 从配置构造 ABAC 客户端（可根据环境切换） —— //
-func (r *Router) buildABAC() middleware.ABACClient {
-	endpoint := "http://localhost:18080/check"
-	if r.cfg.IsProduction() {
-		endpoint = "http://pdp.powerx.svc/check"
+func shouldDelegateToPowerX() bool {
+	v := strings.ToLower(strings.TrimSpace(os.Getenv("POWERX_RBAC_DELEGATE")))
+	switch v {
+	case "1", "true", "yes", "on":
+		return true
+	case "0", "false", "no", "off":
+		return false
 	}
-	// TODO: 如果 r.cfg 有 PDP 地址，从配置覆盖：
-	// if r.cfg.Auth != nil && r.cfg.Auth.PDP != "" { endpoint = r.cfg.Auth.PDP }
-	return middleware.NewHTTPABACClient(endpoint)
+	return os.Getenv("POWERX_PROXY") == "1"
 }

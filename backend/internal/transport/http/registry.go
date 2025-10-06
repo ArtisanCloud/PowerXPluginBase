@@ -1,13 +1,15 @@
 package http
 
 import (
-    "fmt"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
-    agentapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/agent"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/iam"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/notes"
-    "github.com/gin-gonic/gin"
+	"fmt"
+
+	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/iam"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/notes"
+	agentapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/agent"
+	"github.com/gin-gonic/gin"
 )
 
 // Registry API 注册器
@@ -26,10 +28,10 @@ func NewRegistry(engine *gin.Engine, deps *app.Deps) *Registry {
 
 // RegisterRoutes 注册所有路由
 func (r *Registry) RegisterAPIRoutes(gApi *gin.RouterGroup) {
-    admin.RegisterAPIRoutes(gApi, r.deps)
-    agentapi.RegisterAPIRoutes(gApi, r.deps)
-    iam.RegisterAPIRoutes(gApi, r.deps)
-    notes.RegisterAPIRoutes(gApi, r.deps)
+	admin.RegisterAPIRoutes(gApi, r.deps)
+	agentapi.RegisterAPIRoutes(gApi, r.deps)
+	iam.RegisterAPIRoutes(gApi, r.deps)
+	notes.RegisterAPIRoutes(gApi, r.deps)
 }
 
 func (r *Registry) PrintRegisteredRoutes() {
@@ -40,4 +42,9 @@ func (r *Registry) PrintRegisteredRoutes() {
 		fmt.Printf("%-6s %-30s %s\n", route.Method, route.Path, route.Handler)
 	}
 	fmt.Println("===========================")
+}
+
+// RBACMap 汇总所有模块的 RBAC 声明。
+func (r *Registry) RBACMap() map[string]authx.Permission {
+	return map[string]authx.Permission{}
 }

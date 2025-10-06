@@ -9,6 +9,9 @@ type RBACConfig struct {
 	DefaultDeny      bool
 	SuperAdminRoles  []string
 	RoutePermissions map[string]Permission // "METHOD:/api/v1/notes/*" -> {note,read}
+	DelegateToPowerX bool
+	PowerXIssuer     string
+	PowerXAudience   string
 }
 
 func IsSuperAdmin(userRoles, superRoles []string) bool {

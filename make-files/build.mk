@@ -15,6 +15,9 @@ VERSION             ?= $(shell awk -F': *' '/^version:/ {print $$2; exit}' plugi
 # 后端代码在仓库根；如你的 cmd/plugin 在 repo/cmd/plugin，请保持 BACKEND_DIR = .
 BACKEND_DIR         ?= .
 BUILD_DIR           ?= $(BACKEND_DIR)/bin
+ABS_BACKEND_DIR     := $(abspath $(BACKEND_DIR))
+ABS_BUILD_DIR       := $(abspath $(BUILD_DIR))
+GO_BUILD_CACHE     ?= $(abspath $(BACKEND_DIR)/.cache/go-build)
 
 FRONTEND_DIR        ?= web-admin
 FRONTEND_OUTPUT     ?= $(FRONTEND_DIR)/.output
@@ -43,11 +46,12 @@ CHECK_PORT          ?= 4999                       # 临时检查端口（不要�
 .PHONY: build
 build: ## 构建后端（本机平台）
 	@echo "==> 构建后端二进制（本机平台）..."
-	@mkdir -p $(BUILD_DIR)
-	cd $(BACKEND_DIR) && go build -o $(BUILD_DIR)/plugin ./cmd/plugin
-	@if [ -d "$(BACKEND_DIR)/cmd/database" ]; then \
+	@mkdir -p $(ABS_BUILD_DIR)
+	@mkdir -p $(GO_BUILD_CACHE)
+	GOCACHE=$(GO_BUILD_CACHE) go build -C $(ABS_BACKEND_DIR) -o $(ABS_BUILD_DIR)/plugin ./cmd/plugin
+	@if [ -d "$(ABS_BACKEND_DIR)/cmd/database" ]; then \
 	  echo "   构建 migrate（如存在）..."; \
-	  cd $(BACKEND_DIR) && go build -o $(BUILD_DIR)/migrate ./cmd/database; \
+	  GOCACHE=$(GO_BUILD_CACHE) go build -C $(ABS_BACKEND_DIR) -o $(ABS_BUILD_DIR)/migrate ./cmd/database; \
 	else \
 	  echo "   跳过 migrate（未找到 cmd/database）"; \
 	fi
@@ -55,11 +59,12 @@ build: ## 构建后端（本机平台）
 .PHONY: build-linux
 build-linux: ## 构建后端（Linux amd64）
 	@echo "==> 构建后端二进制（Linux/amd64）..."
-	@mkdir -p $(BUILD_DIR)
-	cd $(BACKEND_DIR) && GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/plugin ./cmd/plugin
-	@if [ -d "$(BACKEND_DIR)/cmd/database" ]; then \
+	@mkdir -p $(ABS_BUILD_DIR)
+	@mkdir -p $(GO_BUILD_CACHE)
+	GOOS=linux GOARCH=amd64 GOCACHE=$(GO_BUILD_CACHE) go build -C $(ABS_BACKEND_DIR) -o $(ABS_BUILD_DIR)/plugin ./cmd/plugin
+	@if [ -d "$(ABS_BACKEND_DIR)/cmd/database" ]; then \
 	  echo "   构建 migrate（Linux/amd64）..."; \
-	  cd $(BACKEND_DIR) && GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/migrate ./cmd/database; \
+	  GOOS=linux GOARCH=amd64 GOCACHE=$(GO_BUILD_CACHE) go build -C $(ABS_BACKEND_DIR) -o $(ABS_BUILD_DIR)/migrate ./cmd/database; \
 	else \
 	  echo "   跳过 migrate（未找到 cmd/database）"; \
 	fi

@@ -41,6 +41,7 @@ vendor/
 .env.production
 
 # YAML 配置文件（实际配置）
+backend/bin/*
 backend/etc/config.yaml
 config/host-values.yaml
 config.yaml
@@ -93,5 +94,5 @@ dist/
 .cache/
 .gocache/
 .nuxt_pid
-backend/backend/bin/migrate
-backend/backend/bin/plugin
+
+

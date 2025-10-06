@@ -5,7 +5,7 @@ run: ## 启动后端服务（开发模式）
 	@echo "启动后端服务..."
 	cd $(BACKEND_DIR) && \
 		POWERX_BIND_ADDR=":8091" \
-		POWERX_DB_SCHEMA="note" \
+		POWERX_DB_SCHEMA="px_com_powerx_plugins_base" \
 		POWERX_LOG_LEVEL="debug" \
 		POWERX_DEV_MODE=1 \
 		go run ./cmd/plugin

@@ -41,11 +41,11 @@ export default defineNuxtConfig({
     "@nuxt/image",
   ],
 
-  // colorMode: {
-  //   preference: "system",
-  //   fallback: "light",
-  //   storageKey: "nuxt-color-mode",
-  // },
+  colorMode: {
+    preference: "system",
+    fallback: "light",
+    storageKey: "powerx-color-mode",
+  },
 
   i18n: {
     defaultLocale: "zh",

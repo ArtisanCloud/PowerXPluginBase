@@ -11,6 +11,15 @@ runtime:
   entry: backend/bin/plugin
   env:
     POWERX_BIND_ADDR: ${POWERX_BIND_ADDR:-:8091}
+    POWERX_PROXY: "1"                                # 被 PowerX 托管时应为 1（宿主也可注入）
+    POWERX_PLUGIN_ID: "com.powerx.plugins.base"      # 也可让宿主注入
+    POWERX_SECURITY_JWT_ISSUER: "powerx-auth"        # 必须与宿主一致
+    POWERX_SECURITY_JWT_AUDIENCE: "plugin:com.powerx.plugins.base"
+    POWERX_SECURITY_JWT_SECRET: "${POWERX_AUTH_JWTSECRET}"   # 由宿主用真实 JWTSecret 渲染
+    # 可选：Signed-Context（如启用）
+    # POWERX_SECURITY_CTX_HMAC_SECRET: "${POWERX_CTX_HMAC_SECRET}"
+    POWERX_DEBUG_TRAFFIC: "${POWERX_DEBUG_TRAFFIC:-1}"
+    
   health:
     http: /healthz
     interval: 10s

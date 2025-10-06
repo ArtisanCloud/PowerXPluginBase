@@ -10,7 +10,7 @@ docker-run: ## 使用 Docker 运行插件
 	@echo "运行 Docker 容器..."
 	docker run --rm -p 8091:8091 \
 		-e POWERX_BIND_ADDR=":8091" \
-		-e POWERX_DB_SCHEMA="note" \
+		-e POWERX_DB_SCHEMA="px_com_powerx_plugins_base" \
 		-e POWERX_LOG_LEVEL="debug" \
 		$(DOCKER_IMAGE)
 
