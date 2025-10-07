@@ -58,29 +58,62 @@ frontend:
         - zh-CN
         - en
     menus:
-      - id: base
+      - id: plugins.base
         title: 基础插件
         title_i18n:
           namespace: menus
           key: menu.base.template
           default: Base Plugin
         icon: i-heroicons-clipboard-document-check
-        path: /dashboard
-        route: dashboard
+        path: /intro                # ⚠️ 原 /dashboard 改为 /intro
+        route: intro                # ⚠️ 原 route: dashboard 改为 intro
         order: 20
         slot: group.plugins
         required_policies: [base:template:read]
         children:
-          - id: base.dashboard
-            title: 仪表盘
+          - id: plugins.base.intro  # ⚠️ 重命名（原 plugins.base.dashboard）
+            title: PowerXPluginIntro
             title_i18n:
               namespace: menus
-              key: menu.base.dashboard
-              default: Dashboard
-            icon: i-heroicons-squares-2x2
-            path: /dashboard
-            route: dashboard
+              key: menu.base.intro
+              default: PowerX Plugin Intro
+            icon: i-heroicons-information-circle
+            path: /intro
+            route: intro
             order: 1
+
+          - id: plugins.base.templates
+            title: 模版               # ⚠️ 原“笔记”改为“模版”
+            title_i18n:
+              namespace: menus
+              key: menu.base.templates.title
+              default: Templates
+            icon: i-heroicons-clipboard-document-list
+            path: /templates
+            route: templates
+            order: 2
+            children:
+              - id: plugins.base.templates.develop   # ⚠️ 原 overview -> develop
+                title: 开发介绍
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.templates.develop
+                  default: Templates Develop Intro
+                icon: i-heroicons-document-text
+                path: /templates/develop
+                route: templates/develop
+                order: 1
+
+              - id: plugins.base.templates.crud      # ⚠️ 原 active -> crud
+                title: 模版 CRUD
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.templates.crud
+                  default: Templates CRUD
+                icon: i-heroicons-wrench
+                path: /templates/crud
+                route: templates/crud
+                order: 2
 
 routes:
   basePath: /api/v1
@@ -97,94 +130,6 @@ rbac:
 permissions:
   - resource: base:tempalte
     actions: [read, create, update, delete]
-
-menus:
-  - id: plugins.base
-    title: 基础插件
-    title_i18n:
-      namespace: menus
-      key: menu.base.template
-      default: Base Plugin
-    icon: i-heroicons-clipboard-document-check
-    path: /dashboard
-    route: dashboard
-    order: 20
-    slot: group.plugins
-    required_policies: [base:template:read]
-    children:
-      - id: plugins.base.dashboard
-        title: 仪表盘
-        title_i18n:
-          namespace: menus
-          key: menu.base.dashboard
-          default: Dashboard
-        icon: i-heroicons-squares-2x2
-        path: /dashboard
-        route: dashboard
-        order: 1
-      - id: plugins.base.templates
-        title: 笔记
-        title_i18n:
-          namespace: menus
-          key: menu.base.templates.title
-          default: templates
-        icon: i-heroicons-clipboard-document-list
-        path: /templates
-        route: templates
-        order: 2
-        children:
-          - id: plugins.base.templates.overview
-            title: 笔记总览
-            title_i18n:
-              namespace: menus
-              key: menu.base.templates.overview
-              default: templates Overview
-            icon: i-heroicons-document-text
-            path: /templates
-            route: templates
-            order: 1
-          - id: plugins.base.templates.active
-            title: 活跃笔记
-            title_i18n:
-              namespace: menus
-              key: menu.base.templates.active
-              default: Active templates
-            icon: i-heroicons-play-circle
-            path: /templates/active
-            route: templates/active
-            order: 2
-      - id: plugins.base.reports
-        title: 报表
-        title_i18n:
-          namespace: menus
-          key: menu.base.reports.title
-          default: Reports
-        icon: i-heroicons-chart-bar
-        path: /reports
-        route: reports
-        order: 3
-        required_policies: [base:report:read]
-        children:
-          - id: plugins.base.reports.daily
-            title: 日报表
-            title_i18n:
-              namespace: menus
-              key: menu.base.reports.daily
-              default: Daily Report
-            icon: i-heroicons-calendar-days
-            path: /reports/daily
-            route: reports/daily
-            order: 1
-          - id: plugins.base.reports.monthly
-            title: 月报表
-            title_i18n:
-              namespace: menus
-              key: menu.base.reports.monthly
-              default: Monthly Report
-            icon: i-heroicons-calendar
-            path: /reports/monthly
-            route: reports/monthly
-            order: 2
 
 agents:
   - id: base.assistant
