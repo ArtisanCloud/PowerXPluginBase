@@ -32,9 +32,15 @@
     "team": "团队成员",
     "systemSettings": "系统设置",
     "permissions": "权限",
+    "settings": "设置",
+    "projectSettings": "项目设置",
     "profile": "个人中心",
     "help": "帮助",
     "logout": "退出"
+  },
+  "theme": {
+    "light": "浅色模式",
+    "dark": "深色模式"
   },
   "intro": {
     "title": "Base 模板插件",

@@ -2,6 +2,7 @@
 const pluginId = "com.powerx.plugins.base";
 const pluginAdminBase = `/_p/${pluginId}/admin/`;
 const pluginApiBase   = `/_p/${pluginId}/api/v1`;
+const localApiBase    = process.env.NUXT_PUBLIC_API_BASE || "http://localhost:8086/api/v1";
 
 // Host（被 PowerX 反代）用 1；独立/开发用 0
 const INSIDE_POWERX = process.env.POWERX_PROXY === '1';
@@ -67,7 +68,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: INSIDE_POWERX ? pluginApiBase : "/api/v1",
+      apiBaseUrl: INSIDE_POWERX ? pluginApiBase : localApiBase,
       insidePowerX: INSIDE_POWERX,
       pluginAdminBase,
       bridgeDebug: BRIDGE_DEBUG,
@@ -99,7 +100,7 @@ export default defineNuxtConfig({
           target: "http://localhost:8086",
           changeOrigin: true,
           ws: true,
-          rewrite: (p: string) => p.replace(/^\/api/, ""),
+          // rewrite: (p: string) => p.replace(/^\/api/, ""),
         },
         "/ws": {
           target: "ws://127.0.0.1:4000",

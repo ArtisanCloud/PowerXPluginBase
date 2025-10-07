@@ -24,7 +24,7 @@ export function resolveApiBase(pathname?: string): string {
       ? (useRuntimeConfig() as any).public
       : undefined);
 
-  return cfg?.apiBaseUrl || "http://localhost:8086/v1";
+  return cfg?.apiBaseUrl || "http://localhost:8086/api/v1";
 }
 
 export function getAuthToken(): string | undefined {
@@ -49,10 +49,14 @@ export function getTenantId(): string | undefined {
 
 // 通用类型定义
 export interface Page<T> {
-  items: T[];
-  total: number;
-  page: number;
+  list: T[];
+  page_index: number;
   page_size: number;
+  total: number;
+  // 兼容旧字段，方便前端在未调整完之前继续使用
+  items?: T[];
+  page?: number;
+  limit?: number;
 }
 
 export interface ApiResponse<T = any> {

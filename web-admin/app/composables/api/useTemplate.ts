@@ -1,5 +1,5 @@
 import { apiGet, apiPost, apiPut, apiDel, useApiClient } from "./_client";
-import type { Page } from "./_base";
+import type { ApiResponse, Page } from "./_base";
 
 export interface Template {
   id: number;
@@ -13,25 +13,32 @@ export interface Template {
 export function useTemplateApi() {
   const { baseURL } = useApiClient();
 
-  const listTemplates = (page = 1, page_size = 20, q = "") =>
-    apiGet<Page<Template>>("templates", {
-      page,
-      page_size,
-      q: q || undefined,
-    });
+  const listTemplates = (page = 1, page_size = 20, q = "", init?: any) =>
+    apiGet<ApiResponse<Page<Template>>>(
+      "templates",
+      {
+        page,
+        page_size,
+        q: q || undefined,
+      },
+      init
+    );
 
-  const getTemplate = (id: number | string) =>
-    apiGet<Template>(`templates/${id}`);
+  const getTemplate = (id: number | string, init?: any) =>
+    apiGet<ApiResponse<Template>>(`templates/${id}`, undefined, init);
 
-  const createTemplate = (data: Partial<Template>) =>
-    apiPost<Template>("templates", data);
+  const createTemplate = (data: Partial<Template>, init?: any) =>
+    apiPost<ApiResponse<Template>>("templates", data, init);
 
-  const updateTemplate = (id: number | string, data: Partial<Template>) =>
-    apiPut<Template>(`templates/${id}`, data);
+  const updateTemplate = (
+    id: number | string,
+    data: Partial<Template>,
+    init?: any
+  ) => apiPut<ApiResponse<Template>>(`templates/${id}`, data, init);
 
-  const deleteTemplate = (id: number | string) =>
-    apiDel<void>(`templates/${id}`);
-
+  const deleteTemplate = (id: number | string, init?: any) =>
+    apiDel<ApiResponse<{ ok: boolean }>>(`templates/${id}`, init);
+  
   return {
     baseURL,
     listTemplates,

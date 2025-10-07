@@ -47,17 +47,30 @@
         </div>
       </template>
       <UTable :columns="columns" :data="templates" :loading="loading">
-        <template #actions-data="{ row }">
+        <!-- 注意：v3 是 -cell，不是 -data；row.original 才是你的对象 -->
+        <template #actions-cell="{ row }">
           <div class="flex gap-2">
-            <UButton size="xs" variant="soft" icon="i-heroicons-pencil" @click="startEdit(row)">
-              {{ $t("common.edit") }}
+            <UButton
+              size="xs"
+              variant="soft"
+              icon="i-heroicons-pencil"
+              @click="startEdit(row.original)"
+            >
+              {{ $t('common.edit') }}
             </UButton>
-            <UButton size="xs" variant="soft" color="red" icon="i-heroicons-trash" @click="confirmDelete(row)">
-              {{ $t("common.delete") }}
+            <UButton
+              size="xs"
+              variant="soft"
+              color="error"
+              icon="i-heroicons-trash"
+              @click="confirmDelete(row.original)"
+            >
+              {{ $t('common.delete') }}
             </UButton>
           </div>
         </template>
       </UTable>
+
     </UCard>
 
     <ConfirmDialog
@@ -72,22 +85,37 @@
 
 <script setup lang="ts">
 import ConfirmDialog from "~/components/ConfirmDialog.vue"
+import { useTemplateApi } from "~/composables/api/useTemplate"
+import type { Template } from "~/composables/api/useTemplate"
+
+type TemplateRow = {
+  id: number
+  name: string
+  description: string
+  content: string
+}
 
 const columns = [
-  { key: "name", id: "name", label: "Name" },
-  { key: "description", id: "description", label: "Description" },
-  { key: "content", id: "content", label: "Content" },
-  { key: "actions", id: "actions", label: "" },
-]
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'description', header: 'Description' },
+  { accessorKey: 'content', header: 'Content' },
+  { id: 'actions', header: '' }
+] satisfies any
 
-const { public: { apiBaseUrl } } = useRuntimeConfig()
+const {
+  baseURL: templateApiBase,
+  listTemplates,
+  createTemplate: createTemplateApi,
+  updateTemplate: updateTemplateApi,
+  deleteTemplate: deleteTemplateApi,
+} = useTemplateApi()
 
-const templates = ref<any[]>([])
+const templates = ref<Template[]>([])
 const loading = ref(false)
 const saving = ref(false)
 const editingId = ref<number | null>(null)
 const deleteDialog = ref(false)
-const selectedTemplate = ref<any | null>(null)
+const selectedTemplate = ref<Template | null>(null)
 
 const form = reactive({
   name: "",
@@ -95,19 +123,59 @@ const form = reactive({
   content: "",
 })
 
+const makeLogHandlers = (action: string, context: Record<string, any> = {}) => ({
+  onRequest({ request, options }: any) {
+    console.debug(`[templates/crud] ${action} request`, {
+      baseURL: templateApiBase,
+      request,
+      options,
+      context,
+    })
+  },
+  onResponse({ response }: any) {
+    console.debug(`[templates/crud] ${action} response`, {
+      status: response.status,
+      data: response._data,
+      headers: typeof response.headers?.get === "function"
+        ? {
+            "x-request-id": response.headers.get("x-request-id"),
+          }
+        : undefined,
+      context,
+    })
+  },
+  onResponseError({ response }: any) {
+    console.error(`[templates/crud] ${action} response error`, {
+      status: response?.status,
+      data: response?._data,
+      context,
+    })
+  },
+})
+
 const fetchTemplates = async () => {
   loading.value = true
   try {
-    const res = await $fetch(`${apiBaseUrl}/templates`, {
-      query: { page: 1, page_size: 50 },
+    const query = { page: 1, page_size: 50 }
+    console.debug('[templates/crud] fetching templates', {
+      baseURL: templateApiBase,
+      path: 'templates',
+      query,
     })
-    if (res && res.data && Array.isArray(res.data.list)) {
+
+    const res = await listTemplates(query.page, query.page_size, "", makeLogHandlers("templates:list", { query }))
+    // console.log(res?.success , res.data , Array.isArray(res.data.list),res)
+    if (res?.success && res.data && Array.isArray(res.data.list)) {
       templates.value = res.data.list
+      console.debug('[templates/crud] templates loaded', {
+        count: templates.value.length,
+      })
     } else {
       templates.value = []
+      console.warn('[templates/crud] templates response unexpected', res)
     }
   } catch (error) {
-    console.error("Failed to load templates", error)
+    console.error("[templates/crud] Failed to load templates", error)
     templates.value = []
   } finally {
     loading.value = false
@@ -125,7 +193,7 @@ const startCreate = () => {
   resetForm()
 }
 
-const startEdit = (tpl: any) => {
+const startEdit = (tpl: Template) => {
   editingId.value = tpl.id
   form.name = tpl.name
   form.description = tpl.description
@@ -138,27 +206,39 @@ const handleSubmit = async () => {
   }
   saving.value = true
   try {
+    const payload = {
+      name: form.name,
+      description: form.description,
+      content: form.content,
+    }
     if (editingId.value) {
-      await $fetch(`${apiBaseUrl}/templates/${editingId.value}`, {
-        method: "PUT",
-        body: form,
-      })
+      const res = await updateTemplateApi(
+        editingId.value,
+        payload,
+        makeLogHandlers("templates:update", { id: editingId.value, payload })
+      )
+      if (!res?.success) {
+        throw new Error(res?.message || "Update template failed")
+      }
     } else {
-      await $fetch(`${apiBaseUrl}/templates`, {
-        method: "POST",
-        body: form,
-      })
+      const res = await createTemplateApi(
+        payload,
+        makeLogHandlers("templates:create", { payload })
+      )
+      if (!res?.success) {
+        throw new Error(res?.message || "Create template failed")
+      }
     }
     await fetchTemplates()
     resetForm()
   } catch (error) {
-    console.error("Failed to save template", error)
+    console.error("[templates/crud] Failed to save template", error)
   } finally {
     saving.value = false
   }
 }
 
-const confirmDelete = (tpl: any) => {
+const confirmDelete = (tpl: Template) => {
   selectedTemplate.value = tpl
   deleteDialog.value = true
 }
@@ -166,12 +246,16 @@ const confirmDelete = (tpl: any) => {
 const performDelete = async () => {
   if (!selectedTemplate.value) return
   try {
-    await $fetch(`${apiBaseUrl}/templates/${selectedTemplate.value.id}`, {
-      method: "DELETE",
-    })
+    const res = await deleteTemplateApi(
+      selectedTemplate.value.id,
+      makeLogHandlers("templates:delete", { id: selectedTemplate.value.id })
+    )
+    if (!res?.success) {
+      throw new Error(res?.message || "Delete template failed")
+    }
     await fetchTemplates()
   } catch (error) {
-    console.error("Failed to delete template", error)
+    console.error("[templates/crud] Failed to delete template", error)
   } finally {
     deleteDialog.value = false
     selectedTemplate.value = null

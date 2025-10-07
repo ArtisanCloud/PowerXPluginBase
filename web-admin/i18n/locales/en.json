@@ -32,9 +32,15 @@
     "team": "Team Members",
     "systemSettings": "System Settings",
     "permissions": "Permissions",
+    "settings": "Settings",
+    "projectSettings": "Project Settings",
     "profile": "Profile",
     "help": "Help",
     "logout": "Logout"
+  },
+  "theme": {
+    "light": "Light Theme",
+    "dark": "Dark Theme"
   },
   "intro": {
     "title": "Base Template Plugin",
