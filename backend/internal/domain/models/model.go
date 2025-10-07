@@ -24,9 +24,11 @@ type BaseNoTenantModel struct {
 
 const (
 	TablePluginTenantExt = "plugin_tenant_ext"
-	TableNote            = "note"
 	TableTeamCache       = "team_cache"
 	TableTeamExt         = "team_ext"
 	TableMemberExt       = "member_ext"
 	TableMemberCache     = "member_cache"
+
+	// extend dev
+
 )

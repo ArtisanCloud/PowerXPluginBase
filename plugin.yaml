@@ -1,7 +1,7 @@
 # plugin.yaml 是 PowerX 插件管理器读取的 Manifest，声明插件固定的元信息与能力。
 # 请勿在此写入环境相关的地址、口令等敏感配置；推荐放到 backend/etc/config.yaml 或部署环境变量中。
 id: com.powerx.plugins.base
-name: Base Note Plugin
+name: Base template Plugin
 version: 0.1.0
 description: "PowerX 基础任务管理插件，提供任务、权限与 Agent 能力"
 corex_version: ">=0.6.0"
@@ -62,14 +62,14 @@ frontend:
         title: 基础插件
         title_i18n:
           namespace: menus
-          key: menu.base.note
+          key: menu.base.template
           default: Base Plugin
         icon: i-heroicons-clipboard-document-check
         path: /dashboard
         route: dashboard
         order: 20
         slot: group.plugins
-        required_policies: [base:note:read]
+        required_policies: [base:template:read]
         children:
           - id: base.dashboard
             title: 仪表盘
@@ -81,69 +81,6 @@ frontend:
             path: /dashboard
             route: dashboard
             order: 1
-          - id: base.notes
-            title: 笔记
-            title_i18n:
-              namespace: menus
-              key: menu.base.notes.title
-              default: Notes
-            icon: i-heroicons-clipboard-document-list
-            path: /notes
-            route: notes
-            order: 2
-            children:
-              - id: base.notes.overview
-                title: 笔记总览
-                title_i18n:
-                  namespace: menus
-                  key: menu.base.notes.overview
-                  default: Notes Overview
-                icon: i-heroicons-document-text
-                path: /notes
-                route: notes
-                order: 1
-              - id: base.notes.active
-                title: 活跃笔记
-                title_i18n:
-                  namespace: menus
-                  key: menu.base.notes.active
-                  default: Active Notes
-                icon: i-heroicons-play-circle
-                path: /notes/active
-                route: notes/active
-                order: 2
-          - id: base.reports
-            title: 报表
-            title_i18n:
-              namespace: menus
-              key: menu.base.reports.title
-              default: Reports
-            icon: i-heroicons-chart-bar
-            path: /reports
-            route: reports
-            order: 3
-            required_policies: [base:report:read]
-            children:
-              - id: base.reports.daily
-                title: 日报表
-                title_i18n:
-                  namespace: menus
-                  key: menu.base.reports.daily
-                  default: Daily Report
-                icon: i-heroicons-calendar-days
-                path: /reports/daily
-                route: reports/daily
-                order: 1
-              - id: base.reports.monthly
-                title: 月报表
-                title_i18n:
-                  namespace: menus
-                  key: menu.base.reports.monthly
-                  default: Monthly Report
-                icon: i-heroicons-calendar
-                path: /reports/monthly
-                route: reports/monthly
-                order: 2
 
 routes:
   basePath: /api/v1
@@ -152,30 +89,28 @@ routes:
 
 rbac:
   resources:
-    - resource: base:note
+    - resource: base:template
       actions: [read, create, update, delete]
     - resource: base:report
       actions: [read]
 
 permissions:
-  - resource: base:note
+  - resource: base:tempalte
     actions: [read, create, update, delete]
-  - resource: base:report
-    actions: [read]
 
 menus:
   - id: plugins.base
     title: 基础插件
     title_i18n:
       namespace: menus
-      key: menu.base.note
+      key: menu.base.template
       default: Base Plugin
     icon: i-heroicons-clipboard-document-check
     path: /dashboard
     route: dashboard
     order: 20
     slot: group.plugins
-    required_policies: [base:note:read]
+    required_policies: [base:template:read]
     children:
       - id: plugins.base.dashboard
         title: 仪表盘
@@ -187,36 +122,36 @@ menus:
         path: /dashboard
         route: dashboard
         order: 1
-      - id: plugins.base.notes
+      - id: plugins.base.templates
         title: 笔记
         title_i18n:
           namespace: menus
-          key: menu.base.notes.title
-          default: Notes
+          key: menu.base.templates.title
+          default: templates
         icon: i-heroicons-clipboard-document-list
-        path: /notes
-        route: notes
+        path: /templates
+        route: templates
         order: 2
         children:
-          - id: plugins.base.notes.overview
+          - id: plugins.base.templates.overview
             title: 笔记总览
             title_i18n:
               namespace: menus
-              key: menu.base.notes.overview
-              default: Notes Overview
+              key: menu.base.templates.overview
+              default: templates Overview
             icon: i-heroicons-document-text
-            path: /notes
-            route: notes
+            path: /templates
+            route: templates
             order: 1
-          - id: plugins.base.notes.active
+          - id: plugins.base.templates.active
             title: 活跃笔记
             title_i18n:
               namespace: menus
-              key: menu.base.notes.active
-              default: Active Notes
+              key: menu.base.templates.active
+              default: Active templates
             icon: i-heroicons-play-circle
-            path: /notes/active
-            route: notes/active
+            path: /templates/active
+            route: templates/active
             order: 2
       - id: plugins.base.reports
         title: 报表
@@ -255,22 +190,22 @@ agents:
   - id: base.assistant
     plugin_id: com.powerx.plugins.base
     name: Base 助理
-    description: "智能任务助手，协助创建与查询 Note"
+    description: "智能任务助手，协助创建与查询 Template"
     default_tools:
-      - base.note.create
-      - base.note.query
+      - base.template.create
+      - base.template.query
 
 # 工具清单侧重声明接口契约，真实业务参数通过 config.yaml 或环境变量注入
 # 例如 POWERX_PLUGIN_HTTP_BASE 可在运行时指向宿主反代出来的前缀。
 tools:
-  - id: base.note.create
+  - id: base.template.create
     plugin_id: com.powerx.plugins.base
     name: 创建任务
     description: 创建一个新的 Base 任务
     transport: http
-    endpoint: ${POWERX_PLUGIN_HTTP_BASE:-/api/v1}/notes
+    endpoint: ${POWERX_PLUGIN_HTTP_BASE:-/api/v1}/templates
     method: POST
-    rbac_resource: base:note
+    rbac_resource: base:template
     input_schema:
       type: object
       properties:
@@ -307,14 +242,14 @@ tools:
           type: string
           format: date-time
 
-  - id: base.note.query
+  - id: base.template.query
     plugin_id: com.powerx.plugins.base
     name: 查询任务
     description: 查询 Base 任务列表
     transport: http
-    endpoint: ${POWERX_PLUGIN_HTTP_BASE:-/api/v1}/notes
+    endpoint: ${POWERX_PLUGIN_HTTP_BASE:-/api/v1}/templates
     method: GET
-    rbac_resource: base:note
+    rbac_resource: base:template
     input_schema:
       type: object
       properties:
@@ -377,7 +312,7 @@ signature:
 metadata:
   author: PowerX Team
   category: productivity
-  tags: [base, note, task-management]
+  tags: [base, template, task-management]
   icon: i-heroicons-clipboard-document
   homepage: https://powerx.dev/plugins/base
   license: MIT

@@ -2,24 +2,23 @@ package migrate
 
 import (
 	"context"
+
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/iam"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/note"
 	"gorm.io/gorm"
 )
 
 // MigratePluginModels 只做 AutoMigrate（最小实现）
 func MigratePluginModels(ctx context.Context, db *gorm.DB) error {
-    return db.AutoMigrate(
-        &models.PluginCredential{},
-        &models.PluginTenantExt{},
-        &note.Note{},
-        &iam.TeamCache{},
-        &iam.TeamExt{},
-        &iam.MemberExt{},
-        &iam.MemberCache{},
-    )
+	return db.AutoMigrate(
+		&models.PluginCredential{},
+		&models.PluginTenantExt{},
+		&iam.TeamCache{},
+		&iam.TeamExt{},
+		&iam.MemberExt{},
+		&iam.MemberCache{},
+	)
 }
 
 func ResetDatabase(ctx context.Context, db *gorm.DB, cfg *config.DatabaseConfig) error {
