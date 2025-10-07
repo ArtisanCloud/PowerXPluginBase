@@ -1,21 +1,23 @@
 # migrate.mk 管理数据库迁移与数据初始化任务
 
 .PHONY: migrate
-migrate: ## 运行数据库迁移（通过主进程）
+migrate: ## 运行数据库迁移
 	@echo "运行数据库迁移..."
-	cd $(BACKEND_DIR) && \
-		POWERX_RUN_MIGRATE=true \
-		go run ./cmd/plugin
+	cd $(BACKEND_DIR) && go run ./cmd/database/main.go migrate
 
 .PHONY: migrate-cmd
-migrate-cmd: ## 使用独立迁移命令
-	@echo "使用独立迁移命令..."
-	cd $(BACKEND_DIR) && go run ./cmd/database/main.go migrate
+migrate-cmd: migrate ## 兼容旧命令，内部调用 migrate 目标
+	@:
 
 .PHONY: seed
 seed: ## 运行数据种子脚本
 	@echo "运行数据种子..."
 	cd $(BACKEND_DIR) && go run ./cmd/database/main.go seed
+
+.PHONY: setup-db
+setup-db: ## 执行迁移并填充初始数据
+	@echo "运行迁移并填充初始数据..."
+	cd $(BACKEND_DIR) && go run ./cmd/database/main.go setup
 
 .PHONY: reset-db
 reset-db: ## 重置数据库（危险操作）

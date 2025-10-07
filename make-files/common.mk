@@ -33,7 +33,7 @@ RELEASE_WEBADMIN_OUTPUT := $(RELEASE_WEBADMIN_DIR)/.output
 
 .PHONY: help
 help: ## 显示可用命令列表
-        @echo "PowerX Base Template Plugin Makefile"
+	@echo "PowerX Base Template Plugin Makefile"
 	@echo ""
 	@echo "可用的命令:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
