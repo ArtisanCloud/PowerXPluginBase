@@ -1,6 +1,6 @@
 // 统一导出所有 API 相关功能
 
-export * from "./useNote";
+export * from "./useTemplate";
 export * from "./useMember";
 export * from "./useTeam";
 export * from "./useStream";

@@ -1,11 +1,11 @@
 # common.mk 用于定义 Makefile 公共变量与帮助信息
 
 # 基础变量
-APP_NAME := powerx-plugin-note
+APP_NAME := powerx-plugin-base
 VERSION := 0.1.0
-PLUGIN_ID := com.powerx.plugins.note
+PLUGIN_ID := com.powerx.plugins.base
 
-GO_MODULE := github.com/powerx-plugins/note
+GO_MODULE := github.com/powerx-plugins/base
 BACKEND_DIR := backend
 BUILD_DIR := $(BACKEND_DIR)/bin
 MAIN_FILE := $(BACKEND_DIR)/cmd/plugin/main.go
@@ -33,7 +33,7 @@ RELEASE_WEBADMIN_OUTPUT := $(RELEASE_WEBADMIN_DIR)/.output
 
 .PHONY: help
 help: ## 显示可用命令列表
-	@echo "PowerX Note Plugin Makefile"
+        @echo "PowerX Base Template Plugin Makefile"
 	@echo ""
 	@echo "可用的命令:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \

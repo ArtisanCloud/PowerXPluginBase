@@ -71,13 +71,13 @@ func NewGRPCServer(ctx context.Context, c *cfgpkg.GRPCServer) (*Server, error) {
 
 	// 设置服务健康状态
 	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
-	healthServer.SetServingStatus("note-plugin", healthpb.HealthCheckResponse_SERVING)
+	healthServer.SetServingStatus("template-plugin", healthpb.HealthCheckResponse_SERVING)
 
 	// 注册反射服务（开发和调试用）
 	reflection.Register(s)
 
 	// TODO: 在这里注册你的插件 gRPC 服务
-	// 例如：pluginv1.RegisterNotePluginServiceServer(s, NewNoteServer(deps))
+	// 例如：pluginv1.RegisterTemplatePluginServiceServer(s, NewTemplateServer(deps))
 
 	//logger.WithField("address", lis.Addr().String()).Info("gRPC server configured")
 	logger.Info("gRPC server configured")
@@ -119,24 +119,24 @@ func (s *Server) IsServing() bool {
 // TODO: 当定义插件自己的 proto 服务时，在这里实现服务逻辑
 // 例如：
 //
-// type NoteServer struct {
-// 	pluginv1.UnimplementedNotePluginServiceServer
-// 	noteService *services.NoteService
+// type TemplateServer struct {
+// 	pluginv1.UnimplementedTemplatePluginServiceServer
+// 	templateService *services.TemplateService
 // 	// 其他依赖
 // }
 //
-// func NewNoteServer(deps *SomeDependencies) *NoteServer {
-// 	return &NoteServer{
-// 		noteService: deps.NoteService,
+// func NewTemplateServer(deps *SomeDependencies) *TemplateServer {
+// 	return &TemplateServer{
+// 		templateService: deps.TemplateService,
 // 	}
 // }
 //
-// func (s *NoteServer) CreateNote(ctx context.Context, req *pluginv1.CreateNoteRequest) (*pluginv1.CreateNoteResponse, error) {
-// 	// 实现创建任务逻辑
-// 	return &pluginv1.CreateNoteResponse{}, nil
+// func (s *TemplateServer) CreateTemplate(ctx context.Context, req *pluginv1.CreateTemplateRequest) (*pluginv1.CreateTemplateResponse, error) {
+// 	// 实现创建模板逻辑
+// 	return &pluginv1.CreateTemplateResponse{}, nil
 // }
 //
-// func (s *NoteServer) GetNote(ctx context.Context, req *pluginv1.GetNoteRequest) (*pluginv1.GetNoteResponse, error) {
-// 	// 实现获取任务逻辑
-// 	return &pluginv1.GetNoteResponse{}, nil
+// func (s *TemplateServer) GetTemplate(ctx context.Context, req *pluginv1.GetTemplateRequest) (*pluginv1.GetTemplateResponse, error) {
+// 	// 实现获取模板逻辑
+// 	return &pluginv1.GetTemplateResponse{}, nil
 // }

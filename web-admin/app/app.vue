@@ -9,9 +9,9 @@
 </template>
 
 <script setup>
-// PowerX Note Plugin Admin Interface
+// PowerX Base Template Plugin Admin Interface
 useSeoMeta({
-  title: "PowerX Note Plugin",
-  description: "Note note management for PowerX platform",
+  title: "PowerX Base Template Plugin",
+  description: "Template management showcase for the PowerX platform",
 });
 </script>

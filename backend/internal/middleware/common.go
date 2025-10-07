@@ -217,7 +217,7 @@ func HealthCheck(endpoint string) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{
 				"status":    "healthy",
 				"timestamp": time.Now().UTC(),
-				"service":   "powerx-plugin-note",
+				"service":   "powerx-plugin-base",
 			})
 			c.Abort()
 			return

@@ -28,6 +28,7 @@ const (
 	TableTeamExt         = "team_ext"
 	TableMemberExt       = "member_ext"
 	TableMemberCache     = "member_cache"
+	TableTemplate        = "template"
 
 	// extend dev
 

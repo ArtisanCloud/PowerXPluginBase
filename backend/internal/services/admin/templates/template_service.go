@@ -1,0 +1,91 @@
+package templates
+
+import (
+	"context"
+	"strings"
+
+	dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/template"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository"
+	trepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/template"
+	"gorm.io/gorm"
+)
+
+type TemplateService struct {
+	TemplateRepo *trepo.TemplateRepository
+}
+
+func NewTemplateService(db *gorm.DB) *TemplateService {
+	return &TemplateService{TemplateRepo: trepo.NewTemplateRepository(db)}
+}
+
+func (s *TemplateService) List(
+	ctx context.Context,
+	q string,
+	page, pageSize int,
+) (*repository.Page[[]*dbm.Template], error) {
+	conds := map[string]interface{}{}
+
+	if tid, ok, _ := s.TemplateRepo.CurrentTenantID(ctx); ok {
+		conds["tenant_id = ?"] = tid
+	}
+
+	cb := func(db *gorm.DB, opt interface{}) *gorm.DB {
+		if kw, _ := opt.(string); strings.TrimSpace(kw) != "" {
+			p := "%" + strings.TrimSpace(kw) + "%"
+			db = db.Where("(name ILIKE ? OR description ILIKE ?)", p, p)
+		}
+		return db.Order("id DESC")
+	}
+
+	return s.TemplateRepo.FindPage(ctx, conds, page, pageSize, cb, q)
+}
+
+func (s *TemplateService) GetByID(ctx context.Context, id uint64) (*dbm.Template, error) {
+	tpl, err := s.TemplateRepo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if tpl == nil {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return tpl, nil
+}
+
+func (s *TemplateService) Create(
+	ctx context.Context,
+	name, description, content string,
+) (*dbm.Template, error) {
+	tid, ok, err := s.TemplateRepo.CurrentTenantID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, gorm.ErrInvalidData
+	}
+
+	tpl := &dbm.Template{
+		Name:        name,
+		Description: description,
+		Content:     content,
+	}
+	tpl.TenantID = tid
+
+	return s.TemplateRepo.Create(ctx, tpl)
+}
+
+func (s *TemplateService) Update(
+	ctx context.Context,
+	id uint64,
+	name, description, content string,
+) (*dbm.Template, error) {
+	fields := map[string]interface{}{
+		"name":        name,
+		"description": description,
+		"content":     content,
+	}
+	return s.TemplateRepo.UpdateByID(ctx, id, fields)
+}
+
+func (s *TemplateService) Delete(ctx context.Context, id uint64) error {
+	return s.TemplateRepo.DeleteByID(ctx, id)
+}

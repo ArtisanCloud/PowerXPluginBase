@@ -8,7 +8,7 @@ type RBACConfig struct {
 	Enabled          bool
 	DefaultDeny      bool
 	SuperAdminRoles  []string
-	RoutePermissions map[string]Permission // "METHOD:/api/v1/notes/*" -> {note,read}
+	RoutePermissions map[string]Permission // "METHOD:/api/v1/templates/*" -> {template,read}
 	DelegateToPowerX bool
 	PowerXIssuer     string
 	PowerXAudience   string

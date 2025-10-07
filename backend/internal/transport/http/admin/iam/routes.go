@@ -26,7 +26,7 @@ func registerMemberRoutes(rg *gin.RouterGroup, deps *app.Deps) {
 	members := rg.Group("/members")
 	{
 		// 基础 CRUD 操作
-		members.GET("", memberHandler.ListMembers)     // GET /admin/iam/members
+		members.GET("", memberHandler.ListMembers)   // GET /admin/iam/members
 		members.GET("/:id", memberHandler.GetMember) // GET /admin/iam/members/:id
 
 		// 高级搜索
@@ -38,7 +38,7 @@ func registerMemberRoutes(rg *gin.RouterGroup, deps *app.Deps) {
 }
 
 // registerTeamRoutes 注册团队管理路由（预留）
-func registerTeamRoutes(rg *gin.RouterGroup,deps *app.Deps) {
+func registerTeamRoutes(rg *gin.RouterGroup, deps *app.Deps) {
 	teams := rg.Group("/teams")
 	{
 		// 预留团队相关路由
@@ -70,6 +70,6 @@ func getStatus(c *gin.Context) {
 			"GET /admin/iam/teams - 获取团队列表（预留）",
 			"GET /admin/iam/status - 模块状态",
 		},
-		"note": "集成 PowerX gRPC 服务进行成员和团队管理",
+		"tip": "集成 PowerX gRPC 服务进行成员和团队管理，支撑模板协作场景",
 	})
 }

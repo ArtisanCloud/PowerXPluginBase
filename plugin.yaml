@@ -128,7 +128,7 @@ rbac:
       actions: [read]
 
 permissions:
-  - resource: base:tempalte
+  - resource: base:template
     actions: [read, create, update, delete]
 
 agents:

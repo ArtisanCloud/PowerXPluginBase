@@ -8,6 +8,7 @@
     "search": "Search",
     "loading": "Loading...",
     "confirm": "Confirm",
+    "confirmation": "Confirmation",
     "back": "Back",
     "next": "Next",
     "previous": "Previous",
@@ -15,15 +16,13 @@
     "reset": "Reset",
     "close": "Close",
     "welcome": "Welcome",
-    "appName": "PowerX Note"
+    "appName": "PowerX Base"
   },
   "navigation": {
-    "dashboard": "Dashboard",
-    "contentManagement": "Content Management",
-    "notes": "Notes Management",
-    "notesList": "Notes List",
-    "activenote": "Active Notes",
-    "notePlanning": "Note Planning",
+    "intro": "Plugin Intro",
+    "templates": "Templates",
+    "templatesCrud": "Template CRUD",
+    "templatesDevelop": "Templates Develop Guide",
     "reports": "Reports",
     "reportsDaily": "Daily Reports",
     "reportsMonthly": "Monthly Reports",
@@ -35,61 +34,72 @@
     "permissions": "Permissions",
     "profile": "Profile",
     "help": "Help",
-    "logout": "Logout",
-    "reports": "Reports",
-    "reportsDaily": "Daily Reports",
-    "reportsMonthly": "Monthly Reports"
+    "logout": "Logout"
   },
-  "notes": {
-    "title": "Notes Management",
-    "overview": "Notes Overview",
-    "totalNotes": "Total Notes",
-    "activeNotes": "Active Notes",
-    "completedNotes": "Completed Notes",
-    "recentNotes": "Recent Notes",
-    "createNote": "Create Note",
-    "editNote": "Edit Note",
-    "deleteNote": "Delete Note",
-    "noteTitle": "Note Title",
-    "noteContent": "Note Content",
-    "noteStatus": "Note Status",
-    "createdAt": "Created At",
-    "updatedAt": "Updated At",
-    "author": "Author",
-    "category": "Category",
-    "tags": "Tags",
-    "priority": "Priority",
-    "high": "High",
-    "medium": "Medium",
-    "low": "Low",
-    "draft": "Draft",
-    "published": "Published",
-    "archived": "Archived",
-    "searchNotes": "Search Notes",
-    "filterByCategory": "Filter by Category",
-    "filterByStatus": "Filter by Status",
-    "sortBy": "Sort By",
-    "sortByDate": "Sort by Date",
-    "sortByTitle": "Sort by Title",
-    "sortByPriority": "Sort by Priority",
-    "noNotesFound": "No notes found",
-    "noteStats": "Note Statistics"
+  "intro": {
+    "title": "Base Template Plugin",
+    "description": "Explore the starter template plugin for PowerX and learn how to build reusable modules quickly.",
+    "viewIntro": "View introduction"
+  },
+  "templates": {
+    "overview": {
+      "title": "Template Overview",
+      "description": "Templates help you bootstrap new experiences with consistent structures and reusable content blocks.",
+      "cards": {
+        "create": "Create",
+        "createDescription": "Draft reusable templates that can be applied across multiple pages or workflows.",
+        "automation": "Automation",
+        "automationDescription": "Combine templates with automation to accelerate onboarding and delivery.",
+        "analytics": "Insights",
+        "analyticsDescription": "Measure how templates are used and optimise collaboration in your team."
+      }
+    },
+    "develop": {
+      "title": "Development Guide",
+      "description": "Understand the backend and frontend touch points for extending the template module.",
+      "structure": "Key directories",
+      "steps": "Implementation steps",
+      "step1": "Define the GORM model and migrations for template storage.",
+      "step2": "Expose repository and service layers for business logic.",
+      "step3": "Register HTTP APIs under /api/v1/templates with RBAC protection.",
+      "step4": "Connect the Nuxt pages to the APIs and polish the user experience."
+    },
+    "crud": {
+      "title": "Template CRUD",
+      "description": "Manage demo templates with create, update and delete operations.",
+      "create": "New Template",
+      "formTitle": "Template Form",
+      "fields": {
+        "name": "Template Name",
+        "namePlaceholder": "Enter template name",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe the purpose of this template",
+        "content": "Content",
+        "contentPlaceholder": "Write the template content"
+      },
+      "actions": {
+        "save": "Save Template",
+        "update": "Update Template"
+      },
+      "listTitle": "Existing Templates",
+      "deleteTitle": "Delete Template",
+      "deleteConfirm": "Are you sure you want to delete \"{name}\"?"
+    }
   },
   "reports": {
     "overview": "Reports Overview",
-    "overviewHint": "Track key metrics and trends at a glance.",
-    "placeholder": "Reports module is under construction.",
-    "burndownChart": "Burndown Chart",
-    "velocityChart": "Velocity Chart",
-    "cumulativeFlow": "Cumulative Flow",
-    "sprintReport": "Sprint Report",
-    "teamPerformance": "Team Performance",
-    "productivity": "Productivity Analysis"
+    "overviewHint": "Monitor overall performance with the latest report summaries.",
+    "placeholder": "Report data is being prepared. Connect your data sources to see insights here soon.",
+    "daily": {
+      "overviewHint": "Review today's performance metrics, highlights, and outstanding tasks."
+    },
+    "monthly": {
+      "overviewHint": "Track month-over-month trends and summarise key achievements."
+    }
   },
   "team": {
     "members": "Team Members",
-    "noteMaster": "Note Master",
-    "productOwner": "Product Owner",
+    "templateOwner": "Template Owner",
     "developer": "Developer",
     "tester": "Tester",
     "capacity": "Member Capacity",
@@ -107,7 +117,8 @@
     "role": "Role",
     "lastActive": "Last Active",
     "permissionMatrix": "Permission Matrix",
-    "permission": "Permission"
+    "permission": "Permission",
+    "templateStatuses": "Template Statuses"
   },
   "message": {
     "saveSuccess": "Saved successfully",
@@ -116,16 +127,6 @@
     "confirmDelete": "Are you sure you want to delete? This action cannot be undone.",
     "noData": "No data available",
     "networkError": "Network error, please check your connection",
-    "noteCreated": "Note created successfully"
-  },
-  "reports": {
-    "overviewHint": "Monitor overall performance with the latest report summaries.",
-    "placeholder": "Report data is being prepared. Connect your data sources to see insights here soon.",
-    "daily": {
-      "overviewHint": "Review today's performance metrics, highlights, and outstanding tasks."
-    },
-    "monthly": {
-      "overviewHint": "Track month-over-month trends and summarize key achievements."
-    }
+    "templateCreated": "Template created successfully"
   }
 }

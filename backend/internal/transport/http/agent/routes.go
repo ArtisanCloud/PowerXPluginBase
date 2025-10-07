@@ -6,7 +6,7 @@ import (
 )
 
 // RegisterAPIRoutes 注册 Agent 相关路由
-// 路由风格参考 admin/notes：以模块为前缀分组
+// 路由风格参考 admin/templates：以模块为前缀分组
 // 最终路径示例：/api/v1/agent/tenants/:tenantId/credentials
 func RegisterAPIRoutes(rg *gin.RouterGroup, deps *app.Deps) {
     h := &CredentialHandler{deps: deps}

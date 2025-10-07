@@ -8,31 +8,31 @@ export interface Team {
   lead_id?: string;
   lead_name?: string;
   member_count?: number;
-  notes_count?: number;
+  templates_count?: number;
   created_at: string;
   updated_at: string;
   settings?: {
     is_public: boolean;
     allow_member_invite: boolean;
-    default_note_permission: string;
+    default_template_permission: string;
   };
 }
 
 export interface TeamStats {
   totalMembers: number;
   activeMembers: number;
-  totalNotes: number;
-  publishedNotes: number;
-  draftNotes: number;
+  totalTemplates: number;
+  publishedTemplates: number;
+  draftTemplates: number;
   activityRate: number;
   newMembersThisMonth: number;
-  notesCreatedThisMonth: number;
+  templatesCreatedThisMonth: number;
 }
 
 export interface TeamActivity {
   date: string;
-  notes_created: number;
-  notes_updated: number;
+  templates_created: number;
+  templates_updated: number;
   members_joined: number;
   active_members: number;
 }

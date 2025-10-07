@@ -1,31 +1,28 @@
-package notes
+package templates
 
 import (
 	"strconv"
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/contracts"
-	srvnotes "github.com/ArtisanCloud/PowerXPlugin/internal/services/admin/notes"
+	srvtemplates "github.com/ArtisanCloud/PowerXPlugin/internal/services/admin/templates"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/gin-gonic/gin"
 )
 
-type NoteHandler struct{ NoteService *srvnotes.NoteService }
+type TemplateHandler struct{ TemplateService *srvtemplates.TemplateService }
 
-func NewNoteHandler(deps *app.Deps) *NoteHandler {
-	return &NoteHandler{NoteService: srvnotes.NewNoteService(deps.DB)}
+func NewTemplateHandler(deps *app.Deps) *TemplateHandler {
+	return &TemplateHandler{TemplateService: srvtemplates.NewTemplateService(deps.DB)}
 }
 
-// ====== Handlers ======
-
-func (h *NoteHandler) GetNotes(c *gin.Context) {
-	var q NoteListRequest
+func (h *TemplateHandler) GetTemplates(c *gin.Context) {
+	var q TemplateListRequest
 	if err := c.ShouldBindQuery(&q); err != nil {
 		contracts.ResponseBadRequest(c, "invalid query: "+err.Error())
 		return
 	}
 
-	page, pageSize := q.Page, q.PageSize
-	res, err := h.NoteService.List(c.Request.Context(), q.Q, q.TeamID, q.MemberID, page, pageSize)
+	res, err := h.TemplateService.List(c.Request.Context(), q.Q, q.Page, q.PageSize)
 	if err != nil {
 		contracts.ResponseInternalError(c, err)
 		return
@@ -33,60 +30,60 @@ func (h *NoteHandler) GetNotes(c *gin.Context) {
 	contracts.ResponseSuccess(c, res)
 }
 
-func (h *NoteHandler) GetNote(c *gin.Context) {
+func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 	id, err := parseUint64(c.Param("id"))
 	if err != nil {
 		contracts.ResponseBadRequest(c, "invalid id")
 		return
 	}
-	n, err := h.NoteService.GetByID(c.Request.Context(), id)
+	tpl, err := h.TemplateService.GetByID(c.Request.Context(), id)
 	if err != nil {
 		contracts.ResponseNotFound(c, "not found: "+err.Error())
 		return
 	}
-	contracts.ResponseSuccess(c, n)
+	contracts.ResponseSuccess(c, tpl)
 }
 
-func (h *NoteHandler) CreateNote(c *gin.Context) {
-	var req CreateNoteRequest
+func (h *TemplateHandler) CreateTemplate(c *gin.Context) {
+	var req CreateTemplateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		contracts.ResponseBadRequest(c, "invalid body: "+err.Error())
 		return
 	}
-	n, err := h.NoteService.Create(c.Request.Context(), req.Title, req.Content, req.Author, req.TeamID, req.MemberID)
+	tpl, err := h.TemplateService.Create(c.Request.Context(), req.Name, req.Description, req.Content)
 	if err != nil {
 		contracts.ResponseInternalError(c, err)
 		return
 	}
-	contracts.ResponseSuccess(c, n)
+	contracts.ResponseSuccess(c, tpl)
 }
 
-func (h *NoteHandler) UpdateNote(c *gin.Context) {
+func (h *TemplateHandler) UpdateTemplate(c *gin.Context) {
 	id, err := parseUint64(c.Param("id"))
 	if err != nil {
 		contracts.ResponseBadRequest(c, "invalid id")
 		return
 	}
-	var req UpdateNoteRequest
+	var req UpdateTemplateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		contracts.ResponseBadRequest(c, "invalid body: "+err.Error())
 		return
 	}
-	n, err := h.NoteService.Update(c.Request.Context(), id, req.Title, req.Content, req.Author, req.TeamID, req.MemberID)
+	tpl, err := h.TemplateService.Update(c.Request.Context(), id, req.Name, req.Description, req.Content)
 	if err != nil {
 		contracts.ResponseInternalError(c, err)
 		return
 	}
-	contracts.ResponseSuccess(c, n)
+	contracts.ResponseSuccess(c, tpl)
 }
 
-func (h *NoteHandler) DeleteNote(c *gin.Context) {
+func (h *TemplateHandler) DeleteTemplate(c *gin.Context) {
 	id, err := parseUint64(c.Param("id"))
 	if err != nil {
 		contracts.ResponseBadRequest(c, "invalid id")
 		return
 	}
-	if err := h.NoteService.Delete(c.Request.Context(), id); err != nil {
+	if err := h.TemplateService.Delete(c.Request.Context(), id); err != nil {
 		contracts.ResponseInternalError(c, err)
 		return
 	}

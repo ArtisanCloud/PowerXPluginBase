@@ -22,10 +22,10 @@ func NewMemberService(db *gorm.DB) *MemberService {
 
 // MemberStats 成员统计信息
 type MemberStats struct {
-    MemberID       int64  `json:"member_id"`
-    ActiveNotes    int    `json:"active_notes"`
-    CompletedNotes int    `json:"completed_notes"`
-    TotalNotes     int    `json:"total_notes"`
+	MemberID           int64 `json:"member_id"`
+	ActiveTemplates    int   `json:"active_templates"`
+	PublishedTemplates int   `json:"published_templates"`
+	TotalTemplates     int   `json:"total_templates"`
 }
 
 // GetMemberStats 获取成员在插件内的统计信息
@@ -33,15 +33,15 @@ func (s *MemberService) GetMemberStats(ctx context.Context, memberID int64) (*Me
 	logger.WithField("member_id", memberID).Debug("Getting member stats from plugin database")
 
 	// 这里可以实现从插件数据库获取成员的任务统计
-    // 例如：查询该成员的任务数量等
+	// 例如：查询该成员的任务数量等
 
 	// 模拟数据，实际应该从数据库查询
 	stats := &MemberStats{
-		MemberID:       memberID,
-		ActiveNotes:    5,
-		CompletedNotes: 12,
-		TotalNotes:     17,
-    }
+		MemberID:           memberID,
+		ActiveTemplates:    3,
+		PublishedTemplates: 8,
+		TotalTemplates:     11,
+	}
 
 	logger.WithField("member_id", memberID).WithField("stats", stats).Info("Retrieved member stats")
 
@@ -76,7 +76,7 @@ func (s *MemberService) UpdateMemberActivity(ctx context.Context, memberID int64
 		Info("Updating member activity")
 
 	// 这里可以实现记录成员在插件中的活动
-    // 例如：任务创建、状态更新等
+	// 例如：任务创建、状态更新等
 
 	// 实际实现应该写入数据库
 	// 例如：插入到 member_activities 表

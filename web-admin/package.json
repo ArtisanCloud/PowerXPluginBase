@@ -1,6 +1,6 @@
 {
-  "name": "powerx-note-admin",
-  "description": "PowerX Note Plugin Admin Interface",
+  "name": "powerx-base-admin",
+  "description": "PowerX Base Template Plugin Admin Interface",
   "version": "0.1.0",
   "type": "module",
   "private": true,

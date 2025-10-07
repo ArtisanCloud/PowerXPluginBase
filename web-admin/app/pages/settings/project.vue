@@ -112,7 +112,7 @@
       <div class="space-y-4">
         <div>
           <h3 class="font-medium text-gray-900 dark:text-white mb-3">
-            {{ $t("settings.noteStatuses") }}
+            {{ $t("settings.templateStatuses") }}
           </h3>
           <div class="space-y-2">
             <div

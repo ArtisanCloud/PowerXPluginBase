@@ -81,8 +81,8 @@ export function useMemberApi() {
   const getMemberActivity = (id: string, days = 30) =>
     apiGet<{
       login_count: number;
-      notes_created: number;
-      notes_edited: number;
+      templates_created: number;
+      templates_updated: number;
       last_login: string;
     }>(`members/${id}/activity`, { days });
 

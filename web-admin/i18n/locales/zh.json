@@ -4,10 +4,11 @@
     "cancel": "取消",
     "delete": "删除",
     "edit": "编辑",
-    "add": "添加",
+    "add": "新增",
     "search": "搜索",
     "loading": "加载中...",
     "confirm": "确认",
+    "confirmation": "确认操作",
     "back": "返回",
     "next": "下一步",
     "previous": "上一步",
@@ -15,97 +16,98 @@
     "reset": "重置",
     "close": "关闭",
     "welcome": "欢迎",
-    "appName": "PowerX Note"
+    "appName": "PowerX 基础插件"
   },
   "navigation": {
-    "dashboard": "仪表板",
-    "contentManagement": "内容管理",
-    "notes": "笔记管理",
-    "notesList": "笔记列表",
-    "activenote": "活跃笔记",
-    "notePlanning": "笔记规划",
-    "reports": "报表", 
-    "reportsDaily": "日报表",
-    "reportsMonthly": "月报表",
+    "intro": "插件介绍",
+    "templates": "模板管理",
+    "templatesCrud": "模板 CRUD",
+    "templatesDevelop": "开发指南",
+    "reports": "报表",
+    "reportsDaily": "日报",
+    "reportsMonthly": "月报",
     "teamCollaboration": "团队协作",
     "teamManagement": "团队管理",
     "memberManagement": "成员管理",
     "team": "团队成员",
     "systemSettings": "系统设置",
-    "permissions": "权限管理",
-    "profile": "个人资料",
+    "permissions": "权限",
+    "profile": "个人中心",
     "help": "帮助",
-    "logout": "退出登录",
-    "reports": "报表",
-    "reportsDaily": "日报表",
-    "reportsMonthly": "月报表"
+    "logout": "退出"
   },
-  "notes": {
-    "title": "笔记管理",
-    "overview": "笔记概览",
-    "totalNotes": "总笔记数",
-    "activeNotes": "活跃笔记",
-    "completedNotes": "已完成笔记",
-    "recentNotes": "最近笔记",
-    "createNote": "创建笔记",
-    "editNote": "编辑笔记",
-    "deleteNote": "删除笔记",
-    "noteTitle": "笔记标题",
-    "noteContent": "笔记内容",
-    "noteStatus": "笔记状态",
-    "createdAt": "创建时间",
-    "updatedAt": "更新时间",
-    "author": "作者",
-    "category": "分类",
-    "tags": "标签",
-    "priority": "优先级",
-    "high": "高",
-    "medium": "中",
-    "low": "低",
-    "draft": "草稿",
-    "published": "已发布",
-    "archived": "已归档",
-    "searchNotes": "搜索笔记",
-    "filterByCategory": "按分类筛选",
-    "filterByStatus": "按状态筛选",
-    "sortBy": "排序方式",
-    "sortByDate": "按日期排序",
-    "sortByTitle": "按标题排序",
-    "sortByPriority": "按优先级排序",
-    "noNotesFound": "未找到笔记",
-    "noteStats": "笔记统计"
+  "intro": {
+    "title": "Base 模板插件",
+    "description": "了解 PowerX 基础模板插件，快速搭建可复用的业务模块。",
+    "viewIntro": "查看介绍"
   },
-  "team": {
-    "members": "团队成员",
-    "noteMaster": "Note Master",
-    "productOwner": "产品负责人",
-    "developer": "开发人员",
-    "tester": "测试人员",
-    "capacity": "成员容量",
-    "availability": "可用性"
+  "templates": {
+    "overview": {
+      "title": "模板概览",
+      "description": "使用模板构建一致的业务体验，加速团队协作与交付。",
+      "cards": {
+        "create": "创建",
+        "createDescription": "编写可复用的模板，快速应用到多个页面或流程。",
+        "automation": "自动化",
+        "automationDescription": "结合自动化能力，让模板在上线流程中自动执行。",
+        "analytics": "洞察",
+        "analyticsDescription": "衡量模板的使用效果，持续优化协作效率。"
+      }
+    },
+    "develop": {
+      "title": "开发介绍",
+      "description": "了解模板模块在后端与前端的关键实现步骤。",
+      "structure": "核心目录",
+      "steps": "实施步骤",
+      "step1": "定义模板的 GORM 模型与迁移。",
+      "step2": "实现仓储与服务层封装业务逻辑。",
+      "step3": "在 /api/v1/templates 下注册受 RBAC 保护的 HTTP 接口。",
+      "step4": "将 Nuxt 页面接入 API，并优化用户体验。"
+    },
+    "crud": {
+      "title": "模板 CRUD",
+      "description": "创建、更新与删除示例模板，体验完整流程。",
+      "create": "新建模板",
+      "formTitle": "模板表单",
+      "fields": {
+        "name": "模板名称",
+        "namePlaceholder": "请输入模板名称",
+        "description": "描述",
+        "descriptionPlaceholder": "简要描述模板用途",
+        "content": "内容",
+        "contentPlaceholder": "编写模板内容"
+      },
+      "actions": {
+        "save": "保存模板",
+        "update": "更新模板"
+      },
+      "listTitle": "模板列表",
+      "deleteTitle": "删除模板",
+      "deleteConfirm": "确认删除 \"{name}\" 模板？"
+    }
   },
   "reports": {
     "overview": "报表概览",
-    "overviewHint": "查看关键指标与趋势洞察。",
-    "placeholder": "报表模块正在建设中，敬请期待。",
-    "burndownChart": "燃尽图",
-    "velocityChart": "速度图表",
-    "cumulativeFlow": "累积流图",
-    "sprintReport": "笔记报告",
-    "teamPerformance": "团队绩效",
-    "productivity": "生产力分析",
-    "overviewHint": "查看插件内置的报表概览，后续可对接真实数据。",
-    "placeholder": "报表数据准备中，请连接数据源后查看详细分析。",
+    "overviewHint": "通过最新指标了解整体表现。",
+    "placeholder": "报表数据准备中，连接数据源即可查看洞察。",
     "daily": {
-      "overviewHint": "掌握今日核心指标和任务进展。"
+      "overviewHint": "查看今日关键指标、亮点与待办。"
     },
     "monthly": {
-      "overviewHint": "总结本月的关键趋势与阶段成果。"
+      "overviewHint": "跟踪月度趋势并总结核心成果。"
     }
+  },
+  "team": {
+    "members": "团队成员",
+    "templateOwner": "模板负责人",
+    "developer": "开发者",
+    "tester": "测试",
+    "capacity": "成员产能",
+    "availability": "可用性"
   },
   "settings": {
     "roleManagement": "角色管理",
-    "addRole": "添加角色",
+    "addRole": "新增角色",
     "users": "用户",
     "permissionsDescription": "管理系统角色和用户权限",
     "userPermissions": "用户权限",
@@ -113,17 +115,18 @@
     "filterByRole": "按角色筛选",
     "user": "用户",
     "role": "角色",
-    "lastActive": "最后活跃",
+    "lastActive": "最近活跃",
     "permissionMatrix": "权限矩阵",
-    "permission": "权限"
+    "permission": "权限",
+    "templateStatuses": "模板状态"
   },
   "message": {
     "saveSuccess": "保存成功",
     "deleteSuccess": "删除成功",
     "error": "操作失败，请重试",
-    "confirmDelete": "确定要删除吗？此操作不可撤销。",
+    "confirmDelete": "确定要删除吗？该操作不可恢复。",
     "noData": "暂无数据",
-    "networkError": "网络错误，请检查连接",
-    "noteCreated": "任务创建成功"
+    "networkError": "网络异常，请检查连接",
+    "templateCreated": "模板创建成功"
   }
 }

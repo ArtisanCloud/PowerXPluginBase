@@ -222,10 +222,14 @@ export const resolveInternalAlias = (internalPath: string): string | null => {
   }
 
   if (sanitizedPath === "/" || sanitizedPath === "/dashboard") {
-    return "/dashboard";
+    return "/intro";
   }
 
-  if (sanitizedPath.startsWith("/notes")) {
+  if (sanitizedPath === "/intro") {
+    return "/intro";
+  }
+
+  if (sanitizedPath.startsWith("/templates")) {
     return sanitizedPath;
   }
 

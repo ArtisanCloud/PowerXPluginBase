@@ -7,7 +7,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/iam"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/notes"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/templates"
 	agentapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/agent"
 	"github.com/gin-gonic/gin"
 )
@@ -31,7 +31,7 @@ func (r *Registry) RegisterAPIRoutes(gApi *gin.RouterGroup) {
 	admin.RegisterAPIRoutes(gApi, r.deps)
 	agentapi.RegisterAPIRoutes(gApi, r.deps)
 	iam.RegisterAPIRoutes(gApi, r.deps)
-	notes.RegisterAPIRoutes(gApi, r.deps)
+	templates.RegisterAPIRoutes(gApi, r.deps)
 }
 
 func (r *Registry) PrintRegisteredRoutes() {

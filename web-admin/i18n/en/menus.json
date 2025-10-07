@@ -1,13 +1,12 @@
 {
   "menu": {
     "base": {
-      "note": "Base Plugin",
-      "dashboard": "Dashboard",
-      "notes": {
-        "title": "Notes",
-        "overview": "Notes Overview",
-        "active": "Active Notes",
-        "create": "Create Note"
+      "template": "Base Plugin",
+      "intro": "Plugin Intro",
+      "templates": {
+        "title": "Templates",
+        "develop": "Develop Guide",
+        "crud": "Template CRUD"
       },
       "reports": {
         "title": "Reports",

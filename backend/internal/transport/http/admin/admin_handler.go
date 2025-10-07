@@ -28,14 +28,14 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 
 	manifest := &contracts.PluginManifest{
 		ID:          "com.powerx.plugins.base",
-		Name:        "Base Note Plugin",
+		Name:        "Base Template Plugin",
 		Version:     "0.1.0",
-		Description: "A comprehensive Base note management plugin for PowerX",
+		Description: "A starter plugin that showcases template management capabilities for PowerX",
 		Author:      "PowerX Team",
-		Homepage:    "https://base-plugin",
-		Repository:  "https://base-plugin.git",
+		Homepage:    "https://powerx.dev/plugins/base",
+		Repository:  "https://powerx.dev/plugins/base.git",
 		License:     "MIT",
-		Tags:        []string{"base", "agile", "note-management", "project-management"},
+		Tags:        []string{"base", "template", "starter"},
 
 		Backend: contracts.BackendConfig{
 			Entry:  "backend/bin/plugin",
@@ -54,37 +54,37 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 		Menus: []contracts.MenuConfig{
 			{
 				ID:    "base",
-				Title: "menu.base.note",
+				Title: "menu.base.template",
 				Icon:  "i-heroicons-clipboard-document-check",
 				Path:  "/plugins/base",
 				Order: 20,
 				Children: []contracts.MenuConfig{
 					{
-						ID:    "base.dashboard",
-						Title: "menu.base.dashboard",
-						Icon:  "i-heroicons-squares-2x2",
-						Path:  "/dashboard",
+						ID:    "base.intro",
+						Title: "menu.base.intro",
+						Icon:  "i-heroicons-information-circle",
+						Path:  "/intro",
 						Order: 1,
 					},
 					{
-						ID:    "base.notes",
-						Title: "menu.base.notes.title",
+						ID:    "base.templates",
+						Title: "menu.base.templates.title",
 						Icon:  "i-heroicons-clipboard-document-list",
-						Path:  "/notes",
+						Path:  "/templates",
 						Order: 2,
 						Children: []contracts.MenuConfig{
 							{
-								ID:    "base.notes.overview",
-								Title: "menu.base.notes.overview",
+								ID:    "base.templates.develop",
+								Title: "menu.base.templates.develop",
 								Icon:  "i-heroicons-document-text",
-								Path:  "/notes",
+								Path:  "/templates/develop",
 								Order: 1,
 							},
 							{
-								ID:    "base.notes.active",
-								Title: "menu.base.notes.active",
-								Icon:  "i-heroicons-play-circle",
-								Path:  "/notes/active",
+								ID:    "base.templates.crud",
+								Title: "menu.base.templates.crud",
+								Icon:  "i-heroicons-wrench",
+								Path:  "/templates/crud",
 								Order: 2,
 							},
 						},
@@ -114,15 +114,20 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 						RequiredPermissions: []string{"base:report:read"},
 					},
 				},
-				RequiredPermissions: []string{"base:note:read"},
+				RequiredPermissions: []string{"base:template:read"},
 			},
 		},
 
 		Permissions: []contracts.PermissionConfig{
 			{
-				Resource:    "base:note",
+				Resource:    "base:template",
 				Actions:     []string{"read", "create", "update", "delete"},
-				Description: "Note management permissions",
+				Description: "Template management permissions",
+			},
+			{
+				Resource:    "base:report",
+				Actions:     []string{"read"},
+				Description: "Report access permissions",
 			},
 		},
 
@@ -131,98 +136,83 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 				ID:           "base.assistant",
 				PluginID:     "com.powerx.plugins.base",
 				Name:         "Base 助理",
-				Description:  "智能的 Base 管理助手，可以帮助创建任务、管理 Sprint、生成报告",
+				Description:  "智能的 Base 模板助手，可以帮助创建与查询模板内容",
 				Model:        "gpt-4",
-				Instructions: "你是一个专业的 Base 管理助手。你可以帮助用户创建和管理任务、规划 Sprint、跟踪进度并生成报告。请始终以友好、专业的方式回应用户的请求。",
+				Instructions: "你是一个专业的 Base 模板助手。你可以帮助用户创建、查询和管理模板信息。请始终以友好、专业的方式回应用户的请求。",
 				DefaultTools: []string{
-					"base.note.create",
-					"base.note.query",
-					"base.note.update",
-					"base.report.generate",
+					"base.template.create",
+					"base.template.query",
 				},
-				RequiredPermissions: []string{"base:note:read"},
+				RequiredPermissions: []string{"base:template:read"},
 			},
 		},
 
 		Tools: []contracts.ToolConfig{
 			{
-				ID:           "base.note.create",
+				ID:           "base.template.create",
 				PluginID:     "com.powerx.plugins.base",
-				Name:         "创建任务",
-				Description:  "创建一个新的 Base 任务",
+				Name:         "创建模板",
+				Description:  "创建一个新的模板记录",
 				Transport:    "http",
-				Endpoint:     "/api/v1/notes",
+				Endpoint:     "/api/v1/templates",
 				Method:       "POST",
-				RBACResource: "base:note",
+				RBACResource: "base:template",
 				InputSchema: &contracts.JSONSchema{
 					Type: "object",
 					Properties: map[string]*contracts.JSONSchemaProperty{
-						"title": {
+						"name": {
 							Type:        "string",
-							Description: "任务标题",
+							Description: "模板名称",
 						},
 						"description": {
 							Type:        "string",
-							Description: "任务描述",
+							Description: "模板描述",
 						},
-						"priority": {
+						"content": {
 							Type:        "string",
-							Enum:        []interface{}{"low", "medium", "high", "urgent"},
-							Description: "任务优先级",
-							Default:     "medium",
-						},
-						"assignee": {
-							Type:        "integer",
-							Description: "分配给的用户ID",
-						},
-						"estimate": {
-							Type:        "integer",
-							Minimum:     func() *float64 { v := 1.0; return &v }(),
-							Maximum:     func() *float64 { v := 100.0; return &v }(),
-							Description: "故事点估算",
+							Description: "模板内容",
 						},
 					},
-					Required: []string{"title"},
+					Required: []string{"name", "description", "content"},
 				},
 				OutputSchema: &contracts.JSONSchema{
 					Type: "object",
 					Properties: map[string]*contracts.JSONSchemaProperty{
 						"id": {
 							Type:        "integer",
-							Description: "任务ID",
+							Description: "模板ID",
 						},
-						"title": {
+						"name": {
 							Type:        "string",
-							Description: "任务标题",
+							Description: "模板名称",
 						},
-						"status": {
+						"description": {
 							Type:        "string",
-							Description: "任务状态",
+							Description: "模板描述",
+						},
+						"content": {
+							Type:        "string",
+							Description: "模板内容",
 						},
 					},
 				},
 				Timeout: 30,
 			},
 			{
-				ID:           "base.note.query",
+				ID:           "base.template.query",
 				PluginID:     "com.powerx.plugins.base",
-				Name:         "查询任务",
-				Description:  "查询 Base 任务列表",
+				Name:         "查询模板",
+				Description:  "查询模板列表",
 				Transport:    "http",
-				Endpoint:     "/api/v1/notes",
+				Endpoint:     "/api/v1/templates",
 				Method:       "GET",
-				RBACResource: "base:note",
+				RBACResource: "base:template",
 				InputSchema: &contracts.JSONSchema{
 					Type: "object",
 					Properties: map[string]*contracts.JSONSchemaProperty{
-						"status": {
+						"q": {
 							Type:        "string",
-							Enum:        []interface{}{"todo", "in_progress", "done"},
-							Description: "按状态过滤",
-						},
-						"assignee": {
-							Type:        "integer",
-							Description: "按分配人过滤",
+							Description: "按名称或描述搜索",
 						},
 						"page": {
 							Type:        "integer",
@@ -239,12 +229,37 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 						},
 					},
 				},
-				Timeout: 30,
+				OutputSchema: &contracts.JSONSchema{
+					Type: "object",
+					Properties: map[string]*contracts.JSONSchemaProperty{
+						"list": {
+							Type: "array",
+							Items: &contracts.JSONSchema{
+								Type: "object",
+								Properties: map[string]*contracts.JSONSchemaProperty{
+									"id": {
+										Type:        "integer",
+										Description: "模板ID",
+									},
+									"name": {
+										Type:        "string",
+										Description: "模板名称",
+									},
+									"description": {
+										Type:        "string",
+										Description: "模板描述",
+									},
+									"content": {
+										Type:        "string",
+										Description: "模板内容",
+									},
+								},
+							},
+						},
+					},
+				},
 			},
-			// Sprint 相关遗留已移除
 		},
-
-		// Workflows 中与 Sprint 相关的配置已移除
 
 		Dependencies: []contracts.DependencyConfig{
 			{
@@ -257,14 +272,14 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 		ConfigSchema: &contracts.ConfigSchema{
 			Type: "object",
 			Properties: map[string]*contracts.JSONSchemaProperty{
-				"note_auto_close": {
+				"template_auto_publish": {
 					Type:        "boolean",
-					Description: "是否自动关闭过期任务",
+					Description: "是否自动发布新建模板",
 					Default:     false,
 				},
-				"email_notifications": {
+				"template_notification": {
 					Type:        "boolean",
-					Description: "是否启用邮件通知",
+					Description: "模板变更是否通知订阅者",
 					Default:     true,
 				},
 			},
@@ -286,21 +301,19 @@ func (h *AdminHandler) GetRBACInfo(c *gin.Context) {
 	rbacInfo := &contracts.RBACInfo{
 		Resources: []contracts.Resource{
 			{
-				Name:        "base:note",
-				Description: "Base 任务管理",
+				Name:        "base:template",
+				Description: "Base 模板管理",
 				Actions: []contracts.Action{
-					{Name: "read", Description: "查看任务"},
-					{Name: "create", Description: "创建任务"},
-					{Name: "update", Description: "更新任务"},
-					{Name: "delete", Description: "删除任务"},
+					{Name: "read", Description: "查看模板"},
+					{Name: "create", Description: "创建模板"},
+					{Name: "update", Description: "更新模板"},
+					{Name: "delete", Description: "删除模板"},
 				},
 			},
 			{
 				Name:        "base:report",
 				Description: "Base 报告",
-				Actions: []contracts.Action{
-					{Name: "read", Description: "查看报告"},
-				},
+				Actions:     []contracts.Action{{Name: "read", Description: "查看报告"}},
 			},
 		},
 		Roles: []contracts.Role{
@@ -308,34 +321,33 @@ func (h *AdminHandler) GetRBACInfo(c *gin.Context) {
 				Name:        "base_master",
 				Description: "Base Master 角色",
 				Permissions: []string{
-					"base:note:*",
+					"base:template:*",
 					"base:report:read",
 				},
 			},
 			{
-				Name:        "product_owner",
-				Description: "Product Owner 角色",
+				Name:        "template_editor",
+				Description: "模板编辑角色",
 				Permissions: []string{
-					"base:note:read",
-					"base:note:create",
-					"base:note:update",
-					"base:report:read",
+					"base:template:read",
+					"base:template:create",
+					"base:template:update",
 				},
 			},
 			{
-				Name:        "developer",
-				Description: "开发者角色",
+				Name:        "template_viewer",
+				Description: "模板查看角色",
 				Permissions: []string{
-					"base:note:read",
-					"base:note:update",
+					"base:template:read",
+					"base:report:read",
 				},
 			},
 		},
 		Permissions: []contracts.Permission{
-			{Resource: "base:note", Action: "read"},
-			{Resource: "base:note", Action: "create"},
-			{Resource: "base:note", Action: "update"},
-			{Resource: "base:note", Action: "delete"},
+			{Resource: "base:template", Action: "read"},
+			{Resource: "base:template", Action: "create"},
+			{Resource: "base:template", Action: "update"},
+			{Resource: "base:template", Action: "delete"},
 			{Resource: "base:report", Action: "read"},
 		},
 	}

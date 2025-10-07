@@ -26,7 +26,7 @@ BUILD_DIR=backend/out VERSION=0.1.1 make build
 | `FRONTEND_BUILD_CMD` | `npm --prefix web-admin run build` | 前端构建命令，可结合 CI 需求调整 |
 | `DIST_ROOT` | `dist` | 提供给 PowerX `install/local` 的目录根 |
 | `RELEASE_ROOT` | `target` | 发布产物根目录（用于交付或归档） |
-| `DOCKER_IMAGE` | `powerx-plugin-note:$(VERSION)` | Docker 镜像名称 |
+| `DOCKER_IMAGE` | `powerx-plugin-base:$(VERSION)` | Docker 镜像名称 |
 
 ## 常用命令
 
@@ -75,7 +75,7 @@ target/
 ```bash
 make package-release
 ```
-压缩包默认命名为 `powerx-plugin-note-<version>-release.zip`。
+压缩包默认命名为 `powerx-plugin-base-<version>-release.zip`。
 
 ## 自定义构建输出
 - 修改后端输出目录：

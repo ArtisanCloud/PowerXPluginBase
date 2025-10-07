@@ -1,18 +1,17 @@
 {
   "menu": {
     "base": {
-      "note": "基础插件",
-      "dashboard": "仪表盘",
-      "notes": {
-        "title": "笔记",
-        "overview": "笔记总览",
-        "active": "活跃笔记",
-        "create": "新建笔记"
+      "template": "基础插件",
+      "intro": "插件介绍",
+      "templates": {
+        "title": "模版",
+        "develop": "开发介绍",
+        "crud": "模版 CRUD"
       },
       "reports": {
         "title": "报表",
-        "daily": "日报表",
-        "monthly": "月报表"
+        "daily": "日报",
+        "monthly": "月报"
       },
       "settings": {
         "title": "设置",
