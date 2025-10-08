@@ -6,6 +6,7 @@ import (
 
 	dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/template"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository"
+	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
 	"gorm.io/gorm"
 )
 
@@ -20,19 +21,54 @@ func NewTemplateRepository(db *gorm.DB) *TemplateRepository {
 }
 
 func (r *TemplateRepository) FindByID(ctx context.Context, id uint64) (*dbm.Template, error) {
-	return r.BaseRepository.GetById(ctx, id, nil)
+	tenantID, err := authx.RequireTenantID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return r.BaseRepository.GetById(ctx, id, func(db *gorm.DB) *gorm.DB {
+		if tenantID > 0 {
+			return db.Where("tenant_id = ?", tenantID)
+		}
+		return db
+	})
 }
 
 func (r *TemplateRepository) Create(ctx context.Context, t *dbm.Template) (*dbm.Template, error) {
+	tenantID, err := authx.RequireTenantID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if t.TenantID == 0 {
+		t.TenantID = tenantID
+	} else if t.TenantID != tenantID {
+		return nil, gorm.ErrInvalidData
+	}
 	return r.BaseRepository.Create(ctx, t)
 }
 
 func (r *TemplateRepository) UpdateByID(ctx context.Context, id uint64, fields map[string]interface{}) (*dbm.Template, error) {
-	return r.BaseRepository.UpdateByID(ctx, id, fields, nil)
+	tenantID, err := authx.RequireTenantID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return r.BaseRepository.UpdateByID(ctx, id, fields, func(db *gorm.DB) *gorm.DB {
+		if tenantID > 0 {
+			return db.Where("tenant_id = ?", tenantID)
+		}
+		return db
+	})
 }
 
 func (r *TemplateRepository) DeleteByID(ctx context.Context, id uint64) error {
-	_, err := r.BaseRepository.Delete(ctx, map[string]interface{}{"id": id}, nil, true)
+	tenantID, err := authx.RequireTenantID(ctx)
+	if err != nil {
+		return err
+	}
+	where := map[string]interface{}{"id": id}
+	if tenantID > 0 {
+		where["tenant_id"] = tenantID
+	}
+	_, err = r.BaseRepository.Delete(ctx, where, nil, true)
 	return err
 }
 
@@ -43,7 +79,19 @@ func (r *TemplateRepository) FindPage(
 	cb func(*gorm.DB, interface{}) *gorm.DB,
 	opt interface{},
 ) (*repository.Page[[]*dbm.Template], error) {
-	return r.BaseRepository.FindByCondition(ctx, conditions, page, pageSize, cb, opt)
+	tenantID, err := authx.RequireTenantID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conds := map[string]interface{}{
+		"tenant_id = ?": tenantID,
+	}
+	if len(conditions) > 0 {
+		for k, v := range conditions {
+			conds[k] = v
+		}
+	}
+	return r.BaseRepository.FindByCondition(ctx, conds, page, pageSize, cb, opt)
 }
 
 func (r *TemplateRepository) CurrentTenantID(ctx context.Context) (uint64, bool, error) {

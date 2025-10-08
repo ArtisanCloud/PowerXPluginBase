@@ -14,30 +14,15 @@
       </UButton>
     </div>
 
-    <UCard>
-      <template #header>
-        <div class="flex items-center justify-between">
-          <span class="font-medium">{{ $t("templates.crud.formTitle") }}</span>
-          <UButton variant="ghost" size="xs" @click="resetForm">{{ $t("common.reset") }}</UButton>
-        </div>
-      </template>
-      <UForm :state="form" class="grid gap-4" @submit.prevent="handleSubmit">
-        <UFormField :label="$t('templates.crud.fields.name')" name="name" required>
-          <UInput v-model="form.name" :placeholder="$t('templates.crud.fields.namePlaceholder')" />
-        </UFormField>
-        <UFormField :label="$t('templates.crud.fields.description')" name="description" required>
-          <UTextarea v-model="form.description" :placeholder="$t('templates.crud.fields.descriptionPlaceholder')" />
-        </UFormField>
-        <UFormField :label="$t('templates.crud.fields.content')" name="content" required>
-          <UTextarea v-model="form.content" :placeholder="$t('templates.crud.fields.contentPlaceholder')" :rows="4" />
-        </UFormField>
-        <div class="flex justify-end gap-2">
-          <UButton type="submit" color="primary" :loading="saving">
-            {{ editingId ? $t('templates.crud.actions.update') : $t('templates.crud.actions.save') }}
-          </UButton>
-        </div>
-      </UForm>
-    </UCard>
+    <TemplateFormModal
+      v-if="showFormModal"
+      v-model="showFormModal"
+      :title="modalTitle"
+      :submit-label="submitLabel"
+      :initial-value="formSnapshot"
+      :loading="saving"
+      @submit="handleSubmit"
+    />
 
     <UCard>
       <template #header>
@@ -46,8 +31,33 @@
           <UBadge variant="soft" color="primary">{{ templates.length }}</UBadge>
         </div>
       </template>
-      <UTable :columns="columns" :data="templates" :loading="loading">
+      <UTable
+        :columns="columns"
+        :data="templates"
+        :loading="loading"
+        :ui="{ table: 'min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700' }"
+      >
         <!-- 注意：v3 是 -cell，不是 -data；row.original 才是你的对象 -->
+        <template #description-header="{ column }">
+          <span class="block w-64">
+            {{ column.columnDef.header }}
+          </span>
+        </template>
+        <template #content-header="{ column }">
+          <span class="block w-80">
+            {{ column.columnDef.header }}
+          </span>
+        </template>
+        <template #description-cell="{ row }">
+          <div class="description-cell">
+            {{ row.original.description }}
+          </div>
+        </template>
+        <template #content-cell="{ row }">
+          <div class="content-cell">
+            {{ row.original.content }}
+          </div>
+        </template>
         <template #actions-cell="{ row }">
           <div class="flex gap-2">
             <UButton
@@ -87,9 +97,17 @@
 import ConfirmDialog from "~/components/ConfirmDialog.vue"
 import { useTemplateApi } from "~/composables/api/useTemplate"
 import type { Template } from "~/composables/api/useTemplate"
+import TemplateFormModal from "~/components/templates/TemplateFormModal.vue"
+import { useI18n } from "vue-i18n"
 
 type TemplateRow = {
   id: number
+  name: string
+  description: string
+  content: string
+}
+
+type TemplateFormState = {
   name: string
   description: string
   content: string
@@ -114,14 +132,19 @@ const templates = ref<Template[]>([])
 const loading = ref(false)
 const saving = ref(false)
 const editingId = ref<number | null>(null)
+const showFormModal = ref(false)
 const deleteDialog = ref(false)
 const selectedTemplate = ref<Template | null>(null)
 
-const form = reactive({
+const { t } = useI18n()
+
+const defaultFormValue = (): TemplateFormState => ({
   name: "",
   description: "",
   content: "",
 })
+
+const form = reactive<TemplateFormState>(defaultFormValue())
 
 const makeLogHandlers = (action: string, context: Record<string, any> = {}) => ({
   onRequest({ request, options }: any) {
@@ -152,6 +175,20 @@ const makeLogHandlers = (action: string, context: Record<string, any> = {}) => (
     })
   },
 })
+
+const modalTitle = computed(() =>
+  editingId.value ? t("templates.crud.actions.update") : t("templates.crud.create")
+)
+
+const submitLabel = computed(() =>
+  editingId.value ? t("templates.crud.actions.update") : t("templates.crud.actions.save")
+)
+
+const formSnapshot = computed(() => ({
+  name: form.name,
+  description: form.description,
+  content: form.content,
+}))
 
 const fetchTemplates = async () => {
   loading.value = true
@@ -184,33 +221,38 @@ const fetchTemplates = async () => {
 
 const resetForm = () => {
   editingId.value = null
-  form.name = ""
-  form.description = ""
-  form.content = ""
+  Object.assign(form, defaultFormValue())
+}
+
+const openFormModal = () => {
+  showFormModal.value = true
+}
+
+const closeFormModal = () => {
+  showFormModal.value = false
 }
 
 const startCreate = () => {
   resetForm()
+  openFormModal()
 }
 
 const startEdit = (tpl: Template) => {
   editingId.value = tpl.id
-  form.name = tpl.name
-  form.description = tpl.description
-  form.content = tpl.content
+  Object.assign(form, {
+    name: tpl.name,
+    description: tpl.description,
+    content: tpl.content,
+  })
+  openFormModal()
 }
 
-const handleSubmit = async () => {
-  if (!form.name || !form.description || !form.content) {
+const handleSubmit = async (payload: { name: string; description: string; content: string }) => {
+  if (!payload.name || !payload.description || !payload.content) {
     return
   }
   saving.value = true
   try {
-    const payload = {
-      name: form.name,
-      description: form.description,
-      content: form.content,
-    }
     if (editingId.value) {
       const res = await updateTemplateApi(
         editingId.value,
@@ -230,6 +272,7 @@ const handleSubmit = async () => {
       }
     }
     await fetchTemplates()
+    closeFormModal()
     resetForm()
   } catch (error) {
     console.error("[templates/crud] Failed to save template", error)
@@ -266,3 +309,21 @@ onMounted(() => {
   fetchTemplates()
 })
 </script>
+
+<style scoped>
+.description-cell,
+.content-cell {
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.description-cell {
+  max-width: 16rem;
+}
+
+.content-cell {
+  max-width: 24rem;
+}
+</style>

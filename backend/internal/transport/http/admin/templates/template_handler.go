@@ -1,12 +1,14 @@
 package templates
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/contracts"
 	srvtemplates "github.com/ArtisanCloud/PowerXPlugin/internal/services/admin/templates"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type TemplateHandler struct{ TemplateService *srvtemplates.TemplateService }
@@ -38,7 +40,12 @@ func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 	}
 	tpl, err := h.TemplateService.GetByID(c.Request.Context(), id)
 	if err != nil {
-		contracts.ResponseNotFound(c, "not found: "+err.Error())
+		switch {
+		case errors.Is(err, gorm.ErrRecordNotFound):
+			contracts.ResponseNotFound(c, "not found: "+err.Error())
+		default:
+			contracts.ResponseInternalError(c, err)
+		}
 		return
 	}
 	contracts.ResponseSuccess(c, tpl)

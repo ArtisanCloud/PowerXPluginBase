@@ -23,12 +23,6 @@ func (s *TemplateService) List(
 	q string,
 	page, pageSize int,
 ) (*repository.Page[[]*dbm.Template], error) {
-	conds := map[string]interface{}{}
-
-	if tid, ok, _ := s.TemplateRepo.CurrentTenantID(ctx); ok {
-		conds["tenant_id = ?"] = tid
-	}
-
 	cb := func(db *gorm.DB, opt interface{}) *gorm.DB {
 		if kw, _ := opt.(string); strings.TrimSpace(kw) != "" {
 			p := "%" + strings.TrimSpace(kw) + "%"
@@ -37,10 +31,13 @@ func (s *TemplateService) List(
 		return db.Order("id DESC")
 	}
 
-	return s.TemplateRepo.FindPage(ctx, conds, page, pageSize, cb, q)
+	return s.TemplateRepo.FindPage(ctx, nil, page, pageSize, cb, q)
 }
 
 func (s *TemplateService) GetByID(ctx context.Context, id uint64) (*dbm.Template, error) {
+	if id == 0 {
+		return nil, gorm.ErrInvalidData
+	}
 	tpl, err := s.TemplateRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -55,20 +52,11 @@ func (s *TemplateService) Create(
 	ctx context.Context,
 	name, description, content string,
 ) (*dbm.Template, error) {
-	tid, ok, err := s.TemplateRepo.CurrentTenantID(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, gorm.ErrInvalidData
-	}
-
 	tpl := &dbm.Template{
 		Name:        name,
 		Description: description,
 		Content:     content,
 	}
-	tpl.TenantID = tid
 
 	return s.TemplateRepo.Create(ctx, tpl)
 }
@@ -78,6 +66,9 @@ func (s *TemplateService) Update(
 	id uint64,
 	name, description, content string,
 ) (*dbm.Template, error) {
+	if id == 0 {
+		return nil, gorm.ErrInvalidData
+	}
 	fields := map[string]interface{}{
 		"name":        name,
 		"description": description,
@@ -87,5 +78,8 @@ func (s *TemplateService) Update(
 }
 
 func (s *TemplateService) Delete(ctx context.Context, id uint64) error {
+	if id == 0 {
+		return gorm.ErrInvalidData
+	}
 	return s.TemplateRepo.DeleteByID(ctx, id)
 }

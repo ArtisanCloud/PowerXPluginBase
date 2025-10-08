@@ -2,13 +2,14 @@ package templates
 
 import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
+	httpmw "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/middleware"
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterAPIRoutes(rg *gin.RouterGroup, deps *app.Deps) {
 	h := NewTemplateHandler(deps)
 
-	g := rg.Group("/templates")
+	g := rg.Group("/templates", httpmw.EnsureTenant())
 	{
 		g.GET("", h.GetTemplates)
 		g.GET("/:id", h.GetTemplate)

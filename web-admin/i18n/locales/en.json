@@ -90,6 +90,12 @@
       "listTitle": "Existing Templates",
       "deleteTitle": "Delete Template",
       "deleteConfirm": "Are you sure you want to delete \"{name}\"?"
+    },
+    "form": {
+      "modalDescription": "Fill out the template details below.",
+      "name": "Template Name",
+      "description": "Description",
+      "content": "Content"
     }
   },
   "reports": {
