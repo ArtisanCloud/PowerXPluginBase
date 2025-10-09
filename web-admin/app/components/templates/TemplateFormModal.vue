@@ -1,7 +1,7 @@
 <template>
   <UModal
     v-model:open="open"
-    :dismissible="false"
+    :dismissible="true"
     :modal="true"
     :portal="true"
     :title="title"
@@ -48,7 +48,7 @@
     </template>
 
     <template #footer>
-      <div class="flex items-center justify-end gap-3">
+      <div class="flex w-full flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
         <UButton color="neutral" variant="outline" :disabled="loading" @click="close">
           {{ $t('common.cancel') }}
         </UButton>

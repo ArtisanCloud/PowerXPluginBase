@@ -86,18 +86,31 @@
     <ConfirmDialog
       v-model="deleteDialog"
       :title="$t('templates.crud.deleteTitle')"
-      :description="$t('templates.crud.deleteConfirm', { name: selectedTemplate?.name || '' })"
-      confirm-color="red"
+      :message="$t('templates.crud.deleteConfirm', { name: selectedTemplate?.name || '' })"
+      confirm-color="error"
+      :confirm-text="$t('common.delete')"
+      :loading="deleting"
       @confirm="performDelete"
+      @cancel="handleDeleteCancel"
+    />
+
+    <ToastAlert
+      v-model="toast.visible"
+      :title="toast.title"
+      :message="toast.message"
+      :color="toast.color"
+      :duration="toast.duration"
     />
   </UContainer>
 </template>
 
 <script setup lang="ts">
 import ConfirmDialog from "~/components/ConfirmDialog.vue"
+import ToastAlert from "~/components/ToastAlert.vue"
 import { useTemplateApi } from "~/composables/api/useTemplate"
 import type { Template } from "~/composables/api/useTemplate"
 import TemplateFormModal from "~/components/templates/TemplateFormModal.vue"
+import { nextTick } from "vue"
 import { useI18n } from "vue-i18n"
 
 type TemplateRow = {
@@ -134,7 +147,18 @@ const saving = ref(false)
 const editingId = ref<number | null>(null)
 const showFormModal = ref(false)
 const deleteDialog = ref(false)
+const deleting = ref(false)
 const selectedTemplate = ref<Template | null>(null)
+
+type ToastColor = "primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral"
+
+const toast = reactive({
+  visible: false,
+  title: "",
+  message: "",
+  color: "primary" as ToastColor,
+  duration: 3000,
+})
 
 const { t } = useI18n()
 
@@ -148,24 +172,24 @@ const form = reactive<TemplateFormState>(defaultFormValue())
 
 const makeLogHandlers = (action: string, context: Record<string, any> = {}) => ({
   onRequest({ request, options }: any) {
-    console.debug(`[templates/crud] ${action} request`, {
-      baseURL: templateApiBase,
-      request,
-      options,
-      context,
-    })
+    // console.debug(`[templates/crud] ${action} request`, {
+    //   baseURL: templateApiBase,
+    //   request,
+    //   options,
+    //   context,
+    // })
   },
   onResponse({ response }: any) {
-    console.debug(`[templates/crud] ${action} response`, {
-      status: response.status,
-      data: response._data,
-      headers: typeof response.headers?.get === "function"
-        ? {
-            "x-request-id": response.headers.get("x-request-id"),
-          }
-        : undefined,
-      context,
-    })
+    // console.debug(`[templates/crud] ${action} response`, {
+    //   status: response.status,
+    //   data: response._data,
+    //   headers: typeof response.headers?.get === "function"
+    //     ? {
+    //         "x-request-id": response.headers.get("x-request-id"),
+    //       }
+    //     : undefined,
+    //   context,
+    // })
   },
   onResponseError({ response }: any) {
     console.error(`[templates/crud] ${action} response error`, {
@@ -194,19 +218,19 @@ const fetchTemplates = async () => {
   loading.value = true
   try {
     const query = { page: 1, page_size: 50 }
-    console.debug('[templates/crud] fetching templates', {
-      baseURL: templateApiBase,
-      path: 'templates',
-      query,
-    })
+    // console.debug('[templates/crud] fetching templates', {
+    //   baseURL: templateApiBase,
+    //   path: 'templates',
+    //   query,
+    // })
 
     const res = await listTemplates(query.page, query.page_size, "", makeLogHandlers("templates:list", { query }))
     // console.log(res?.success , res.data , Array.isArray(res.data.list),res)
     if (res?.success && res.data && Array.isArray(res.data.list)) {
       templates.value = res.data.list
-      console.debug('[templates/crud] templates loaded', {
-        count: templates.value.length,
-      })
+      // console.debug('[templates/crud] templates loaded', {
+      //   count: templates.value.length,
+      // })
     } else {
       templates.value = []
       console.warn('[templates/crud] templates response unexpected', res)
@@ -252,6 +276,7 @@ const handleSubmit = async (payload: { name: string; description: string; conten
     return
   }
   saving.value = true
+  const isUpdate = Boolean(editingId.value)
   try {
     if (editingId.value) {
       const res = await updateTemplateApi(
@@ -274,8 +299,19 @@ const handleSubmit = async (payload: { name: string; description: string; conten
     await fetchTemplates()
     closeFormModal()
     resetForm()
-  } catch (error) {
+    showToast({
+      title: isUpdate ? t("templates.crud.actions.update") : t("templates.crud.create"),
+      message: isUpdate ? t("message.saveSuccess") : t("message.templateCreated"),
+      color: "success",
+    })
+  } catch (error: any) {
     console.error("[templates/crud] Failed to save template", error)
+    showToast({
+      title: t("message.error"),
+      message: error?.message || t("message.error"),
+      color: "error",
+      duration: 5000,
+    })
   } finally {
     saving.value = false
   }
@@ -287,7 +323,8 @@ const confirmDelete = (tpl: Template) => {
 }
 
 const performDelete = async () => {
-  if (!selectedTemplate.value) return
+  if (!selectedTemplate.value || deleting.value) return
+  deleting.value = true
   try {
     const res = await deleteTemplateApi(
       selectedTemplate.value.id,
@@ -297,12 +334,68 @@ const performDelete = async () => {
       throw new Error(res?.message || "Delete template failed")
     }
     await fetchTemplates()
-  } catch (error) {
-    console.error("[templates/crud] Failed to delete template", error)
-  } finally {
     deleteDialog.value = false
-    selectedTemplate.value = null
+    showToast({
+      title: t("templates.crud.deleteTitle"),
+      message: t("message.deleteSuccess"),
+      color: "success",
+    })
+  } catch (error: any) {
+    console.error("[templates/crud] Failed to delete template", error)
+    showToast({
+      title: t("message.error"),
+      message: error?.message || t("message.error"),
+      color: "error",
+      duration: 5000,
+    })
+  } finally {
+    deleting.value = false
   }
+}
+
+const handleDeleteCancel = () => {
+  deleteDialog.value = false
+}
+
+watch(deleteDialog, (isOpen) => {
+  if (!isOpen) {
+    selectedTemplate.value = null
+    deleting.value = false
+  }
+})
+
+const normalizeToString = (value?: string | number | null) => {
+  if (value === null || value === undefined) {
+    return ""
+  }
+  return typeof value === "string" ? value : String(value)
+}
+
+const showToast = ({
+  title,
+  message,
+  color = "primary",
+  duration = 3000,
+}: {
+  title?: string
+  message: string | number
+  color?: ToastColor
+  duration?: number
+}) => {
+  const normalizedTitle = normalizeToString(title)
+  const normalizedMessage = normalizeToString(message)
+  toast.title = normalizedTitle
+  toast.message = normalizedMessage
+  toast.color = color
+  toast.duration = duration
+  if (!normalizedTitle && !normalizedMessage) {
+    toast.visible = false
+    return
+  }
+  toast.visible = false
+  nextTick(() => {
+    toast.visible = true
+  })
 }
 
 onMounted(() => {

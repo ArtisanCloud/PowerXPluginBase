@@ -1,41 +1,111 @@
 <template>
   <UModal
-    :close="{ onClick: () => emit('close', false) }"
-    :title="options.title || $t('common.confirmation')"
+    v-model:open="open"
+    :title="dialogTitle"
+    :description="resolvedDescription || undefined"
+    :ui="{
+      content: 'w-full max-w-md space-y-4'
+    }"
   >
-    <div class="py-2">
-      <p class="text-sm text-gray-600 dark:text-gray-400">
-        {{ options.message }}
-      </p>
-    </div>
+    <template #body>
+      <slot>
+        <p
+          v-if="showBodyMessage"
+          class="text-sm text-gray-600 dark:text-gray-300"
+        >
+          {{ bodyMessage }}
+        </p>
+      </slot>
+    </template>
 
     <template #footer>
-      <div class="flex justify-end gap-3">
-        <UButton variant="outline" @click="emit('close', false)">
-          {{ options.cancelText || $t("common.cancel") }}
+      <div class="ml-auto flex w-full max-w-full items-center justify-end gap-3">
+        <UButton
+          variant="ghost"
+          :disabled="loading"
+          @click="handleCancel"
+        >
+          {{ cancelText }}
         </UButton>
         <UButton
-          :color="options.type === 'error' ? 'red' : 'primary'"
-          @click="emit('close', true)"
+          :color="buttonColor"
+          :loading="loading"
+          @click="handleConfirm"
         >
-          {{ options.confirmText || $t("common.confirm") }}
+          {{ confirmText }}
         </UButton>
       </div>
     </template>
   </UModal>
 </template>
 
-<script setup>
-const { t } = useI18n();
+<script setup lang="ts">
+import { computed, useSlots } from "vue"
+import { useI18n } from "vue-i18n"
 
-// 定义props
-const props = defineProps({
-  options: {
-    type: Object,
-    default: () => ({}),
-  },
-});
+const props = withDefaults(defineProps<{
+  modelValue?: boolean
+  title?: string
+  description?: string
+  message?: string
+  confirmText?: string
+  cancelText?: string
+  confirmColor?: "primary" | "secondary" | "success" | "error" | "warning" | "info" | "neutral"
+  loading?: boolean
+}>(), {
+  modelValue: false,
+  confirmColor: "primary",
+  loading: false,
+})
 
-// 定义emits
-const emit = defineEmits(["close"]);
+const emit = defineEmits<{
+  (e: "update:modelValue", value: boolean): void
+  (e: "confirm"): void
+  (e: "cancel"): void
+}>()
+
+const { t } = useI18n()
+const slots = useSlots()
+
+const open = computed({
+  get: () => props.modelValue,
+  set: (value: boolean) => emit("update:modelValue", value),
+})
+
+const dialogTitle = computed(
+  () => props.title || t("common.confirmation")
+)
+
+const confirmText = computed(
+  () => props.confirmText || t("common.confirm")
+)
+
+const cancelText = computed(
+  () => props.cancelText || t("common.cancel")
+)
+
+const loading = computed(() => props.loading)
+
+const buttonColor = computed(() => props.confirmColor)
+
+const resolvedDescription = computed(() =>
+  props.description ?? ""
+)
+
+const bodyMessage = computed(() =>
+  props.message ?? ""
+)
+
+const showBodyMessage = computed(() =>
+  !slots.default && !!bodyMessage.value
+)
+
+const handleCancel = () => {
+  emit("cancel")
+  open.value = false
+}
+
+const handleConfirm = () => {
+  emit("confirm")
+}
 </script>
