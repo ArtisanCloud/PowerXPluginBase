@@ -23,17 +23,6 @@
     "templates": "Templates",
     "templatesCrud": "Template CRUD",
     "templatesDevelop": "Templates Develop Guide",
-    "reports": "Reports",
-    "reportsDaily": "Daily Reports",
-    "reportsMonthly": "Monthly Reports",
-    "teamCollaboration": "Team Collaboration",
-    "teamManagement": "Team Management",
-    "memberManagement": "Member Management",
-    "team": "Team Members",
-    "systemSettings": "System Settings",
-    "permissions": "Permissions",
-    "settings": "Settings",
-    "projectSettings": "Project Settings",
     "profile": "Profile",
     "help": "Help",
     "logout": "Logout"
@@ -97,40 +86,6 @@
       "description": "Description",
       "content": "Content"
     }
-  },
-  "reports": {
-    "overview": "Reports Overview",
-    "overviewHint": "Monitor overall performance with the latest report summaries.",
-    "placeholder": "Report data is being prepared. Connect your data sources to see insights here soon.",
-    "daily": {
-      "overviewHint": "Review today's performance metrics, highlights, and outstanding tasks."
-    },
-    "monthly": {
-      "overviewHint": "Track month-over-month trends and summarise key achievements."
-    }
-  },
-  "team": {
-    "members": "Team Members",
-    "templateOwner": "Template Owner",
-    "developer": "Developer",
-    "tester": "Tester",
-    "capacity": "Member Capacity",
-    "availability": "Availability"
-  },
-  "settings": {
-    "roleManagement": "Role Management",
-    "addRole": "Add Role",
-    "users": "Users",
-    "permissionsDescription": "Manage system roles and user permissions",
-    "userPermissions": "User Permissions",
-    "searchUsers": "Search Users",
-    "filterByRole": "Filter by Role",
-    "user": "User",
-    "role": "Role",
-    "lastActive": "Last Active",
-    "permissionMatrix": "Permission Matrix",
-    "permission": "Permission",
-    "templateStatuses": "Template Statuses"
   },
   "message": {
     "saveSuccess": "Saved successfully",

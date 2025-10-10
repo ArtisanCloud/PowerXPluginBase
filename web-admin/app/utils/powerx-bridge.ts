@@ -233,30 +233,6 @@ export const resolveInternalAlias = (internalPath: string): string | null => {
     return sanitizedPath;
   }
 
-  if (sanitizedPath.startsWith("/reports")) {
-    return sanitizedPath;
-  }
-
-  if (sanitizedPath === "/settings") {
-    return "/settings/project";
-  }
-
-  if (sanitizedPath.startsWith("/settings/")) {
-    const subPath = sanitizedPath.slice("/settings/".length);
-    if (subPath === "preferences" || subPath === "project") {
-      return "/settings/project";
-    }
-    return `/settings/${subPath}`;
-  }
-
-  if (sanitizedPath === "/team") {
-    return "/team/management";
-  }
-
-  if (sanitizedPath.startsWith("/team/")) {
-    return sanitizedPath;
-  }
-
   return null;
 };
 

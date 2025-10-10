@@ -5,7 +5,6 @@ import (
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/iam"
 	templatemodel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/template"
 	"gorm.io/gorm"
 )
@@ -15,10 +14,6 @@ func MigratePluginModels(ctx context.Context, db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.PluginCredential{},
 		&models.PluginTenantExt{},
-		&iam.TeamCache{},
-		&iam.TeamExt{},
-		&iam.MemberExt{},
-		&iam.MemberCache{},
 		&templatemodel.Template{},
 	)
 }

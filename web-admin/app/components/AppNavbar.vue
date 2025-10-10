@@ -66,11 +66,6 @@ const userMenuItems = [
   ],
   [
     {
-      label: t("navigation.settings"),
-      icon: "i-heroicons-cog-6-tooth",
-      click: () => navigateTo("/settings"),
-    },
-    {
       label: t("navigation.help"),
       icon: "i-heroicons-question-mark-circle",
       click: () => navigateTo("/help"),

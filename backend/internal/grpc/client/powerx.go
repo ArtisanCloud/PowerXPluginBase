@@ -28,7 +28,6 @@ import (
 
 	commonv1 "github.com/ArtisanCloud/PowerX/api/grpc/gen/go/common/v1"
 	stsv1 "github.com/ArtisanCloud/PowerX/api/grpc/gen/go/powerx/auth/sts/v1"
-	iamv1 "github.com/ArtisanCloud/PowerX/api/grpc/gen/go/powerx/iam/v1"
 )
 
 // 通用请求和响应结构（与 PowerX proto 兼容）
@@ -46,9 +45,7 @@ type PageRequest struct {
 type PowerXServiceClient struct {
 	conn *grpc.ClientConn
 	// 基于 proto 的强类型客户端
-	members iamv1.MemberServiceClient
-	teams   iamv1.TeamServiceClient
-	sts     stsv1.STSServiceClient
+	sts stsv1.STSServiceClient
 
 	token    string
 	tenantID int64
@@ -157,8 +154,6 @@ func (p *PowerXServiceClient) ensureConn(ctx context.Context) error {
 	}
 	p.conn = conn
 	// 初始化强类型客户端
-	p.members = iamv1.NewMemberServiceClient(conn)
-	p.teams = iamv1.NewTeamServiceClient(conn)
 	p.sts = stsv1.NewSTSServiceClient(conn)
 	return nil
 }
@@ -176,32 +171,6 @@ func (p *PowerXServiceClient) RC() *RequestContext {
 		TenantId:    p.tenantID,
 		AccessToken: p.token,
 	}
-}
-
-// MembersClient 返回 iam 成员服务客户端
-func (p *PowerXServiceClient) MembersClient(ctx context.Context) (iamv1.MemberServiceClient, error) {
-	if p.conn == nil {
-		if err := p.ensureConn(ctx); err != nil {
-			return nil, err
-		}
-	}
-	if p.members == nil {
-		p.members = iamv1.NewMemberServiceClient(p.conn)
-	}
-	return p.members, nil
-}
-
-// TeamsClient 返回 iam 团队服务客户端
-func (p *PowerXServiceClient) TeamsClient(ctx context.Context) (iamv1.TeamServiceClient, error) {
-	if p.conn == nil {
-		if err := p.ensureConn(ctx); err != nil {
-			return nil, err
-		}
-	}
-	if p.teams == nil {
-		p.teams = iamv1.NewTeamServiceClient(p.conn)
-	}
-	return p.teams, nil
 }
 
 // STSClient 返回 STS 服务客户端

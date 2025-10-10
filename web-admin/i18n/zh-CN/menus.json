@@ -7,16 +7,6 @@
         "title": "模版",
         "develop": "开发介绍",
         "crud": "模版 CRUD"
-      },
-      "reports": {
-        "title": "报表",
-        "daily": "日报",
-        "monthly": "月报"
-      },
-      "settings": {
-        "title": "设置",
-        "preferences": "偏好设置",
-        "access": "访问控制"
       }
     }
   }

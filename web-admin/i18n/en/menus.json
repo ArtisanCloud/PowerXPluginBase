@@ -7,16 +7,6 @@
         "title": "Templates",
         "develop": "Develop Guide",
         "crud": "Template CRUD"
-      },
-      "reports": {
-        "title": "Reports",
-        "daily": "Daily Report",
-        "monthly": "Monthly Report"
-      },
-      "settings": {
-        "title": "Settings",
-        "preferences": "Preferences",
-        "access": "Access Control"
       }
     }
   }

@@ -89,30 +89,6 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 							},
 						},
 					},
-					{
-						ID:    "base.reports",
-						Title: "menu.base.reports.title",
-						Icon:  "i-heroicons-chart-bar",
-						Path:  "/reports",
-						Order: 3,
-						Children: []contracts.MenuConfig{
-							{
-								ID:    "base.reports.daily",
-								Title: "menu.base.reports.daily",
-								Icon:  "i-heroicons-calendar-days",
-								Path:  "/reports/daily",
-								Order: 1,
-							},
-							{
-								ID:    "base.reports.monthly",
-								Title: "menu.base.reports.monthly",
-								Icon:  "i-heroicons-calendar",
-								Path:  "/reports/monthly",
-								Order: 2,
-							},
-						},
-						RequiredPermissions: []string{"base:report:read"},
-					},
 				},
 				RequiredPermissions: []string{"base:template:read"},
 			},
@@ -123,11 +99,6 @@ func (h *AdminHandler) GetManifest(c *gin.Context) {
 				Resource:    "base:template",
 				Actions:     []string{"read", "create", "update", "delete"},
 				Description: "Template management permissions",
-			},
-			{
-				Resource:    "base:report",
-				Actions:     []string{"read"},
-				Description: "Report access permissions",
 			},
 		},
 
@@ -310,11 +281,6 @@ func (h *AdminHandler) GetRBACInfo(c *gin.Context) {
 					{Name: "delete", Description: "删除模板"},
 				},
 			},
-			{
-				Name:        "base:report",
-				Description: "Base 报告",
-				Actions:     []contracts.Action{{Name: "read", Description: "查看报告"}},
-			},
 		},
 		Roles: []contracts.Role{
 			{
@@ -322,7 +288,6 @@ func (h *AdminHandler) GetRBACInfo(c *gin.Context) {
 				Description: "Base Master 角色",
 				Permissions: []string{
 					"base:template:*",
-					"base:report:read",
 				},
 			},
 			{
@@ -339,7 +304,6 @@ func (h *AdminHandler) GetRBACInfo(c *gin.Context) {
 				Description: "模板查看角色",
 				Permissions: []string{
 					"base:template:read",
-					"base:report:read",
 				},
 			},
 		},
@@ -348,7 +312,6 @@ func (h *AdminHandler) GetRBACInfo(c *gin.Context) {
 			{Resource: "base:template", Action: "create"},
 			{Resource: "base:template", Action: "update"},
 			{Resource: "base:template", Action: "delete"},
-			{Resource: "base:report", Action: "read"},
 		},
 	}
 

@@ -124,8 +124,6 @@ rbac:
   resources:
     - resource: base:template
       actions: [read, create, update, delete]
-    - resource: base:report
-      actions: [read]
 
 permissions:
   - resource: base:template
