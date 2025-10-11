@@ -15,29 +15,34 @@ Follow-up TODOs: None
 ## Core Principles
 
 ### I. Host Contract First
+
 - All plugin interfaces MUST conform to the PowerX reverse proxy contract: expose business APIs under `/v1`, surface management endpoints at `/api/v1/admin/{manifest,rbac}`, and keep `plugin.yaml` in sync with the runtime manifest.
 - Outbound calls to PowerX MUST use STS-issued credentials; direct coupling to host internals is prohibited.
 Citing the host contract first keeps every plugin drop-in compatible with the Platform Router and avoids regressions when PowerX upgrades its routing fabric.
 
 ### II. Tenant Isolation & Zero Trust
+
 - Every inbound request MUST validate the PowerX context (JWT or HMAC) before touching application state; `POWERX_DEV_MODE` is limited to local development.
 - The data model MUST carry `tenant_id` and Postgres Row Level Security; repositories MUST execute inside `BeginTenantTx` with `SET LOCAL app.tenant_id`.
 - Secrets, tokens, and database roles MUST follow least privilege and be rotated via STS or environment management.
 Zero trust enforcement is non-negotiable because the plugin frequently runs alongside other tenants within the same cluster and shares host infrastructure.
 
 ### III. Service-Centric Architecture
+
 - Transport handlers stay thin: validate input, delegate to services, and translate responses; business orchestration lives exclusively in `internal/services`.
 - Repositories encapsulate data access and never leak GORM specifics to services; HTTP and gRPC layers MUST share the same service logic.
 - Shared dependencies (config, logger, clients) travel through the application container to keep construction deterministic and testable.
 This layering preserves clear failure domains, encourages reuse between protocols, and allows automated testing at each boundary.
 
 ### IV. Observable & Testable Delivery
+
 - All features MUST provide structured logging with request IDs, health probes, and metrics hooks needed by PowerX observability.
 - Each change MUST ship with automated coverage matching scope: unit tests for services, integration tests for multi-tenant flows, and migration smoke tests when schemas change.
 - Migrations MUST be idempotent, reversible, and guarded behind explicit `POWERX_RUN_MIGRATE` toggles.
 Evidence-first delivery ensures plugins remain diagnosable after deployment and protects multi-tenant data paths from silent drift.
 
 ### V. Minimal Footprint & Versioned Releases
+
 - Keep dependencies minimal, prefer Go/Nuxt stack already curated by the template, and remove dormant code before release.
 - Every release MUST document runtime configuration, update manifests, and package artifacts via `make release && make package-release` (or equivalent CI task).
 - Breaking changes to APIs, data contracts, or host expectations MUST trigger semantic version bumps and migration guidance.
@@ -65,5 +70,12 @@ Lean releases reduce attack surface, simplify audits, and make upgrades safe for
 - Amendments follow semantic versioning: MAJOR for contract-breaking shifts, MINOR for new principles or mandatory workflow changes, PATCH for clarifications. Each amendment notes rationale and required migrations.
 - Compliance is enforced during code review and release sign-off; reviewers MUST document how each principle was satisfied or justified.
 - The Docs team ensures downstream templates stay synchronized; any TODOs introduced by amendments carry assigned owners and due dates.
+
+## G8: UI Layer Definition (Optional)
+
+- ID: PX-FE-001
+- The term **frontend** in templates refers generically to any UI layer under the plugin:
+  `web-admin/`, `web-app/`, `mini-app/`, `mobile-app/`, etc.
+- Each project must define its active UI layers in `plan.md` → Project Structure section.
 
 **Version**: 1.0.0 | **Ratified**: 2025-10-11 | **Last Amended**: 2025-10-11
