@@ -7,7 +7,7 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Principle IV (Observable & Testable Delivery) requires automated coverage matching each change. Include the necessary test tasks unless the specification explicitly states there is no executable code impact.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -59,12 +59,12 @@ description: "Task list template for feature implementation"
 
 Examples of foundational tasks (adjust based on your project):
 
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
-- [ ] T008 Configure error handling and logging infrastructure
-- [ ] T009 Setup environment configuration management
+- [ ] T004 Configure Postgres schema migrations and RLS policies in `backend/internal/db`
+- [ ] T005 [P] Extend TenantContext / RBAC guards to cover new scopes
+- [ ] T006 [P] Wire service and repository scaffolding in `backend/internal/services` and `backend/internal/domain/repository`
+- [ ] T007 Create or update shared models/entities (ensure `tenant_id` coverage)
+- [ ] T008 Configure structured logging, metrics, and health probes
+- [ ] T009 Setup environment configuration and credential exchange (STS, secrets)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -76,7 +76,7 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 (Required coverage per Principle IV) ⚠️
 
 **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
@@ -102,7 +102,7 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 2 (Required coverage per Principle IV) ⚠️
 
 - [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
@@ -124,7 +124,7 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 3 (Required coverage per Principle IV) ⚠️
 
 - [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
@@ -246,5 +246,3 @@ With multiple developers:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
-
-

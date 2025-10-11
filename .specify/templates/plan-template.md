@@ -31,7 +31,11 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] **Host Contract First**: Document how the feature respects `/v1` routing, admin endpoints, and required `plugin.yaml` or manifest updates.
+- [ ] **Tenant Isolation & Zero Trust**: Explain tenant context handling, RLS-covered migrations, and verification strategy (tests or tooling).
+- [ ] **Service-Centric Architecture**: Identify impacted services/repositories and confirm transport layers stay thin and protocol-shared.
+- [ ] **Observable & Testable Delivery**: Outline logging/metrics updates and automated tests (unit, integration, migration smoke) that will ship with the change.
+- [ ] **Minimal Footprint & Versioned Releases**: Call out dependency additions/removals, packaging tasks, and planned version bump rationale.
 
 ## Project Structure
 
