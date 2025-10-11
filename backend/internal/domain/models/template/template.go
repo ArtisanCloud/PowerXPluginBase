@@ -1,5 +1,7 @@
 package template
 
+// internal/domain/models/template/template.go
+
 import "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
 
 // Template represents a reusable snippet that can be shared across the Base plugin.
