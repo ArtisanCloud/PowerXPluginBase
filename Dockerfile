@@ -28,7 +28,7 @@ RUN apk --no-cache add ca-certificates tzdata
 
 # 创建非 root 用户
 RUN addgroup -g 1001 -S appgroup && \
-    adduser -u 1001 -S appuser -G appgroup
+  adduser -u 1001 -S appuser -G appgroup
 
 # 设置工作目录
 WORKDIR /app
@@ -49,11 +49,11 @@ RUN chown -R appuser:appgroup /app
 USER appuser
 
 # 暴露端口
-EXPOSE 8091
+EXPOSE 8086
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8091/healthz || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8086/healthz || exit 1
 
 # 启动应用
 CMD ["./plugin"]

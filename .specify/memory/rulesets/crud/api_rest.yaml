@@ -1,0 +1,26 @@
+# HTTP Envelope & REST 约定
+kind: ruleset
+id: crud_api_rest
+version: 1.0.0
+exports:
+  envelope:
+    code: integer
+    message: string
+    data: object | null
+  page:
+    items: array
+    total: integer
+    page: integer
+    page_size: integer
+checks:
+  - id: rest-methods
+    desc: 资源具备 GET/GET:id/POST/PUT/DELETE 的最小集合
+    assert:
+      type: route
+      target: backend/internal/transport/http/**
+      route_set:
+        - GET /v1/{resource}
+        - GET /v1/{resource}/:id
+        - POST /v1/{resource}
+        - PUT /v1/{resource}/:id
+        - DELETE /v1/{resource}/:id

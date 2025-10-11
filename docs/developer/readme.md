@@ -84,7 +84,23 @@ internal/
 ├── transport/
 │   ├── http/templates/           # HTTP 路由 & Handler（薄）
 │   └── grpc/server/template/     # gRPC Service（薄）
-└── grpc/proto/                   # *.proto
+└── grpc
+│   ├── client
+│   │   └── clientset/          # 统一建链/拦截器/STS，聚合各模块客户端
+│   │   │   └── clientset.go
+│   │   ├── common/             # 连接、拦截器、动态反射工具（可选兜底）
+│   │   │   ├── conn.go
+│   │   │   └── interceptors.go
+│   │   ├── iam/                # 示例：IAM 模块（强类型 SDK）
+│   │   │   └── iam.go
+│   │   ├── files/              # 示例：文件模块（强类型 SDK）
+│   │   │   └── files.go
+│   │   ├── sts/                # 你已经有的 STS TokenManager（保留）
+│   │   │   └── sts.go
+│   │   └── reflect/            # 反射动态调用（仅作兜底/调试）
+│   │       └── reflect.go
+└── ├── server
+        └── server.go           # 仅当你要对外提供服务时才需要注册
 
 ```
 
@@ -120,7 +136,7 @@ web-admin/  (Nuxt 4 + Nuxt UI 3.3.2)
 
 **运行模式：**
 
-- **本地开发**：`/` → 直连 `http://127.0.0.1:8091/v1`
+- **本地开发**：`/` → 直连 `http://127.0.0.1:8086/v1`
 - **宿主反代**：`/_p/<plugin-id>/admin/` → API 前缀 `/_p/<plugin-id>/api/v1`
 
 在 `nuxt.config.ts` 里通过 `runtimeConfig.public.apiBaseUrl` 动态切换。
@@ -191,14 +207,14 @@ func (t *Template) TableName() string { return models.S(models.TableTemplate) }
 * **本地开发**
 
   * 后端：`POWERX_DEV_MODE=1 go run ./backend/cmd/plugin`
-  * 前端：`npm run dev`（默认直连 `:8091/v1`）
+  * 前端：`npm run dev`（默认直连 `:8086/v1`）
 * **发布打包**
 
   * `make release && make package-release` → `target/<ver>/*.zip`
 * **Docker**
 
   * `docker build -t <image:ver> -f backend/Dockerfile .`
-  * 宿主通过内部网络反代 `/_p/<plugin-id>/*` 到插件容器 `:8091`
+  * 宿主通过内部网络反代 `/_p/<plugin-id>/*` 到插件容器 `:8086`
 
 ---
 

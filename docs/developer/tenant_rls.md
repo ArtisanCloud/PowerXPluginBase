@@ -53,12 +53,12 @@ PowerX Request
 
 ## 三、RLS 策略示例
 
-假设 schema 名为 `template`，业务表为 `template`：
+假设 schema 名为 `px_com_plugin_base`，业务表为 `template`：
 
 ```sql
 CREATE SCHEMA IF NOT EXISTS template;
 
-CREATE TABLE IF NOT EXISTS template.template (
+CREATE TABLE IF NOT EXISTS px_com_plugin_base.template (
   id         BIGSERIAL PRIMARY KEY,
   tenant_id  BIGINT NOT NULL,
   title      VARCHAR(200) NOT NULL,
@@ -71,11 +71,11 @@ CREATE TABLE IF NOT EXISTS template.template (
 );
 
 -- 启用 RLS
-ALTER TABLE template.template ENABLE ROW LEVEL SECURITY;
+ALTER TABLE px_com_plugin_base.template ENABLE ROW LEVEL SECURITY;
 
 -- 定义租户隔离策略
 CREATE POLICY p_tenant_isolation
-  ON template.template
+  ON px_com_plugin_base.template
   USING (tenant_id::text = current_setting('app.tenant_id', true));
 ```
 

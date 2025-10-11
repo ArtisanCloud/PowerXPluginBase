@@ -8,8 +8,8 @@ docker-build: ## 构建 Docker 镜像
 .PHONY: docker-run
 docker-run: ## 使用 Docker 运行插件
 	@echo "运行 Docker 容器..."
-	docker run --rm -p 8091:8091 \
-		-e POWERX_BIND_ADDR=":8091" \
+	docker run --rm -p 8086:8086 \
+		-e POWERX_BIND_ADDR=":8086" \
 		-e POWERX_DB_SCHEMA="px_com_powerx_plugins_base" \
 		-e POWERX_LOG_LEVEL="debug" \
 		$(DOCKER_IMAGE)

@@ -17,7 +17,7 @@ properties:
       bind_addr:
         type: string
         description: "HTTP 监听地址，仅本地调试时使用。"
-        default: ":8091"
+        default: ":8086"
       api_prefix:
         type: string
         description: "对外暴露的 API 前缀，需与 plugin.yaml 的 endpoints.http_base_path 一致。"

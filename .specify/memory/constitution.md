@@ -1,81 +1,121 @@
-# PowerX Plugin Base Constitution
+---
+# ① Manifest Path（manifest 解析声明）
+manifest: .specify/memory/manifest.yaml
 
-<!--
-Sync Impact Report
-Version change: N/A → 1.0.0
-Modified principles: Initial publication
-Added sections: Core Principles; Operational Constraints; Development Workflow & Quality Gates; Governance
-Removed sections: None
-Templates requiring updates:
-- ✅ .specify/templates/plan-template.md (Constitution Check aligned)
-- ✅ .specify/templates/tasks-template.md (Foundational work tightened)
-Follow-up TODOs: None
--->
+# ② 别名启用（插件侧）
+use:
+  - "@plugin-crud-http"
+  - "@plugin-crud-grpc"
+  - "@plugin-frontend-admin"   # 前端（web-admin）聚合别名
+
+# ③ 指南文件（用于 /plan 语义扩展）
+include:
+  - dev_crud_http_guides.md
+  - dev_crud_grpc_guides.md
+  - dev_sts_guides.md
+  - dev_frontend_guides.md      # 前端开发约定（Nuxt 4 + Nuxt UI 3.3.x）
+
+# ④ Ruleset Paths（显式暴露以便 Runner 能读取）
+rulesets:
+  # 后端顶层
+  - rulesets/crud_http.yaml
+  - rulesets/crud_grpc.yaml
+  - rulesets/sts.yaml
+
+  # 前端顶层
+  - rulesets/frontend_admin.yaml
+
+  # 后端细分
+  - rulesets/crud/api_rest.yaml
+  - rulesets/crud/handler_http.yaml
+  - rulesets/crud/dto.yaml
+  - rulesets/crud/service.yaml
+  - rulesets/crud/repository.yaml
+  - rulesets/crud/model.yaml
+  - rulesets/crud/migration.yaml
+  - rulesets/crud/transport_grpc.yaml
+  - rulesets/crud/proto_gen.yaml
+  - rulesets/crud/di.yaml
+  - rulesets/crud/test.yaml
+
+  # 前端细分
+  - rulesets/crud/frontend/nuxt_api_client.yaml
+  - rulesets/crud/frontend/nuxt_pages.yaml
+  - rulesets/crud/frontend/nuxt_components.yaml
+  - rulesets/crud/frontend/nuxt_stores.yaml
+  - rulesets/crud/frontend/nuxt_i18n.yaml
+  - rulesets/crud/frontend/nuxt_layout.yaml
+  - rulesets/crud/frontend/nuxt_tests.yaml
+---
+
+# PowerXPlugin Constitution (Plugins Only)
+
+> 本宪章仅约束 **插件侧仓库（PowerXPlugin）**：包含后端 API 与 **web-admin 等前端实现**。  
+> CoreX 的规则以 PowerX 仓库中的 Constitution 为准，本文件不替代、不覆盖 Core 配置。
 
 ## Core Principles
 
-### I. Host Contract First
+### I. Host Contract First（反代合同优先）
 
-- All plugin interfaces MUST conform to the PowerX reverse proxy contract: expose business APIs under `/v1`, surface management endpoints at `/api/v1/admin/{manifest,rbac}`, and keep `plugin.yaml` in sync with the runtime manifest.
-- Outbound calls to PowerX MUST use STS-issued credentials; direct coupling to host internals is prohibited.
-Citing the host contract first keeps every plugin drop-in compatible with the Platform Router and avoids regressions when PowerX upgrades its routing fabric.
+- 业务 API 暴露在 `/v1/**`；管理端点：`/api/v1/admin/{manifest,rbac}`；`plugin.yaml` 与运行时清单保持一致。
+- 出站访问 PowerX 必须使用 **STS** 短期凭证；禁止直接耦合宿主内部实现。
 
-### II. Tenant Isolation & Zero Trust
+### II. Tenant Isolation & Zero Trust（多租户与零信任）
 
-- Every inbound request MUST validate the PowerX context (JWT or HMAC) before touching application state; `POWERX_DEV_MODE` is limited to local development.
-- The data model MUST carry `tenant_id` and Postgres Row Level Security; repositories MUST execute inside `BeginTenantTx` with `SET LOCAL app.tenant_id`.
-- Secrets, tokens, and database roles MUST follow least privilege and be rotated via STS or environment management.
-Zero trust enforcement is non-negotiable because the plugin frequently runs alongside other tenants within the same cluster and shares host infrastructure.
+- 入站请求在读写状态前**必须**验签（JWT/HMAC）；`POWERX_DEV_MODE` 仅限本地。
+- 模型携带 `tenant_id`，启用 **RLS**；Repo 在 `BeginTenantTx` 中执行并 `SET LOCAL app.tenant_id`。
+- 秘钥/令牌/DB 角色遵循**最小权限**并可轮换（STS/环境托管）。
 
-### III. Service-Centric Architecture
+### III. Service-Centric Architecture（服务为中心）
 
-- Transport handlers stay thin: validate input, delegate to services, and translate responses; business orchestration lives exclusively in `internal/services`.
-- Repositories encapsulate data access and never leak GORM specifics to services; HTTP and gRPC layers MUST share the same service logic.
-- Shared dependencies (config, logger, clients) travel through the application container to keep construction deterministic and testable.
-This layering preserves clear failure domains, encourages reuse between protocols, and allows automated testing at each boundary.
+- Handler 保持**薄**：校验→鉴权→调用 Service→序列化；业务编排**仅在** `internal/services`。
+- Repo 封装数据访问细节；HTTP 与 gRPC **复用同一** Service。
+- 依赖通过容器注入（配置、日志、客户端），保证可测试与可重放构造。
 
-### IV. Observable & Testable Delivery
+### IV. Observable & Testable Delivery（可观测与可测试）
 
-- All features MUST provide structured logging with request IDs, health probes, and metrics hooks needed by PowerX observability.
-- Each change MUST ship with automated coverage matching scope: unit tests for services, integration tests for multi-tenant flows, and migration smoke tests when schemas change.
-- Migrations MUST be idempotent, reversible, and guarded behind explicit `POWERX_RUN_MIGRATE` toggles.
-Evidence-first delivery ensures plugins remain diagnosable after deployment and protects multi-tenant data paths from silent drift.
+- 结构化日志（含 request_id/tenant_id）、`/healthz`、必要指标钩子。
+- 变更须配套测试：Service 单测、多租户集成测、迁移冒烟；迁移可幂等、可回滚，并受 `POWERX_RUN_MIGRATE` 控制。
 
-### V. Minimal Footprint & Versioned Releases
+### V. Minimal Footprint & Versioned Releases（轻量与版本化）
 
-- Keep dependencies minimal, prefer Go/Nuxt stack already curated by the template, and remove dormant code before release.
-- Every release MUST document runtime configuration, update manifests, and package artifacts via `make release && make package-release` (or equivalent CI task).
-- Breaking changes to APIs, data contracts, or host expectations MUST trigger semantic version bumps and migration guidance.
-Lean releases reduce attack surface, simplify audits, and make upgrades safe for operators managing dozens of plugins.
+- 依赖最小化，优先模板栈（Go + Nuxt）；发布前清理死代码。
+- 交付必须更新文档/清单，并通过 `make release && make package-release`（或 CI 等价）打包。
+- 破坏性变更需 **SemVer** 升级并提供迁移指南。
 
 ## Operational Constraints
 
-- **Database**: Use Postgres ≥ 13 with a dedicated schema per plugin; enforce RLS and schema migrations through the provided tooling.
-- **Runtime**: Production deployments MUST disable `POWERX_DEV_MODE`, configure `POWERX_CTX_*` issuers/audiences, and expose the service on `POWERX_BIND_ADDR`.
-- **Networking**: PowerX reverse proxy mounts `/_p/<plugin-id>/admin/*` to `web-admin/.output` and `/_p/<plugin-id>/api/*` to backend `/v1/...`; SDKs and frontends MUST respect this prefix.
-- **Secrets & Credentials**: Interactions with PowerX APIs require STS token exchange (`/_p/_internal/sts/exchange`); long-lived credentials are forbidden.
-- **Frontend**: When `web-admin` is shipped, the Nuxt runtime MUST derive its base URL and API base from `runtimeConfig.public.apiBaseUrl` to adapt between standalone and proxied modes.
+- **Database**：Postgres ≥ 13；每插件独立 schema；RLS 强制；迁移使用项目提供工具链。
+- **Runtime**：生产禁用 `POWERX_DEV_MODE`；配置 `POWERX_CTX_*`（issuer/audience）；服务监听 `POWERX_BIND_ADDR`。
+- **Networking（反代）**：宿主路由  
+  `/_p/<plugin-id>/admin/* → web-admin/.output/**`  
+  `/_p/<plugin-id>/api/*   → backend /v1/**`  
+  前端与 SDK **必须**遵守该前缀。
+- **Secrets & Credentials**：访问 PowerX API 需调用 `/_p/_internal/sts/exchange` 获取 STS；禁止长效凭据。
+- **Frontend（web-admin 等）**：  
+  - Nuxt 运行期基于 `runtimeConfig.public.apiBaseUrl` 适配「直连 `:8086/v1`」与「宿主反代 `/_p/<plugin-id>/api/v1`」。  
+  - 打包产物**固定**在 `web-admin/.output/` 并**随发布包交付**。  
+  - UI 组件遵循 Nuxt UI 3.3.x：`UModal v-model:open`、`USwitch`（无 `UToggle`）、`color ∈ {primary,secondary,success,info,warning,error,neutral}`。
 
 ## Development Workflow & Quality Gates
 
-- **Spec → Plan → Tasks**: Each feature starts with a spec capturing independently testable user stories, followed by an implementation plan that passes the Constitution Check, and finally tasks grouped per story to preserve MVP slices.
-- **Gate Reviews**: Before implementation, reviewers confirm host contract compliance, tenant isolation coverage, and planned tests; completion reviews verify observability signals and migration discipline.
-- **Testing Strategy**: Run `make test`, migration smoke tests, and (when applicable) Nuxt lint/build in CI; no change merges without green automation for its scope.
-- **Release Readiness**: Deliveries include updated `plugin.yaml`, manifest/RBAC endpoints, version bumps, and documentation updates in `docs/`.
-- **Incident Handling**: On regressions, roll forward with fixes that add missing coverage; rollbacks must preserve schema compatibility.
+- **Spec → Plan → Tasks**：自规范开始；`plan.md` 通过 Constitution Check；`tasks.md` 按用户故事分组，保持 MVP 切片。
+- **Gate Reviews**：实装前评审合同/租户/测试覆盖；完工评审可观测与迁移纪律。
+- **CI**：`make test`、迁移冒烟、（有前端则）Nuxt lint/build；未绿灯不合并。
+- **Release Readiness**：交付包含 `plugin.yaml`、manifest/RBAC、版本号与 `docs/` 更新。
+- **Incidents**：前滚修复并补测试；回滚需保持 schema 兼容。
 
 ## Governance
 
-- This constitution supersedes conflicting guidance; deviations require an RFC reviewed by PowerX Core maintainers and recorded in `docs/references/changelog.md`.
-- Amendments follow semantic versioning: MAJOR for contract-breaking shifts, MINOR for new principles or mandatory workflow changes, PATCH for clarifications. Each amendment notes rationale and required migrations.
-- Compliance is enforced during code review and release sign-off; reviewers MUST document how each principle was satisfied or justified.
-- The Docs team ensures downstream templates stay synchronized; any TODOs introduced by amendments carry assigned owners and due dates.
+- 本宪章优先级高于其他约定；偏离需提 RFC 并经 Core 审核，记录到 `docs/references/changelog.md`。
+- 修订遵循 SemVer；记录动机与迁移要求。
+- 评审与发版环节强制检查合规并留痕。
+- 模板同步由文档维护；新增 TODO 必须指定负责人与截止时间。
 
-## G8: UI Layer Definition (Optional)
+## Appendix A: UI Layer Definition（Optional）
 
-- ID: PX-FE-001
-- The term **frontend** in templates refers generically to any UI layer under the plugin:
-  `web-admin/`, `web-app/`, `mini-app/`, `mobile-app/`, etc.
-- Each project must define its active UI layers in `plan.md` → Project Structure section.
+- **ID**: PX-FE-001  
+- “frontend” 为**泛指**：`web-admin/`、`web-app/`、`mini-app/`、`mobile-app/` 等任一 UI 层。  
+- 每个项目需在 `plan.md → Project Structure` 明确本次涉及的 UI 层，并与 rulesets 的输出路径一致。
 
 **Version**: 1.0.0 | **Ratified**: 2025-10-11 | **Last Amended**: 2025-10-11
