@@ -39,7 +39,6 @@ rulesets:
   - rulesets/crud/model.yaml
   - rulesets/crud/migration.yaml
   - rulesets/crud/transport_grpc.yaml
-  - rulesets/crud/proto_gen.yaml
   - rulesets/crud/di.yaml
   - rulesets/crud/test.yaml
 

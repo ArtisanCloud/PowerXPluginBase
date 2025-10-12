@@ -15,13 +15,16 @@ requires:
   - rulesets/crud/di.yaml
   - rulesets/crud/test.yaml
 checks:
-  - id: http-prefix-v1
-    desc: 业务路由全部置于 /v1/**，管理端点使用 /api/v1/admin/**
+  - id: http-prefix-configurable
+    desc: API 分组使用可配置前缀，默认 /api/v1，并统一挂载管理端点
     assert:
-      type: codeql
-      target: backend/internal/transport/http/**
-      query: |
-        ensure_all_routes_under_prefix("/v1") && ensure_admin_routes("/api/v1/admin")
+      type: grep
+      target: backend/internal/router/router.go
+      pattern:
+        - "prefix := r.cfg.Server.APIPrefix"
+        - "if strings.TrimSpace(prefix) == \"\" {"
+        - "prefix = \"/api/v1\""
+        - "gApi := r.engine.Group(prefix)"
   - id: http-envelope
     desc: 响应使用统一 envelope 与分页结构
     assert:

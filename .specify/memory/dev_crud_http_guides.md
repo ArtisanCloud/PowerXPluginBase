@@ -5,35 +5,46 @@
 
 ## 1. 路由与前缀
 
-- **业务前缀**：`/v1`（所有业务接口均挂在该前缀）  
-- **宿主反代**：`/_p/<plugin-id>/api/* → backend /v1/**`（PG-HOST-001）  
+- **业务前缀**：默认 `/api/v1`，可通过 `server.api_prefix` 配置覆盖。  
+- **宿主反代**：`/_p/<plugin-id>/api/* → backend <api_prefix>/**`（PG-HOST-001）。  
 - **典型资源**（以 `template` 为例）：
-  - `GET    /v1/templates`（分页/筛选）
-  - `GET    /v1/templates/:id`
-  - `POST   /v1/templates`
-  - `PUT    /v1/templates/:id`
-  - `DELETE /v1/templates/:id`
+  - `GET    /api/v1/templates`（分页/筛选）
+  - `GET    /api/v1/templates/:id`
+  - `POST   /api/v1/templates`
+  - `PUT    /api/v1/templates/:id`
+  - `DELETE /api/v1/templates/:id`
 
 > 管理端点另见：`/api/v1/admin/{manifest, rbac}`（合规要求，非业务 CRUD）。
 
 ## 2. 统一响应与错误模型
 
-- **Envelope**：
+- **Envelope（contracts.APIResponse）**：
 
   ```json
-  { "code": 0, "message": "ok", "data": { ... } }
-
-````
-
-* **分页响应**：
-
-  ```json
-  { "items": [ ... ], "total": 135, "page": 1, "page_size": 20 }
+  {
+    "success": true,
+    "message": "",
+    "data": { ... },
+    "error": null,
+    "timestamp": "2024-12-09T12:00:00Z",
+    "request_id": "rq-123"
+  }
   ```
+
+* **分页响应**：`data` 字段内返回 `{ "items": [...], "total": 135, "page": 1, "page_size": 20 }`
 * **错误响应**（示例）：
 
   ```json
-  { "code": 40001, "message": "permission denied", "details": { "resource": "base:template", "action": "read" } }
+  {
+    "success": false,
+    "error": {
+      "code": "PERMISSION_DENIED",
+      "message": "permission denied",
+      "details": { "resource": "base:template", "action": "read" }
+    },
+    "timestamp": "2024-12-09T12:00:05Z",
+    "request_id": "rq-123"
+  }
   ```
 
 > 约定与 `rulesets/crud/api_rest.yaml` 保持一致；如需扩展字段（如 trace_id），保持向后兼容。
@@ -74,7 +85,7 @@ backend/
     ├── services/template/
     ├── domain/repository/template/
     └── transport/http/template/
-        ├── routes.go         # 注册 /v1/templates...
+        ├── routes.go         # 注册 /api/v1/templates...（随前缀配置）
         ├── handler_list.go
         ├── handler_get.go
         ├── handler_create.go
@@ -90,7 +101,7 @@ backend/
 
 ## 8. 合规清单（Checklist）
 
-* [ ] 路由全部置于 `/v1/**`
+* [ ] 路由全部置于配置的 API 前缀（默认 `/api/v1`）
 * [ ] 响应 envelope 与分页结构符合规范
 * [ ] 中间件完成验签/RBAC/RLS 注入
 * [ ] Handler 薄；业务仅在 Service
