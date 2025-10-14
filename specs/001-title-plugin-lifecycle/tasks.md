@@ -14,22 +14,22 @@
 
 - Backend runtime + metadata: `backend/`, `backend/plugin/`
 - Build automation: `make-files/`, `Makefile`
-- Lifecycle scaffold: `scaffold/lifecycle/`
+- Lifecycle docs: `docs/lifecycle/`
 - Published integration docs: `docs/integration/01_plugin_lifecycle/`
 - Contracts & references: `docs/contract/`
-- Examples & templates: `build/pxp/`, `scaffold/lifecycle/examples/`
+- Examples & templates: `build/pxp/`, `docs/lifecycle/examples/`
 
 ---
 
 ## Phase 1 — Setup (Shared Infrastructure)
 
-**Purpose**: Establish lifecycle scaffolding assets used by downstream documentation.
+**Purpose**: Establish lifecycle documentation assets used by downstream integration guides.
 
-- [ ] T001 [US-All] Create lifecycle scaffold (`scaffold/lifecycle/overview.md`, `scaffold/lifecycle/_index.md`) and add reference pointer in `docs/README.md`  
-      `scaffold/lifecycle/`, `docs/README.md`
-- [ ] T002 [P] [US-All] Set up examples scaffold under `scaffold/lifecycle/examples/` and stage current `backend/plugin/plugin.yaml` + `manifest.yaml` snapshots for reference  
-      `scaffold/lifecycle/examples/`
-- [ ] T003 [P] [US-All] Update developer quick references to point at scaffold sources (`docs/contract/plugin_yaml_spec.md`, `docs/contract/rbac_manifest_spec.md`)  
+- [X] T001 [US-All] Create lifecycle documentation hub (`docs/lifecycle/overview.md`, `docs/lifecycle/_index.md`) and add reference pointer in `docs/readme.md`  
+      `docs/lifecycle/`, `docs/readme.md`
+- [X] T002 [P] [US-All] Set up examples workspace under `docs/lifecycle/examples/` and stage current `backend/plugin/plugin.yaml` + `manifest.yaml` snapshots for reference  
+      `docs/lifecycle/examples/`
+- [X] T003 [P] [US-All] Update developer quick references to point at lifecycle sources (`docs/contract/plugin_yaml_spec.md`, `docs/contract/rbac_manifest_spec.md`)  
       `docs/contract/`
 
 ---
@@ -39,12 +39,12 @@
 **Purpose**: Shared groundwork before individual stories branch off.
 
 - [ ] T010 [US-All] Capture current build + release flow by diagramming `make run`, `make build`, `make release` dependencies for inclusion in lifecycle docs  
-      `scaffold/lifecycle/overview.md`
+      `docs/lifecycle/overview.md`
 - [ ] T011 [P] [US-All] Draft lifecycle glossary aligning terminology across spec, plan, and docs (Plugin Package, Lifecycle Manifest, Release Channel Record, Status Ledger)  
-      `scaffold/lifecycle/glossary.md`
+      `docs/lifecycle/glossary.md`
 - [ ] T012 [US-All] Inventory existing automation scripts and note extension points for lifecycle tasks (Makefiles, backend/plugin metadata)  
       `make-files/`, `Makefile`, `backend/plugin/`
-- [ ] T013 [US-All] Implement sync routine (e.g., `make sync-lifecycle-docs`) and document how scaffold content is published into `docs/integration/01_plugin_lifecycle/`  
+- [ ] T013 [US-All] Implement sync routine (e.g., `make sync-lifecycle-docs`) and document how lifecycle content is published into `docs/integration/01_plugin_lifecycle/`  
       `make-files/docs.mk`, `docs/integration/01_plugin_lifecycle/README.md`
 
 **Checkpoint**: Common understanding of assets, terminology, and publication flow established.
@@ -59,14 +59,14 @@
 
 ### Tasks
 
-- [ ] T101 [US1] Author `scaffold/lifecycle/bootstrap.md` covering repo fork/rename, directory layout, environment setup, and migration execution  
-      `scaffold/lifecycle/bootstrap.md`
-- [ ] T102 [P] [US1] Produce bootstrap checklist (`scaffold/lifecycle/checklists/bootstrap-checklist.md`) referencing RLS, RBAC, and build prep items  
-      `scaffold/lifecycle/checklists/bootstrap-checklist.md`
-- [ ] T103 [US1] Update `scaffold/lifecycle/overview.md` with init → bootstrap timeline and link to checklist/quickstart  
-      `scaffold/lifecycle/overview.md`
-- [ ] T104 [P] [US1] Embed bootstrap quickstart snippet into `scaffold/lifecycle/quickstart.md` and cross-link from repository `README.md`  
-      `scaffold/lifecycle/quickstart.md`, `README.md`
+- [ ] T101 [US1] Author `docs/lifecycle/bootstrap.md` covering repo fork/rename, directory layout, environment setup, and migration execution  
+      `docs/lifecycle/bootstrap.md`
+- [ ] T102 [P] [US1] Produce bootstrap checklist (`docs/lifecycle/checklists/bootstrap-checklist.md`) referencing RLS, RBAC, and build prep items  
+      `docs/lifecycle/checklists/bootstrap-checklist.md`
+- [ ] T103 [US1] Update `docs/lifecycle/overview.md` with init → bootstrap timeline and link to checklist/quickstart  
+      `docs/lifecycle/overview.md`
+- [ ] T104 [P] [US1] Embed bootstrap quickstart snippet into `docs/lifecycle/quickstart.md` and cross-link from repository `README.md`  
+      `docs/lifecycle/quickstart.md`, `README.md`
 - [ ] T105 [US1] Align `docs/contract/plugin_yaml_spec.md` to reference lifecycle bootstrap requirements and examples  
       `docs/contract/plugin_yaml_spec.md`
 
@@ -83,17 +83,17 @@
 ### Tasks
 
 - [ ] T201 [US2] Author manifest mapping guide bridging `backend/plugin/plugin.yaml` to release-time `manifest.yaml`  
-      `scaffold/lifecycle/manifest-mapping.md`
-- [ ] T202 [P] [US2] Introduce JSON Schema for manifest validation and store under lifecycle scaffold (align with contract asset)  
-      `scaffold/lifecycle/contracts/manifest.schema.json`
+      `docs/lifecycle/manifest-mapping.md`
+- [ ] T202 [P] [US2] Introduce JSON Schema for manifest validation and store under lifecycle documentation set (align with contract asset)  
+      `docs/lifecycle/contracts/manifest.schema.json`
 - [ ] T203 [US2] Add `make verify-manifest` target wiring schema validation for `plugin.yaml` + `manifest.yaml`, including CI hook  
       `Makefile`, `make-files/manifest.mk`
 - [ ] T204 [P] [US2] Implement `make package-pxp` pipeline to stage artefacts in `build/pxp/`, compute SHA256, and collect signature placeholders  
       `make-files/release.mk`, `build/pxp/`
-- [ ] T205 [US2] Document packaging workflow, audit logging, and rollback expectations (`scaffold/lifecycle/package.md`)  
-      `scaffold/lifecycle/package.md`
+- [ ] T205 [US2] Document packaging workflow, audit logging, and rollback expectations (`docs/lifecycle/package.md`)  
+      `docs/lifecycle/package.md`
 - [ ] T206 [P] [US2] Provide Marketplace submission checklist and log retention template  
-      `scaffold/lifecycle/checklists/release-checklist.md`
+      `docs/lifecycle/checklists/release-checklist.md`
 - [ ] T207 [US2] Update `docs/contract/rbac_manifest_spec.md` with cross references to lifecycle manifest requirements  
       `docs/contract/rbac_manifest_spec.md`
 
@@ -110,17 +110,17 @@
 ### Tasks
 
 - [ ] T301 [US3] Document lifecycle status state machine, required effective dates, and replacement guidance  
-      `scaffold/lifecycle/deprecation.md`
+      `docs/lifecycle/deprecation.md`
 - [ ] T302 [P] [US3] Add tenant & Marketplace communication templates (email, in-app notice)  
-      `scaffold/lifecycle/notices/deprecation-email.md`, `scaffold/lifecycle/notices/in-app.md`
+      `docs/lifecycle/notices/deprecation-email.md`, `docs/lifecycle/notices/in-app.md`
 - [ ] T303 [US3] Provide operational runbook covering host install visibility toggles and rollback policy  
-      `scaffold/lifecycle/runbooks/deprecation-runbook.md`
+      `docs/lifecycle/runbooks/deprecation-runbook.md`
 - [ ] T304 [P] [US3] Publish Marketplace lifecycle OpenAPI contract and reference usage in docs  
-      `scaffold/lifecycle/contracts/marketplace-lifecycle.openapi.yaml`, `scaffold/lifecycle/deprecation.md`
+      `docs/lifecycle/contracts/marketplace-lifecycle.openapi.yaml`, `docs/lifecycle/deprecation.md`
 - [ ] T305 [US3] Update manifest sample with lifecycle block examples for active → deprecated → sunset transitions  
-      `scaffold/lifecycle/examples/manifest-lifecycle.yaml`
+      `docs/lifecycle/examples/manifest-lifecycle.yaml`
 - [ ] T306 [US3] Extend release checklist with deprecation review gates (permissions, compliance archiving)  
-      `scaffold/lifecycle/checklists/release-checklist.md`
+      `docs/lifecycle/checklists/release-checklist.md`
 
 **Checkpoint**: Lifecycle transitions demonstrably propagate to Marketplace/host with documented playbook.
 
@@ -128,14 +128,14 @@
 
 ## Phase 6 — Polish & Cross-Cutting
 
-- [ ] T901 [P] [US-All] Run editorial review (style, terminology) and align glossary across scaffold + published docs  
-      `scaffold/lifecycle/`, `docs/integration/01_plugin_lifecycle/`
+- [ ] T901 [P] [US-All] Run editorial review (style, terminology) and align glossary across lifecycle + published docs  
+      `docs/lifecycle/`, `docs/integration/01_plugin_lifecycle/`
 - [ ] T902 [US-All] Update `docs/releases/` templates to reference lifecycle governance steps  
       `docs/releases/`
 - [ ] T903 [US-All] Wire CI job to call new Make targets (`make verify-manifest`, `make package-pxp`) and capture artefacts  
       `.github/workflows/*.yml`
-- [ ] T904 [P] [US-All] Provide sample audit trail bundle in `scaffold/lifecycle/examples/pxp-audit/`  
-      `scaffold/lifecycle/examples/pxp-audit/`
+- [ ] T904 [P] [US-All] Provide sample audit trail bundle in `docs/lifecycle/examples/pxp-audit/`  
+      `docs/lifecycle/examples/pxp-audit/`
 
 ---
 
@@ -149,7 +149,7 @@
 
 ### Parallel Opportunities
 
-- Setup: T002 and T003 can proceed after T001 scaffolds docs.  
+- Setup: T002 and T003 can proceed after T001 establishes the lifecycle docs.  
 - Foundational: T011 can run alongside T010; T012 can proceed independently once directories exist.  
 - US1: T102 and T104 parallel after T101 outlines bootstrap narrative.  
 - US2: T202, T204, T206 can run in parallel after T201 defines manifest mapping.  

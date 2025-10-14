@@ -108,7 +108,7 @@ build/
 
 ```
 
-**Structure Decision**: Retain current backend/frontend split aligned with plugin constitution. Lifecycle scaffolding will live under `scaffold/lifecycle/`, with a documented sync process that publishes curated outputs into `docs/integration/01_plugin_lifecycle/`. Packaging validation scripts land under `make-files/` targets, and manifest templates within `backend/plugin/`.
+**Structure Decision**: Retain current backend/frontend split aligned with plugin constitution. Lifecycle documentation lives under `docs/lifecycle/`, with a documented sync process that publishes curated outputs into `docs/integration/01_plugin_lifecycle/`. Packaging validation scripts land under `make-files/` targets, and manifest templates within `backend/plugin/`.
 
 ---
 

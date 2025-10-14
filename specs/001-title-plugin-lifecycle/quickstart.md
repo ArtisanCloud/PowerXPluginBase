@@ -8,7 +8,7 @@ Follow this guide to adopt the lifecycle governance standard for a PowerX plugin
    - `backend/`, `web-admin/`, `docs/`, `build/pxp/`
    - Copy `backend/etc/config.example.yaml` to `config.yaml` (gitignored).
 3. Run `make dev-setup` then `make migrate` to initialize schema.
-4. Document environment variables and migration seeds in `scaffold/lifecycle/bootstrap.md`.
+4. Document environment variables and migration seeds in `docs/lifecycle/bootstrap.md`.
 
 ## 2. Maintain Manifest Parity
 1. Update `backend/plugin/plugin.yaml` for development metadata.
@@ -18,7 +18,7 @@ Follow this guide to adopt the lifecycle governance standard for a PowerX plugin
 ## 3. Produce a Signed `.pxp` Package
 1. Build backend and admin assets: `make build && make frontend-build`.
 2. Invoke `make package-pxp` to populate `build/pxp/` with artefacts, hashes, and signing receipts.
-3. Archive generated audit log in `scaffold/lifecycle/releases/<version>.md`.
+3. Archive generated audit log in `docs/lifecycle/releases/<version>.md`.
 
 ## 4. Register with the Marketplace
 1. Submit `.pxp` via Marketplace API along with manifest metadata and hash proof.
@@ -28,7 +28,7 @@ Follow this guide to adopt the lifecycle governance standard for a PowerX plugin
 ## 5. Manage Deprecation & Sunset
 1. When planning deprecation, update `manifest.yaml:lifecycle.status` and `effective_date`.
 2. Call Marketplace lifecycle endpoint to broadcast status and optional replacement version.
-3. Notify tenants using templated communications stored in `scaffold/lifecycle/notices/`.
+3. Notify tenants using templated communications stored in `docs/lifecycle/notices/`.
 4. After the sunset date, verify host catalog hides the version and archive artefacts per compliance retention rules.
 
 ## 6. Validate Continuously
@@ -37,5 +37,5 @@ Follow this guide to adopt the lifecycle governance standard for a PowerX plugin
 3. Review lifecycle checklists during quarterly audits to ensure ongoing conformance.
 
 ## 7. Publish Updated Lifecycle Docs
-1. Run `make sync-lifecycle-docs` (or equivalent) to mirror `scaffold/lifecycle/` into `docs/integration/01_plugin_lifecycle/`.
-2. Commit both scaffold source files and synced integration outputs for review.
+1. Run `make sync-lifecycle-docs` (or equivalent) to mirror `docs/lifecycle/` into `docs/integration/01_plugin_lifecycle/`.
+2. Commit both lifecycle source files and synced integration outputs for review.

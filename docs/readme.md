@@ -15,6 +15,8 @@
 | [deploy/](./deploy/) | 环境变量、容器部署、安全加固 |
 | [references/](./references/) | FAQ、变更记录、术语表 |
 
+> 源文档脚手架：`docs/lifecycle/` 为插件生命周期标准的唯一编辑入口，运行 `make sync-lifecycle-docs` 可同步到 `docs/integration/01_plugin_lifecycle/`。
+
 ---
 
 ## 🚀 推荐阅读顺序

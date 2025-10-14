@@ -1,8 +1,8 @@
 # Research Findings — Plugin Lifecycle Governance
 
-## Decision 1: Centralize lifecycle standard in `scaffold/lifecycle/`
-- **Decision**: Author the end-to-end lifecycle standard in `scaffold/lifecycle/`, anchored by `scaffold/lifecycle/overview.md` and supporting checklists, then publish curated copies into `docs/integration/01_plugin_lifecycle/` via a sync routine.
-- **Rationale**: Keeping the guidance in a scaffold namespace preserves a single source of truth while letting integration docs consume generated outputs for reviewers.
+## Decision 1: Centralize lifecycle standard in `docs/lifecycle/`
+- **Decision**: Author the end-to-end lifecycle standard in `docs/lifecycle/`, anchored by `docs/lifecycle/overview.md` and supporting checklists, then publish curated copies into `docs/integration/01_plugin_lifecycle/` via a sync routine.
+- **Rationale**: Keeping the guidance in a dedicated lifecycle directory preserves a single source of truth while letting integration docs consume generated outputs for reviewers.
 - **Alternatives considered**:
   - Embed guidance directly in `backend/plugin/manifest.yaml` comments — rejected because comments are lossy and not easily referenced by Marketplace reviewers.
   - Publish only in external wiki — rejected due to audit traceability and offline CI review requirements.

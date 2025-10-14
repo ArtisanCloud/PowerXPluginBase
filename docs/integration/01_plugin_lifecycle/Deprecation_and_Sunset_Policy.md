@@ -136,7 +136,7 @@ Marketplace 应同步维护每个版本的状态：
 
 ## 🧠 十、文档与公告模板（示例）
 
-路径：`scaffold/lifecycle/NOTICE_DEPRECATION.md`（通过 `make sync-lifecycle-docs` 同步至本目录）
+路径：`docs/lifecycle/NOTICE_DEPRECATION.md`（通过 `make sync-lifecycle-docs` 同步至本目录）
 
 ```markdown
 # 插件弃用公告：CRM Plugin

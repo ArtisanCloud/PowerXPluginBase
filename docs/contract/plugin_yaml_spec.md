@@ -3,6 +3,8 @@
 > 本页目标：定义 **PowerX 插件清单文件**（`plugin.yaml`）的字段、规则与加载流程。  
 > 读者对象：插件开发者 / 平台集成方 / Marketplace 运营人员。
 
+> 📁 **最新脚手架示例**：`docs/lifecycle/examples/plugin.yaml` 为唯一维护点，编辑完成后执行 `make sync-lifecycle-docs` 同步到公开文档。请勿直接修改集成目录下的副本。
+
 ---
 
 ## 一、文件位置与作用
