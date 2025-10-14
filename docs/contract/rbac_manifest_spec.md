@@ -7,6 +7,9 @@
 >  
 > 读者对象：后端开发者 / 插件集成方 / PowerX 平台工程师。
 
+> 📁 **脚手架来源**：`docs/lifecycle/examples/manifest.yaml` 与关联 runbook/模板为权威版本，编辑后通过 `make sync-lifecycle-docs` 发布到本目录。
+> 📚 延伸阅读：[`docs/lifecycle/manifest-mapping.md`](../lifecycle/manifest-mapping.md) 与 [`docs/lifecycle/package.md`](../lifecycle/package.md)。
+
 ---
 
 ## 一、接口概览
