@@ -1,0 +1,28 @@
+{
+  "$id": "schema/input/crm.customer.create.v1.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CRM Customer Create Request",
+  "type": "object",
+  "required": ["name", "email"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "phone": {
+      "type": "string",
+      "pattern": "^[0-9+\-() ]{7,20}$"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}
