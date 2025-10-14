@@ -38,13 +38,13 @@
 
 **Purpose**: Shared groundwork before individual stories branch off.
 
-- [ ] T010 [US-All] Capture current build + release flow by diagramming `make run`, `make build`, `make release` dependencies for inclusion in lifecycle docs  
+- [X] T010 [US-All] Capture current build + release flow by diagramming `make run`, `make build`, `make release` dependencies for inclusion in lifecycle docs  
       `docs/lifecycle/overview.md`
-- [ ] T011 [P] [US-All] Draft lifecycle glossary aligning terminology across spec, plan, and docs (Plugin Package, Lifecycle Manifest, Release Channel Record, Status Ledger)  
+- [X] T011 [P] [US-All] Draft lifecycle glossary aligning terminology across spec, plan, and docs (Plugin Package, Lifecycle Manifest, Release Channel Record, Status Ledger)  
       `docs/lifecycle/glossary.md`
-- [ ] T012 [US-All] Inventory existing automation scripts and note extension points for lifecycle tasks (Makefiles, backend/plugin metadata)  
+- [X] T012 [US-All] Inventory existing automation scripts and note extension points for lifecycle tasks (Makefiles, backend/plugin metadata)  
       `make-files/`, `Makefile`, `backend/plugin/`
-- [ ] T013 [US-All] Implement sync routine (e.g., `make sync-lifecycle-docs`) and document how lifecycle content is published into `docs/integration/01_plugin_lifecycle/`  
+- [X] T013 [US-All] Implement sync routine (e.g., `make sync-lifecycle-docs`) and document how lifecycle content is published into `docs/integration/01_plugin_lifecycle/`  
       `make-files/docs.mk`, `docs/integration/01_plugin_lifecycle/README.md`
 
 **Checkpoint**: Common understanding of assets, terminology, and publication flow established.
