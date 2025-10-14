@@ -9,3 +9,5 @@ This directory contains the published version of the plugin lifecycle standard t
 3. Review the diff here plus the original sources, then commit both sets of changes.
 
 > Do not edit files in this folder manually; they will be overwritten on the next sync.
+
+For detailed release notes templates, see `docs/releases/` in the repository.

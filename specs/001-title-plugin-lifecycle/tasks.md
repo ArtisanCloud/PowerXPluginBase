@@ -128,13 +128,13 @@
 
 ## Phase 6 — Polish & Cross-Cutting
 
-- [ ] T901 [P] [US-All] Run editorial review (style, terminology) and align glossary across lifecycle + published docs  
+- [X] T901 [P] [US-All] Run editorial review (style, terminology) and align glossary across lifecycle + published docs  
       `docs/lifecycle/`, `docs/integration/01_plugin_lifecycle/`
-- [ ] T902 [US-All] Update `docs/releases/` templates to reference lifecycle governance steps  
+- [X] T902 [US-All] Update `docs/releases/` templates to reference lifecycle governance steps  
       `docs/releases/`
-- [ ] T903 [US-All] Wire CI job to call new Make targets (`make verify-manifest`, `make package-pxp`) and capture artefacts  
+- [X] T903 [US-All] Wire CI job to call new Make targets (`make verify-manifest`, `make package-pxp`) and capture artefacts  
       `.github/workflows/*.yml`
-- [ ] T904 [P] [US-All] Provide sample audit trail bundle in `docs/lifecycle/examples/pxp-audit/`  
+- [X] T904 [P] [US-All] Provide sample audit trail bundle in `docs/lifecycle/examples/pxp-audit/`  
       `docs/lifecycle/examples/pxp-audit/`
 
 ---
