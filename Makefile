@@ -9,3 +9,5 @@ include $(MAKEFILES_DIR)/dev.mk
 include $(MAKEFILES_DIR)/docker.mk
 include $(MAKEFILES_DIR)/project.mk
 include $(MAKEFILES_DIR)/docs.mk
+include $(MAKEFILES_DIR)/manifest.mk
+include $(MAKEFILES_DIR)/release.mk

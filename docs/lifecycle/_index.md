@@ -6,6 +6,8 @@
 
 - [overview.md](./overview.md) — end-to-end lifecycle narrative and entry points
 - [checklists/](./checklists/) — bootstrap, release, and deprecation checklists
+- [manifest-mapping.md](./manifest-mapping.md) — field-by-field parity reference between plugin.yaml and manifest.yaml
+- [package.md](./package.md) — detailed packaging and publishing flow
 - [examples/](./examples/) — canonical metadata snapshots (`plugin.yaml`, `manifest.yaml`)
 - [glossary.md](./glossary.md) — shared terminology across lifecycle docs
 - [contracts/](./contracts/) — machine-readable schemas and Marketplace API definitions

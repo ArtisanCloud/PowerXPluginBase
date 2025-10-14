@@ -1,5 +1,5 @@
 id: com.powerx.plugins.base
-name: Base Template Plugin
+name: Base template Plugin
 version: 0.1.0
 channel: dev
 min_core: 0.6.0

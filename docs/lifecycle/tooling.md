@@ -10,6 +10,7 @@ This note inventories the existing build and release automation so lifecycle tas
 | `make build` | `make-files/build.mk` | Compiles Go binaries and runs `npm run build` for the admin UI. Outputs to `backend/bin/` and `web-admin/.output/`. | Packaging relies on these artefacts; do not rebuild inside `make package-pxp`. |
 | `make migrate` | `make-files/migrate.mk` | Runs Go-based migrations (`backend/cmd/database`). | Ensure migration readiness checks appear in bootstrap checklist. |
 | `make release` | `make-files/project.mk` | Aggregates build artefacts and tags release metadata. | Lifecycle packaging steps will extend this via `make package-pxp`. |
+| `make package-pxp` | `make-files/release.mk` | Stages `.pxp` artefacts, produces hashes/audit log, prepares signature placeholder. | Run before Marketplace submission; upload staged directory for signing. |
 | `make test` | `make-files/test.mk` | Executes backend Go tests. | Include in validation stage before promotions. |
 
 ## Key Files & Directories

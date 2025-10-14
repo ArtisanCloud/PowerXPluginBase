@@ -82,19 +82,19 @@
 
 ### Tasks
 
-- [ ] T201 [US2] Author manifest mapping guide bridging `backend/plugin/plugin.yaml` to release-time `manifest.yaml`  
+- [X] T201 [US2] Author manifest mapping guide bridging `backend/plugin/plugin.yaml` to release-time `manifest.yaml`  
       `docs/lifecycle/manifest-mapping.md`
-- [ ] T202 [P] [US2] Introduce JSON Schema for manifest validation and store under lifecycle documentation set (align with contract asset)  
+- [X] T202 [P] [US2] Introduce JSON Schema for manifest validation and store under lifecycle documentation set (align with contract asset)  
       `docs/lifecycle/contracts/manifest.schema.json`
-- [ ] T203 [US2] Add `make verify-manifest` target wiring schema validation for `plugin.yaml` + `manifest.yaml`, including CI hook  
+- [X] T203 [US2] Add `make verify-manifest` target wiring schema validation for `plugin.yaml` + `manifest.yaml`, including CI hook  
       `Makefile`, `make-files/manifest.mk`
-- [ ] T204 [P] [US2] Implement `make package-pxp` pipeline to stage artefacts in `build/pxp/`, compute SHA256, and collect signature placeholders  
+- [X] T204 [P] [US2] Implement `make package-pxp` pipeline to stage artefacts in `build/pxp/`, compute SHA256, and collect signature placeholders  
       `make-files/release.mk`, `build/pxp/`
-- [ ] T205 [US2] Document packaging workflow, audit logging, and rollback expectations (`docs/lifecycle/package.md`)  
+- [X] T205 [US2] Document packaging workflow, audit logging, and rollback expectations (`docs/lifecycle/package.md`)  
       `docs/lifecycle/package.md`
-- [ ] T206 [P] [US2] Provide Marketplace submission checklist and log retention template  
+- [X] T206 [P] [US2] Provide Marketplace submission checklist and log retention template  
       `docs/lifecycle/checklists/release-checklist.md`
-- [ ] T207 [US2] Update `docs/contract/rbac_manifest_spec.md` with cross references to lifecycle manifest requirements  
+- [X] T207 [US2] Update `docs/contract/rbac_manifest_spec.md` with cross references to lifecycle manifest requirements  
       `docs/contract/rbac_manifest_spec.md`
 
 **Checkpoint**: Packaging validation runs clean on sample plugin and docs guide the flow end-to-end.

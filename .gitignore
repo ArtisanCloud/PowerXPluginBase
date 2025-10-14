@@ -92,9 +92,9 @@ uploads/
 logs/
 
 dist/
+build/
 .cache/
 .gocache/
 .nuxt_pid
 *.bin
-
 
