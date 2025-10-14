@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: '20'
       - name: Install backend deps
-        run: go mod download ./...
+        run: go mod download
         working-directory: ./backend
       - name: Install web-admin deps
         run: npm ci
@@ -53,7 +53,7 @@ jobs:
         with:
           node-version: '20'
       - name: Install backend deps
-        run: go mod download ./...
+        run: go mod download
         working-directory: ./backend
       - name: Install web-admin deps
         run: npm ci
