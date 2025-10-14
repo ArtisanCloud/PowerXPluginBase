@@ -1,0 +1,171 @@
+openapi: 3.1.0
+info:
+  title: PowerX Marketplace Plugin Lifecycle API
+  version: 1.0.0
+  description: >
+    Contract for registering plugin versions, validating manifests, and managing lifecycle status within the PowerX Marketplace.
+servers:
+  - url: https://marketplace.powerx.dev/api
+paths:
+  /plugins/{pluginId}/versions:
+    post:
+      summary: Submit a plugin version for review
+      operationId: submitPluginVersion
+      tags: [Versions]
+      parameters:
+        - name: pluginId
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^com\\.powerx\\.plugin\\.[a-z0-9\\-]+$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [version, channel, manifestUrl, pxpUrl, sha256]
+              properties:
+                version:
+                  type: string
+                  pattern: "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z\\-.]+)?$"
+                channel:
+                  type: string
+                  enum: [stable, beta, alpha, dev]
+                manifestUrl:
+                  type: string
+                  format: uri
+                pxpUrl:
+                  type: string
+                  format: uri
+                sha256:
+                  type: string
+                  pattern: "^[a-f0-9]{64}$"
+                releaseNotes:
+                  type: string
+      responses:
+        "202":
+          description: Version submission accepted for review
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [submissionId, status]
+                properties:
+                  submissionId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [pending_review]
+  /plugins/{pluginId}/versions/{version}/validate:
+    post:
+      summary: Perform pre-publication validation of manifest and package
+      operationId: validatePluginVersion
+      tags: [Validation]
+      parameters:
+        - name: pluginId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [manifest]
+              properties:
+                manifest:
+                  type: object
+                  description: Manifest document to validate against schema and host compatibility rules.
+      responses:
+        "200":
+          description: Validation results
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, findings]
+                properties:
+                  success:
+                    type: boolean
+                  findings:
+                    type: array
+                    items:
+                      type: object
+                      required: [severity, message]
+                      properties:
+                        severity:
+                          type: string
+                          enum: [error, warning, info]
+                        message:
+                          type: string
+  /plugins/{pluginId}/versions/{version}/lifecycle:
+    patch:
+      summary: Update lifecycle status for a published version
+      operationId: updateLifecycleStatus
+      tags: [Lifecycle]
+      parameters:
+        - name: pluginId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, effectiveDate]
+              properties:
+                status:
+                  type: string
+                  enum: [active, deprecated, sunset]
+                effectiveDate:
+                  type: string
+                  format: date
+                replacementVersion:
+                  type: string
+                announcementUrl:
+                  type: string
+                  format: uri
+      responses:
+        "200":
+          description: Lifecycle status updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, effectiveDate]
+                properties:
+                  status:
+                    type: string
+                  effectiveDate:
+                    type: string
+                    format: date
+                  acknowledgedAt:
+                    type: string
+                    format: date-time
+        "409":
+          description: Requested status transition is invalid (e.g., active → sunset directly)
+components:
+  securitySchemes:
+    MarketplaceToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - MarketplaceToken: []

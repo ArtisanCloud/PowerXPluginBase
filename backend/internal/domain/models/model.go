@@ -1,5 +1,7 @@
 package models
 
+// backend/internal/domain/models/model.go
+
 import (
 	"time"
 
