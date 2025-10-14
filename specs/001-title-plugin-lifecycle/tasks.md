@@ -59,15 +59,15 @@
 
 ### Tasks
 
-- [ ] T101 [US1] Author `docs/lifecycle/bootstrap.md` covering repo fork/rename, directory layout, environment setup, and migration execution  
+- [X] T101 [US1] Author `docs/lifecycle/bootstrap.md` covering repo fork/rename, directory layout, environment setup, and migration execution  
       `docs/lifecycle/bootstrap.md`
-- [ ] T102 [P] [US1] Produce bootstrap checklist (`docs/lifecycle/checklists/bootstrap-checklist.md`) referencing RLS, RBAC, and build prep items  
+- [X] T102 [P] [US1] Produce bootstrap checklist (`docs/lifecycle/checklists/bootstrap-checklist.md`) referencing RLS, RBAC, and build prep items  
       `docs/lifecycle/checklists/bootstrap-checklist.md`
-- [ ] T103 [US1] Update `docs/lifecycle/overview.md` with init → bootstrap timeline and link to checklist/quickstart  
+- [X] T103 [US1] Update `docs/lifecycle/overview.md` with init → bootstrap timeline and link to checklist/quickstart  
       `docs/lifecycle/overview.md`
-- [ ] T104 [P] [US1] Embed bootstrap quickstart snippet into `docs/lifecycle/quickstart.md` and cross-link from repository `README.md`  
+- [X] T104 [P] [US1] Embed bootstrap quickstart snippet into `docs/lifecycle/quickstart.md` and cross-link from repository `README.md`  
       `docs/lifecycle/quickstart.md`, `README.md`
-- [ ] T105 [US1] Align `docs/contract/plugin_yaml_spec.md` to reference lifecycle bootstrap requirements and examples  
+- [X] T105 [US1] Align `docs/contract/plugin_yaml_spec.md` to reference lifecycle bootstrap requirements and examples  
       `docs/contract/plugin_yaml_spec.md`
 
 **Checkpoint**: US1 documentation reviewed and validated via dry run.

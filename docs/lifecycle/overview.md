@@ -9,6 +9,19 @@ This directory captures the canonical lifecycle standard for PowerX plugins from
 3. **Packaging & Publishing** — Deterministic `.pxp` builds, hash + signature capture, Marketplace submission, and audit trails. Guidance stored in [`package.md`](./package.md).
 4. **Deprecation & Sunset** — Lifecycle status machine, communication templates, and host visibility controls. Procedures live in [`deprecation.md`](./deprecation.md), notices, and runbooks.
 
+### Bootstrap Timeline (M0 → M1)
+
+```
+Day 0   : Fork template → rename modules → initialise git remote
+Day 1   : Ensure directory layout & copy config samples
+Day 2   : Run make dev-setup + make migrate against local Postgres
+Day 3   : Verify backend (/healthz) and admin UI shell via make run
+Day 4   : Document bootstrap steps & checklists in docs/lifecycle/
+Day 5   : Snapshot plugin.yaml, run make sync-lifecycle-docs, request review
+```
+
+> For a condensed walkthrough, see [`quickstart.md`](./quickstart.md); for validation, execute the [`bootstrap-checklist.md`](./checklists/bootstrap-checklist.md).
+
 ## Operational Workflow
 
 - Author or update documents in `docs/lifecycle/`.
