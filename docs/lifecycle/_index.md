@@ -5,6 +5,7 @@
 ## Contents
 
 - [overview.md](./overview.md) — end-to-end lifecycle narrative and entry points
+- [deprecation.md](./deprecation.md) — deprecation & sunset playbook
 - [checklists/](./checklists/) — bootstrap, release, and deprecation checklists
 - [manifest-mapping.md](./manifest-mapping.md) — field-by-field parity reference between plugin.yaml and manifest.yaml
 - [package.md](./package.md) — detailed packaging and publishing flow

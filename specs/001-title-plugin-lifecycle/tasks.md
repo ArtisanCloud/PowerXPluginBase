@@ -109,17 +109,17 @@
 
 ### Tasks
 
-- [ ] T301 [US3] Document lifecycle status state machine, required effective dates, and replacement guidance  
+- [X] T301 [US3] Document lifecycle status state machine, required effective dates, and replacement guidance  
       `docs/lifecycle/deprecation.md`
-- [ ] T302 [P] [US3] Add tenant & Marketplace communication templates (email, in-app notice)  
+- [X] T302 [P] [US3] Add tenant & Marketplace communication templates (email, in-app notice)  
       `docs/lifecycle/notices/deprecation-email.md`, `docs/lifecycle/notices/in-app.md`
-- [ ] T303 [US3] Provide operational runbook covering host install visibility toggles and rollback policy  
+- [X] T303 [US3] Provide operational runbook covering host install visibility toggles and rollback policy  
       `docs/lifecycle/runbooks/deprecation-runbook.md`
-- [ ] T304 [P] [US3] Publish Marketplace lifecycle OpenAPI contract and reference usage in docs  
+- [X] T304 [P] [US3] Publish Marketplace lifecycle OpenAPI contract and reference usage in docs  
       `docs/lifecycle/contracts/marketplace-lifecycle.openapi.yaml`, `docs/lifecycle/deprecation.md`
-- [ ] T305 [US3] Update manifest sample with lifecycle block examples for active → deprecated → sunset transitions  
+- [X] T305 [US3] Update manifest sample with lifecycle block examples for active → deprecated → sunset transitions  
       `docs/lifecycle/examples/manifest-lifecycle.yaml`
-- [ ] T306 [US3] Extend release checklist with deprecation review gates (permissions, compliance archiving)  
+- [X] T306 [US3] Extend release checklist with deprecation review gates (permissions, compliance archiving)  
       `docs/lifecycle/checklists/release-checklist.md`
 
 **Checkpoint**: Lifecycle transitions demonstrably propagate to Marketplace/host with documented playbook.

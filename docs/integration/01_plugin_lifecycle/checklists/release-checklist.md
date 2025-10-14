@@ -35,3 +35,11 @@
 - [ ] Rollback plan documented including previous stable package location
 
 Reviewer: ____________________      Date: ____________________
+
+## Deprecation / Sunset
+
+- [ ] manifest `lifecycle.status`/`sunset_at` 与 Marketplace 状态一致
+- [ ] 通知模板（邮件 & In-App）已发送/安排
+- [ ] 新安装防护验证完成（sunset 后阻止安装，返回明确错误）
+- [ ] 数据迁移/导出方案完成演练并记录在 runbook
+
