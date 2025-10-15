@@ -169,29 +169,29 @@ DO NOT keep these sample tasks in the generated tasks.md.
 
 ### Tests for US3
 
-- [ ] T301 [P] [US3] Integration test verifying `/metrics` scrape contains quota/session/restart metrics  
+- [X] T301 [P] [US3] Integration test verifying `/metrics` scrape contains quota/session/restart metrics  
       `backend/tests/integration/runtime_ops/test_observability_metrics_test.go`
-- [ ] T302 [US3] Unit test for log formatter ensuring JSON fields `trace_id`, `tenant_id`, `level`  
-      `backend/internal/services/admin/runtime_ops/logging_formatter_test.go`
-- [ ] T303 [P] [US3] Integration test for OpenTelemetry span propagation from handler to service  
+- [X] T302 [US3] Unit test for log formatter ensuring JSON字段（包含 `trace_id`, `tenant_id`）  
+      `backend/internal/logger/runtime_test.go`
+- [X] T303 [P] [US3] Integration test for OpenTelemetry span propagation from handler to service  
       `backend/tests/integration/runtime_ops/test_tracing_propagation_test.go`
 
 ### Implementation for US3
 
-- [ ] T304 [US3] Implement log formatter & retention logic (7-day archive)  
-      `backend/internal/services/admin/runtime_ops/logging_formatter.go`, `backend/internal/services/admin/runtime_ops/log_rotation.go`
-- [ ] T305 [US3] Implement metrics exporter wiring for Prometheus `/metrics` (quota_usage, plugin_cost_total, restart counts)  
+- [X] T304 [US3] Implement log formatter & retention逻辑（7 天归档）  
+      `backend/internal/logger/runtime.go`
+- [X] T305 [US3] Implement metrics exporter wiring for Prometheus `/metrics` (quota_usage, plugin_cost_total, restart counts)  
       `backend/internal/services/admin/runtime_ops/metrics_exporter.go`
-- [ ] T306 [US3] Implement OpenTelemetry tracing integration with span naming convention  
+- [X] T306 [US3] Implement OpenTelemetry tracing integration with span naming convention  
       `backend/internal/services/admin/runtime_ops/tracing.go`
-- [ ] T307 [US3] Update `/metrics` HTTP endpoint to merge runtime ops metrics  
+- [X] T307 [US3] Update `/metrics` HTTP endpoint to merge runtime ops metrics  
       `backend/internal/transport/http/admin/runtime_ops/handler_metrics.go`
-- [ ] T308 [P] [US3] Update Loki/Tempo shipping configuration to read from host `POWERX_*` env / `host_values.yaml` fallbacks  
+- [X] T308 [P] [US3] Update Loki/Tempo shipping configuration to read from host `POWERX_*` env / `host_values.yaml` fallbacks  
       `backend/internal/config/config.go`, `backend/etc/config.yaml`, `backend/etc/host_values.yaml`
-- [ ] T309 [US3] Documentation for observability stack usage, dashboards, alert thresholds  
+- [X] T309 [US3] Documentation for observability stack usage, dashboards, alert thresholds  
       `docs/integration/03_runtime_and_ops/observability.md`
-- [ ] T310 [US3] Configure alert thresholds & host alert channel integration (Prometheus rules / notifier)  
-      `backend/internal/services/admin/runtime_ops/alerting.go`, `backend/etc/config.yaml`, `docs/integration/03_runtime_and_ops/observability.md`
+- [X] T310 [US3] Configure alert thresholds & host alert channel integration (Prometheus rules / notifier)  
+      `backend/internal/services/admin/runtime_ops/observability_config.go`, `backend/etc/config.yaml`, `docs/integration/03_runtime_and_ops/Logs_Metrics_and_Tracing.md`
 
 **Checkpoint**: All targeted stories are independently functional.
 

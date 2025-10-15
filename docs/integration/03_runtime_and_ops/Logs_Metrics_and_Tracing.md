@@ -80,6 +80,13 @@
 > PowerX Core 的日志收集器会自动识别 `plugin_id` 与 `trace_id` 字段。
 > 插件可通过 stdout 输出日志，由宿主捕获并写入文件。
 
+### 3️⃣ 代码实现约定
+
+- 使用 `backend/internal/logger` 提供的统一封装写日志，不要直接实例化 logrus。`logger.Init()` 由应用入口执行。  
+- 记录插件运行事件时，调用 `logger.WithRuntimeFields(pluginID, tenantID, traceID, component, extraFields)` 自动补齐 `plugin_id`、`tenant_id`、`trace_id`、`component` 等字段，确保日志与宿主采集规则一致。  
+- 如需追加自定义字段，传入 `extraFields`（`logger.Fields`）；框架会合并后输出。  
+- 本地调试仍可通过 `logger.SetOutput` 将日志重定向到文件或缓冲区；生产环境保持 stdout 输出以便宿主收集。
+
 ---
 
 ## 🧩 四、日志采集与上报
@@ -111,6 +118,26 @@ log_agent:
 [INFO] [plugin=crm] [tenant=123] [trace=abc123] created contact id=456
 ```
 
+#### 配置来源
+
+宿主在 `config/host-values.yaml` 中下发 `runtime_ops` 配置，控制日志保留与观测出口：
+
+```yaml
+runtime_ops:
+  log_retention_days: 7
+  observability:
+    loki_endpoint: https://loki.powerx.local
+    tempo_endpoint: https://tempo.powerx.local
+  alerts:
+    health_failure_rate: 0.5
+    p95_latency_ms: 500
+    error_rate: 0.05
+    quota_usage: 0.9
+    billing_anomaly: 0.2
+```
+
+运行时代码应读取上述值（见 `backend/internal/config`），避免硬编码，确保宿主可在不同环境下动态调控日志与告警策略。
+
 ---
 
 ## ⚙️ 五、Metrics（指标系统）
@@ -139,14 +166,18 @@ plugin_latency_seconds_count 1020
 
 ### 必须指标
 
-| 指标名                        | 类型        | 说明         |
-| -------------------------- | --------- | ---------- |
-| `plugin_request_total`     | counter   | 插件处理的总请求数  |
-| `plugin_error_total`       | counter   | 错误请求总数     |
-| `plugin_latency_seconds`   | histogram | 请求耗时分布     |
-| `plugin_cpu_seconds_total` | counter   | CPU 使用量    |
-| `plugin_memory_bytes`      | gauge     | 内存占用       |
-| `plugin_mcp_sessions`      | gauge     | 当前 MCP 连接数 |
+| 指标名                             | 类型        | 说明              |
+| -------------------------------- | --------- | ----------------- |
+| `powerx_plugin_request_total`    | counter   | 插件处理的总请求数     |
+| `powerx_plugin_error_total`      | counter   | 错误请求总数        |
+| `powerx_plugin_latency_seconds`  | histogram | 请求耗时分布        |
+| `powerx_plugin_cpu_seconds_total`| counter   | CPU 使用量         |
+| `powerx_plugin_memory_bytes`     | gauge     | 内存占用            |
+| `powerx_plugin_mcp_sessions`     | gauge     | 当前 MCP 连接数     |
+| `powerx_quota_usage`             | gauge     | 配额使用率 (0~1)    |
+| `powerx_plugin_cost_total`       | counter   | 累计成本（插件/租户） |
+| `powerx_plugin_restart_total`    | counter   | 重启次数            |
+| `powerx_plugin_health_status`    | gauge     | 健康状态（1=健康）    |
 
 宿主统一抓取：
 

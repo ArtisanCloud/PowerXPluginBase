@@ -13,4 +13,6 @@ func RegisterRoutes(router *gin.RouterGroup, deps *app.Deps) {
 
 	sessions := NewSessionsHandler(deps)
 	router.POST("/sessions/register", sessions.Register)
+
+	router.GET("/metrics", MetricsHandler)
 }

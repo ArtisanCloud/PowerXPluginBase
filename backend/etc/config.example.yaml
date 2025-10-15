@@ -28,6 +28,15 @@ runtime_ops:
   cpu_default: "500m"
   memory_default: "512Mi"
   network_profile: "standard"
+  observability:
+    loki_endpoint: ""
+    tempo_endpoint: ""
+  alerts:
+    health_failure_rate: 0.5
+    p95_latency_ms: 500
+    error_rate: 0.05
+    quota_usage: 0.9
+    billing_anomaly: 0.2
 
 # PowerX 上下文配置
 context:

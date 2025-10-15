@@ -82,6 +82,23 @@ type RuntimeOpsDefaults struct {
 	CPUDefault                 string `yaml:"cpu_default" json:"cpu_default"`
 	MemoryDefault              string `yaml:"memory_default" json:"memory_default"`
 	NetworkProfile             string `yaml:"network_profile" json:"network_profile"`
+	Observability              ObservabilityConfig `yaml:"observability" json:"observability"`
+	Alerts                     AlertThresholds    `yaml:"alerts" json:"alerts"`
+}
+
+// ObservabilityConfig captures metrics/logging exporters.
+type ObservabilityConfig struct {
+	LokiEndpoint  string `yaml:"loki_endpoint" json:"loki_endpoint"`
+	TempoEndpoint string `yaml:"tempo_endpoint" json:"tempo_endpoint"`
+}
+
+// AlertThresholds defines default alert thresholds for runtime ops.
+type AlertThresholds struct {
+	HealthFailureRate float64 `yaml:"health_failure_rate" json:"health_failure_rate"`
+	P95LatencyMs      int     `yaml:"p95_latency_ms" json:"p95_latency_ms"`
+	ErrorRate         float64 `yaml:"error_rate" json:"error_rate"`
+	QuotaUsage        float64 `yaml:"quota_usage" json:"quota_usage"`
+	BillingAnomaly    float64 `yaml:"billing_anomaly" json:"billing_anomaly"`
 }
 
 // NotificationsConfig 通知配置
@@ -243,17 +260,28 @@ func getDefaultConfig() *Config {
 		Runtime: &RuntimeConfig{
 			RunMigrate: false,
 		},
-		RuntimeOps: &RuntimeOpsDefaults{
-			HeartbeatSeconds:           15,
-			HeartbeatMisses:            3,
-			QuotaWindowMinutes:         5,
-			RestartBackoffStartSeconds: 5,
-			RestartBackoffMaxSeconds:   120,
-			LogRetentionDays:           7,
-			CPUDefault:                 "500m",
-			MemoryDefault:              "512Mi",
-			NetworkProfile:             "standard",
+	RuntimeOps: &RuntimeOpsDefaults{
+		HeartbeatSeconds:           15,
+		HeartbeatMisses:            3,
+		QuotaWindowMinutes:         5,
+		RestartBackoffStartSeconds: 5,
+		RestartBackoffMaxSeconds:   120,
+		LogRetentionDays:           7,
+		CPUDefault:                 "500m",
+		MemoryDefault:              "512Mi",
+		NetworkProfile:             "standard",
+		Observability: ObservabilityConfig{
+			LokiEndpoint:  "",
+			TempoEndpoint: "",
 		},
+		Alerts: AlertThresholds{
+			HealthFailureRate: 0.5,
+			P95LatencyMs:      500,
+			ErrorRate:         0.05,
+			QuotaUsage:        0.9,
+			BillingAnomaly:    0.2,
+		},
+	},
 		Context: &ContextConfig{
 			TTL: 300 * time.Second, // 5分钟
 		},
