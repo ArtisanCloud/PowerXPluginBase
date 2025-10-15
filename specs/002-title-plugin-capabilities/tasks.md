@@ -99,15 +99,15 @@
 
 ### Tasks
 
-- [ ] T016 [US3] Implement compatibility diff script (Node 20) that wraps `ajv`, `json-diff`, and `openapi-diff` for schema/capability comparisons  
+- [X] T016 [US3] Implement compatibility diff script (Node 20) that wraps `ajv`, `json-diff`, and `openapi-diff` for schema/capability comparisons  
       `scripts/check-compatibility.mjs`
-- [ ] T017 [P] [US3] Declare Node CLI dependencies and npm scripts for compatibility tooling  
+- [X] T017 [P] [US3] Declare Node CLI dependencies and npm scripts for compatibility tooling  
       `scripts/package.json`, `scripts/package-lock.json`
-- [ ] T018 [US3] Add `make check-compat` target and shared variables for diff output paths  
+- [X] T018 [US3] Add `make check-compat` target and shared variables for diff output paths  
       `make-files/compat.mk`, `Makefile`
-- [ ] T019 [P] [US3] Seed baseline compatibility config and ensure artefact directories are version-controlled  
+- [X] T019 [P] [US3] Seed baseline compatibility config and ensure artefact directories are version-controlled  
       `contracts/compatibility.yaml`, `build/compat/.gitkeep`
-- [ ] T020 [US3] Document compatibility workflow and update quickstart instructions  
+- [X] T020 [US3] Document compatibility workflow and update quickstart instructions  
       `docs/lifecycle/package.md`, `specs/002-title-plugin-capabilities/quickstart.md`
 
 **Checkpoint**: Compatibility automation surfaces breaking changes with auditable reports.

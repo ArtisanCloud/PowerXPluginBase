@@ -1,0 +1,35 @@
+# Compatibility tracking for capabilities and JSON Schemas.
+# Update this file whenever a capability or schema evolves so `make check-compat`
+# can detect breaking changes between the current workspace and your chosen baseline.
+
+items:
+  - kind: capability
+    id: base.template.create
+    change_type: patch
+    current: contracts/capabilities/base.template.create.yaml
+    baseline: contracts/capabilities/base.template.create.yaml
+  - kind: capability
+    id: base.template.query
+    change_type: patch
+    current: contracts/capabilities/base.template.query.yaml
+    baseline: contracts/capabilities/base.template.query.yaml
+  - kind: schema
+    id: schema/input/base.template.create.v1.json
+    change_type: patch
+    current: contracts/schema/input/base.template.create.v1.json
+    baseline: contracts/schema/input/base.template.create.v1.json
+  - kind: schema
+    id: schema/input/base.template.query.v1.json
+    change_type: patch
+    current: contracts/schema/input/base.template.query.v1.json
+    baseline: contracts/schema/input/base.template.query.v1.json
+  - kind: schema
+    id: schema/output/base.template.create.v1.json
+    change_type: patch
+    current: contracts/schema/output/base.template.create.v1.json
+    baseline: contracts/schema/output/base.template.create.v1.json
+  - kind: schema
+    id: schema/output/base.template.query.v1.json
+    change_type: patch
+    current: contracts/schema/output/base.template.query.v1.json
+    baseline: contracts/schema/output/base.template.query.v1.json

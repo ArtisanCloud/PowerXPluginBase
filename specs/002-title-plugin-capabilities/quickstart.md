@@ -16,6 +16,7 @@
    - Update capability YAML `rbac` block; run `make check-capability` to ensure resource/action pairs exist in manifest RBAC contracts.
 
 5. **Run Compatibility Checks**  
+   - Run `npm install --prefix scripts` once to install compatibility tooling dependencies.  
    - Execute `make check-compat` to diff schemas/capabilities against baseline versions.  
    - Review generated reports under `build/compat/` (or configured path).
 
