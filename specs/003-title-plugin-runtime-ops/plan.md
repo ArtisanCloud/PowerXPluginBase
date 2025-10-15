@@ -23,7 +23,7 @@ Define host-side runtime governance for PowerX plugins covering bootstrap sequen
 
 **Language/Version**: Go 1.24 (backend services), Node 20 + Nuxt 4 with TypeScript 4.x (admin tooling references)  
 **Primary Dependencies**: Fiber HTTP stack, gRPC runtime, OpenTelemetry SDK, Prometheus exporter, Loki/Tempo clients, MCP controller libraries  
-**Storage**: PostgreSQL schema `powerx_plugin_base` (declared in `plugin.yaml`); tables for `runtime_assignments`, `port_reservations`, `plugin_sessions`, `quota_ledger` (new migrations required)  
+**Storage**: PostgreSQL schema `powerx_plugin_base` (declared in `plugin.yaml` / `host_values.yaml`); tables for `runtime_assignments`, `port_reservations`, `plugin_sessions`, `quota_ledger` (new migrations required)  
 **Testing**: `make test` (Go unit/integration), targeted MCP session simulations, Prometheus scrape smoke tests, chaos tests for restart/backoff  
 **Target Platform**: PowerX host Linux nodes running RuntimeManager + MCP controller  
 **Project Type**: Backend services with supporting documentation (no new UI screens)  
@@ -116,7 +116,7 @@ backend/
 │   │   └── runtime_ops/            # Persistence adapters for runtime ops tables
 │   ├── shared/                 # Shared tooling (logging, utils)
 │   └── mcp/controller/         # Session lifecycle coordination
-├── etc/                        # Runtime configuration & manifest extensions
+├── etc/                        # Configuration incl. host_values.yaml injections & overrides
 └── tests/
     ├── integration/
     ├── services/

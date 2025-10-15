@@ -16,6 +16,7 @@
 - Port governance will be centrally managed by the RuntimeManager via a Port Registry that persists reservations and rejects duplicate allocations; plugins may not hard-code ports.
 - MCP session security layers will rely on JWT assertions signed by the host; plugins must verify signature, tenant scope, and expiry before accepting REGISTER completion.
 - Observability exports require Prometheus `/metrics` and OpenTelemetry spans; if the runtime cannot host an HTTP endpoint, the plugin must surface metrics via MCP `EVENT` messages in the agreed format.
+- Host-provided `host_values.yaml` injects DSN, schema (`px_*`), ports, and security tokens; runtime ops MUST consume these values without overriding host-managed assignments.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -121,6 +122,7 @@ Quota managers and billing analysts need multi-tier quotas and usage accounting 
 - **FR-021**: Alerting MUST define thresholds for health check failure rate, P95 latency, error rate, quota exhaustion, and billing anomaly, integrating with host alert channels.
 - **FR-022**: All runtime and MCP events MUST include tenant-aware audit trails stored for the retention period defined by platform policy.
 - **FR-023**: Debug tooling MUST allow developers to simulate MCP sessions and runtime bootstrap locally using sandbox tokens without bypassing security validation.
+- **FR-024**: Runtime ops MUST treat host-generated `host_values.yaml` and environment variables (`POWERX_*`) as source-of-truth for connection info, schemas, and bind ports, augmenting but never conflicting with host startup orchestration.
 
 ### Key Entities *(include if feature involves data)*
 
