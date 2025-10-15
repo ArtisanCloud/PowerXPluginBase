@@ -71,6 +71,7 @@ rulesets:
 - Handler 保持**薄**：校验→鉴权→调用 Service→序列化；业务编排**仅在** `internal/services`。
 - Repo 封装数据访问细节；HTTP 与 gRPC **复用同一** Service。
 - 依赖通过容器注入（配置、日志、客户端），保证可测试与可重放构造。
+- 新增子域须沿用目录分层：`internal/transport/http/{admin,agent,...}/<domain>` → `internal/services/{admin,agent,...}/<domain>` → `internal/domain/{models,repository}/<domain>`，目录名使用 lower_snake_case，避免自定义层级。
 
 ### IV. Observable & Testable Delivery（可观测与可测试）
 
@@ -88,6 +89,7 @@ rulesets:
 - **Language Versions**: Backend services MUST target Go 1.24; frontend/admin stacks MUST use Node 20 with TypeScript 4.x plus Nuxt 4 presets.
 - **Database Schema**: Plugin-managed tables deploy under the `powerx_plugin_base` schema defined in `plugin.yaml`; only local, isolated development may fall back to `public`.
 - **Database**：Postgres ≥ 13；插件使用 `plugin.yaml` 中声明的单一 schema（默认 `powerx_plugin_base`）；RLS 强制；迁移使用项目提供工具链。
+- **Configuration Layout**：后端运行配置统一存放 `backend/etc/`（含 manifest runtime overrides）；禁止在仓库其他目录自定义配置副本。
 - **Runtime**：生产禁用 `POWERX_DEV_MODE`；配置 `POWERX_CTX_*`（issuer/audience）；服务监听 `POWERX_BIND_ADDR`。
 - **Networking（反代）**：宿主路由  
   `/_p/<plugin-id>/admin/* → web-admin/.output/**`  

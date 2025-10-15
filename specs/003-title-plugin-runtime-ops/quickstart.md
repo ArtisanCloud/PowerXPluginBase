@@ -33,5 +33,5 @@
 
 8. **Run test suites**
    - `make test` for unit/integration coverage.
-   - `go test ./backend/internal/services/runtime_ops -run Test -count=1` for focused service tests.
+   - `go test ./backend/internal/services/admin/runtime_ops -run Test -count=1` for focused service tests.
    - Optional: `make test-coverage` to review `backend/coverage.html`.

@@ -98,17 +98,25 @@ backend/
 │   ├── plugin/                 # RuntimeManager entrypoint (existing)
 │   └── database/               # Migration tooling
 ├── internal/
-│   ├── router/http/            # /v1/** HTTP routing
-│   ├── transport/{http,grpc}/  # Thin transports delegating to services
+│   ├── router/                 # Root router wiring transports
+│   ├── transport/
+│   │   ├── http/
+│   │   │   ├── admin/
+│   │   │   │   └── runtime_ops/     # New admin endpoints for runtime management
+│   │   │   └── agent/
+│   │   └── grpc/
 │   ├── services/
 │   │   ├── admin/
-│   │   ├── agent/
-│   │   └── runtime_ops/        # New service orchestrating bootstrap, MCP, quotas
-│   ├── domain/models/          # Domain definitions (extend with runtime ops entities)
-│   ├── domain/repository/      # Persistence adapters (extend with runtime ops repos)
+│   │   │   ├── templates/
+│   │   │   └── runtime_ops/        # New service orchestrating bootstrap, MCP, quotas
+│   │   └── agent/
+│   ├── domain/models/
+│   │   └── runtime_ops/            # Domain entities for runtime ops
+│   ├── domain/repository/
+│   │   └── runtime_ops/            # Persistence adapters for runtime ops tables
 │   ├── shared/                 # Shared tooling (logging, utils)
 │   └── mcp/controller/         # Session lifecycle coordination
-├── plugin/                     # Manifest/runtime configuration
+├── etc/                        # Runtime configuration & manifest extensions
 └── tests/
     ├── integration/
     ├── services/
@@ -118,7 +126,7 @@ docs/
 └── integration/03_runtime_and_ops/   # Operational guides & alerting thresholds
 ```
 
-**Structure Decision**: Extend existing backend layers (`internal/services`, `internal/domain`, `internal/router`, `internal/transport`) with a `runtime_ops` service and repositories while keeping documentation under `docs/integration/03_runtime_and_ops/`; no deviations from current project layout.
+**Structure Decision**: Extend existing backend layers (`internal/router` orchestrator → `internal/transport/http/admin` for routes → `internal/services/admin`) with a `runtime_ops` subdomain, plus matching `domain/models` and `domain/repository` folders. Documentation continues under `docs/integration/03_runtime_and_ops/`; structure aligns with current admin/agent conventions and remains transport-agnostic.
 
 ---
 
