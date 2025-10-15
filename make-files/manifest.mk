@@ -15,3 +15,13 @@ verify-manifest:
 		--plugin "$(ABS_PLUGIN_FILE)" \
 		--manifest "$(ABS_MANIFEST_FILE)" \
 		--schema "$(ABS_MANIFEST_SCHEMA)"
+
+.PHONY: check-capability
+check-capability:
+	@echo "[manifest] Running capability validation against $(PLUGIN_FILE)"
+	@mkdir -p $(BACKEND_GOCACHE)
+	@cd backend && GOCACHE=$(BACKEND_GOCACHE) go run ./cmd/manifestcheck \
+		--plugin "$(ABS_PLUGIN_FILE)" \
+		--manifest "$(ABS_MANIFEST_FILE)" \
+		--schema "$(ABS_MANIFEST_SCHEMA)" \
+		--capabilities-only

@@ -1,0 +1,58 @@
+{
+  "$id": "schema/output/base.template.query.v1.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Base Template Query Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["data", "pagination"],
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "status", "created_at"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["todo", "in_progress", "done"]
+          },
+          "assignee": {
+            "type": ["integer", "null"]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "pagination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["page", "limit", "total"],
+      "properties": {
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

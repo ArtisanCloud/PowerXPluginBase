@@ -1,0 +1,15 @@
+id: crm.customer.create
+type: API
+version: 1.2.0
+status: active
+description: Creates a customer record in the CRM module.
+rbac:
+  resource: crm:customer
+  actions: [create]
+provides:
+  - schema/output/crm.customer.create.v1.json
+consumes:
+  - schema/input/crm.customer.create.v1.json
+metadata:
+  latency_sla_ms: 500
+  retry_policy: exponential

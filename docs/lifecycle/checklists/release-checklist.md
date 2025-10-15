@@ -6,6 +6,8 @@
 
 - [ ] `make verify-manifest` succeeds with current `plugin.yaml` and release `manifest.yaml`
 - [ ] Channel and lifecycle status updated appropriately in `manifest.yaml`
+- [ ] `make check-capability` confirms manifest ↔ capability parity (diffs reviewed)
+- [ ] `make check-compat` runs and diff reports stored under `build/compat/`
 - [ ] Release notes drafted (features, fixes, migration notes)
 
 ## Packaging
@@ -15,6 +17,7 @@
 - [ ] `hashes.txt` contains entries for backend binaries, manifest, plugin metadata, and web assets
 - [ ] `audit.log` captures `created_at`, `plugin_version`, `source_commit`, `staged_dir`
 - [ ] `signature.json` generated (status `pending` until signing service confirms)
+- [ ] Compatibility report (`build/compat/report.json`) archived with release artefacts
 
 ## Signing & Validation
 
@@ -27,6 +30,7 @@
 - [ ] Package (`.pxp` or zipped directory) uploaded via Marketplace API
 - [ ] Manifest channel + version registered and confirmed unique
 - [ ] Release notes and audit artefacts attached to change request / ticket
+- [ ] Compatibility diff bundle (`build/compat/`) attached to change request / ticket
 
 ## Post-Release
 
@@ -42,4 +46,3 @@ Reviewer: ____________________      Date: ____________________
 - [ ] 通知模板（邮件 & In-App）已发送/安排
 - [ ] 新安装防护验证完成（sunset 后阻止安装，返回明确错误）
 - [ ] 数据迁移/导出方案完成演练并记录在 runbook
-

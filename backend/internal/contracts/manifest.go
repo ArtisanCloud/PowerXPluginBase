@@ -32,6 +32,9 @@ type PluginManifest struct {
 	// 工具定义
 	Tools []ToolConfig `json:"tools,omitempty"`
 
+	// 能力声明
+	Capabilities *ManifestCapabilities `json:"capabilities,omitempty"`
+
 	// 工作流定义
 	Workflows []WorkflowConfig `json:"workflows,omitempty"`
 
@@ -157,6 +160,27 @@ type DependencyConfig struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 	Type    string `json:"type"` // plugin, service, database, etc.
+}
+
+// ManifestCapabilities 提供插件能力的描述引用
+type ManifestCapabilities struct {
+	Provides []ManifestCapabilityRef `json:"provides,omitempty"`
+	Consumes []ManifestCapabilityRef `json:"consumes,omitempty"`
+}
+
+// ManifestCapabilityRef 指向具体的能力定义文件及关联 Schema。
+type ManifestCapabilityRef struct {
+	ID         string              `json:"id"`
+	Version    string              `json:"version,omitempty"`
+	Descriptor string              `json:"descriptor,omitempty"`
+	Schemas    *ManifestSchemaRefs `json:"schemas,omitempty"`
+	Metadata   map[string]string   `json:"metadata,omitempty"`
+}
+
+// ManifestSchemaRefs 声明能力相关的输入输出 Schema。
+type ManifestSchemaRefs struct {
+	Input  []string `json:"input,omitempty"`
+	Output []string `json:"output,omitempty"`
 }
 
 // ConfigSchema 配置模式定义

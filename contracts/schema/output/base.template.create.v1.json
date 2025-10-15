@@ -1,0 +1,38 @@
+{
+  "$id": "schema/output/base.template.create.v1.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Base Template Create Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "status", "created_at"],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Unique template identifier"
+    },
+    "title": {
+      "type": "string",
+      "description": "Template title"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["todo", "in_progress", "done"],
+      "description": "Workflow status of the template"
+    },
+    "assignee": {
+      "type": ["integer", "null"],
+      "description": "Assigned user identifier"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "urgent"],
+      "description": "Configured priority"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp"
+    }
+  }
+}

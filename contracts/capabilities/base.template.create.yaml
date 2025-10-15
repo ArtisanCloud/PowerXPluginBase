@@ -1,0 +1,22 @@
+id: base.template.create
+type: Tool
+version: 1.0.0
+status: active
+description: Creates a new Base template entry.
+rbac:
+  resource: base:template
+  actions:
+    - create
+provides:
+  - id: schema/output/base.template.create.v1.json
+    path: schema/output/base.template.create.v1.json
+    kind: output
+    version: 1.0.0
+consumes:
+  - id: schema/input/base.template.create.v1.json
+    path: schema/input/base.template.create.v1.json
+    kind: input
+    version: 1.0.0
+metadata:
+  latency_sla_ms: 500
+  retry_policy: exponential

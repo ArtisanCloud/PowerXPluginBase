@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/ArtisanCloud/PowerXPlugin/internal/contracts/capability"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -15,35 +17,57 @@ func main() {
 	pluginPath := flag.String("plugin", "plugin.yaml", "Path to plugin.yaml")
 	manifestPath := flag.String("manifest", "docs/lifecycle/examples/manifest.yaml", "Path to manifest.yaml")
 	schemaPath := flag.String("schema", "docs/lifecycle/contracts/manifest.schema.json", "Path to manifest JSON schema (for documentation reference)")
+	capabilitiesOnly := flag.Bool("capabilities-only", false, "Only run capability validation (skip manifest shape checks)")
 	flag.Parse()
 
-	if err := run(*pluginPath, *manifestPath, *schemaPath); err != nil {
+	if err := run(*pluginPath, *manifestPath, *schemaPath, *capabilitiesOnly); err != nil {
 		fmt.Fprintf(os.Stderr, "manifestcheck: %v\n", err)
 		os.Exit(1)
 	}
 	fmt.Println("manifestcheck: plugin and manifest metadata validated successfully")
 }
 
-func run(pluginPath, manifestPath, schemaPath string) error {
+func run(pluginPath, manifestPath, schemaPath string, capabilitiesOnly bool) error {
 	pluginMap, err := loadYAMLFile(pluginPath)
 	if err != nil {
 		return fmt.Errorf("load plugin: %w", err)
 	}
 
-	manifestMap, err := loadYAMLFile(manifestPath)
+	var manifestMap map[string]interface{}
+	if manifestPath != "" {
+		manifestMap, err = loadYAMLFile(manifestPath)
+		if err != nil {
+			return fmt.Errorf("load manifest: %w", err)
+		}
+	}
+
+	if !capabilitiesOnly {
+		if manifestMap == nil {
+			return errors.New("manifest path must be provided when capabilities-only is false")
+		}
+		if err := validateManifestShape(manifestMap); err != nil {
+			return err
+		}
+
+		if err := ensureSchemaExists(schemaPath); err != nil {
+			return err
+		}
+
+		if err := comparePluginAndManifest(pluginMap, manifestMap); err != nil {
+			return err
+		}
+	}
+
+	root, err := filepath.Abs(filepath.Dir(pluginPath))
 	if err != nil {
-		return fmt.Errorf("load manifest: %w", err)
+		return fmt.Errorf("resolve plugin root: %w", err)
 	}
 
-	if err := validateManifestShape(manifestMap); err != nil {
-		return err
-	}
-
-	if err := ensureSchemaExists(schemaPath); err != nil {
-		return err
-	}
-
-	if err := comparePluginAndManifest(pluginMap, manifestMap); err != nil {
+	if err := capability.Validate(capability.ValidateOptions{
+		RootDir:      root,
+		PluginData:   pluginMap,
+		ManifestData: manifestMap,
+	}); err != nil {
 		return err
 	}
 
