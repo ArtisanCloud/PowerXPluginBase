@@ -44,11 +44,11 @@ DO NOT keep these sample tasks in the generated tasks.md.
 
 **Purpose**: Ensure local dev environment and baseline tooling align with constitution.
 
-- [ ] T001 Sync directories per plan (`backend/internal/services/admin/runtime_ops`, `backend/internal/domain/models/runtime_ops`, etc.)  
+- [X] T001 Sync directories per plan (`backend/internal/services/admin/runtime_ops`, `backend/internal/domain/models/runtime_ops`, etc.)  
       `backend/internal/services/admin/runtime_ops/`, `backend/internal/domain/models/runtime_ops/`, `backend/internal/domain/repository/runtime_ops/`, `backend/internal/transport/http/admin/runtime_ops/`
-- [ ] T002 Install dependencies via `make dev-setup` (Go 1.24 modules, Node 20 setup)  
+- [X] T002 Install dependencies via `make dev-setup` (Go 1.24 modules, Node 20 setup)  
       `Makefile`, `make-files/dev.mk`
-- [ ] T003 [P] Verify tooling (`golangci-lint`, `go test`, Prometheus exporters) ready for runtime ops work  
+- [X] T003 [P] Verify tooling (`golangci-lint`, `go test`, Prometheus exporters) ready for runtime ops work  
       `make-files/dev.mk`, `make-files/test.mk`
 
 ---
