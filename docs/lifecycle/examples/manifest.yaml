@@ -20,6 +20,25 @@ contracts:
   api: contracts/api.yaml
   rbac: contracts/rbac.yaml
   config: contracts/config.schema.json
+
+capabilities:
+  provides:
+    - id: base.template.create
+      version: 1.0.0
+      descriptor: contracts/capabilities/base.template.create.yaml
+      schemas:
+        input:
+          - schema/input/base.template.create.v1.json
+        output:
+          - schema/output/base.template.create.v1.json
+    - id: base.template.query
+      version: 1.0.0
+      descriptor: contracts/capabilities/base.template.query.yaml
+      schemas:
+        input:
+          - schema/input/base.template.query.v1.json
+        output:
+          - schema/output/base.template.query.v1.json
 rbac:
   - role: powerx.plugin.base.admin
     actions:

@@ -9,8 +9,8 @@
    - Ensure schema `$id` matches file path for tooling to resolve.
 
 3. **Reference in Manifest**  
-   - Under `manifest.yaml`, list capability IDs in `capabilities.provides/consumes` with version hints.  
-   - Keep detailed metadata out of manifest—only ID/type/version.
+   - Under `plugin.yaml` / release `manifest.yaml`, list capability IDs in `capabilities.provides/consumes` with the descriptor path and schema references.  
+   - Keep detailed metadata in `contracts/`; manifests should remain lightweight pointers (ID, version, descriptor, schema IDs).
 
 4. **Map RBAC Permissions**  
    - Update capability YAML `rbac` block; run `make check-capability` to ensure resource/action pairs exist in manifest RBAC contracts.

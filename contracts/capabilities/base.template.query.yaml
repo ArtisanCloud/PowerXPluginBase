@@ -1,0 +1,22 @@
+id: base.template.query
+type: Tool
+version: 1.0.0
+status: active
+description: Queries Base template records with optional filters.
+rbac:
+  resource: base:template
+  actions:
+    - read
+provides:
+  - id: schema/output/base.template.query.v1.json
+    path: schema/output/base.template.query.v1.json
+    kind: output
+    version: 1.0.0
+consumes:
+  - id: schema/input/base.template.query.v1.json
+    path: schema/input/base.template.query.v1.json
+    kind: input
+    version: 1.0.0
+metadata:
+  latency_sla_ms: 300
+  paginated: true

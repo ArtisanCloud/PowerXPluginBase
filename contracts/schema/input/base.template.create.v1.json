@@ -1,0 +1,36 @@
+{
+  "$id": "schema/input/base.template.create.v1.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Base Template Create Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Template title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Template description"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "urgent"],
+      "default": "medium",
+      "description": "Task priority level"
+    },
+    "assignee": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Assigned user identifier"
+    },
+    "estimate": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Estimated effort points"
+    }
+  }
+}

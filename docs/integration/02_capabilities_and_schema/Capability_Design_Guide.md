@@ -148,6 +148,27 @@ permissions:
 
 ---
 
+### 2.1 Manifest 引用
+
+在 `plugin.yaml` / release `manifest.yaml` 中只需要引用能力 ID 与描述文件路径，避免重复维护 Schema：
+
+```yaml
+capabilities:
+  provides:
+    - id: crm.contact.create
+      version: 1.0.0
+      descriptor: contracts/capabilities/crm.contact.create.yaml
+      schemas:
+        input:
+          - schema/input/crm.contact.create.v1.json
+        output:
+          - schema/output/crm.contact.create.v1.json
+```
+
+安装流程会根据这些引用加载 `contracts/capabilities/*` 与 `contracts/schema/*`，同时与 RBAC 配置做对齐校验。
+
+---
+
 ### 3️⃣ 输入输出模式（IO Schema）
 
 每个能力应定义标准化的输入输出（参考下一篇 [IO_Schema_and_Validation.md](./IO_Schema_and_Validation.md)），

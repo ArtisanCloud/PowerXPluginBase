@@ -34,10 +34,10 @@
 
 **Purpose**: Establish reusable capability data structures and loaders before story work.
 
-- [ ] T003 [Foundation] Define `CapabilityDescriptor`, `SchemaRef`, and related structs with YAML/JSON tags  
-      `backend/internal/contracts/capability.go`
-- [ ] T004 [Foundation] Implement filesystem catalog loader that indexes `contracts/capabilities/*.yaml` and exposes lookup helpers  
-      `backend/internal/contracts/capability_loader.go`
+- [X] T003 [Foundation] Define `CapabilityDescriptor`, `SchemaRef`, and related structs with YAML/JSON tags  
+      `backend/internal/contracts/capability/types.go`
+- [X] T004 [Foundation] Implement filesystem catalog loader that indexes `contracts/capabilities/*.yaml` and exposes lookup helpers  
+      `backend/internal/contracts/capability/loader.go`
 
 **Checkpoint**: Capability catalog primitives exist and can be reused by manifest + validator stories.
 
@@ -51,17 +51,17 @@
 
 ### Tasks
 
-- [ ] T005 [US1] Extend `PluginManifest` contracts to surface `capabilities.provides/consumes` entries and schema references  
+- [X] T005 [US1] Extend `PluginManifest` contracts to surface `capabilities.provides/consumes` entries and schema references  
       `backend/internal/contracts/manifest.go`
-- [ ] T006 [P] [US1] Author capability descriptors for existing template tools with version + RBAC metadata  
+- [X] T006 [P] [US1] Author capability descriptors for existing template tools with version + RBAC metadata  
       `contracts/capabilities/base.template.create.yaml`, `contracts/capabilities/base.template.query.yaml`
-- [ ] T007 [P] [US1] Create draft-07 JSON Schemas for input/output payloads referenced by the new capability descriptors  
-      `contracts/schema/input/base.template.create.v1.json`, `contracts/schema/output/base.template.create.v1.json`, `contracts/schema/output/base.template.query.v1.json`
-- [ ] T008 [US1] Add loader-focused unit tests covering happy-path parsing and schema list resolution  
-      `backend/internal/contracts/capability_loader_test.go`
-- [ ] T009 [US1] Update manifest samples to list capability IDs and schema assets for packaging parity  
+- [X] T007 [P] [US1] Create draft-07 JSON Schemas for input/output payloads referenced by the new capability descriptors  
+      `contracts/schema/input/base.template.create.v1.json`, `contracts/schema/input/base.template.query.v1.json`, `contracts/schema/output/base.template.create.v1.json`, `contracts/schema/output/base.template.query.v1.json`
+- [X] T008 [US1] Add loader-focused unit tests covering happy-path parsing and schema list resolution  
+      `backend/internal/contracts/capability/loader_test.go`
+- [X] T009 [US1] Update manifest samples to list capability IDs and schema assets for packaging parity  
       `plugin.yaml`, `docs/lifecycle/examples/manifest.yaml`
-- [ ] T010 [US1] Publish governance guidance describing capability authoring + manifest references  
+- [X] T010 [US1] Publish governance guidance describing capability authoring + manifest references  
       `docs/lifecycle/capabilities.md`, `docs/integration/02_capabilities_and_schema/Capability_Design_Guide.md`
 
 **Checkpoint**: Capabilities ship as first-class assets and manifest references are traceable to concrete schemas.
