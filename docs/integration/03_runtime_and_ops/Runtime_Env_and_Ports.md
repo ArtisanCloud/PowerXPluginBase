@@ -74,6 +74,24 @@ PowerX 会在启动时自动注入一组环境变量：
 > 插件应通过系统变量读取这些值，而非硬编码。  
 > 建议后端使用配置加载器，如 Go 的 `viper`、Node 的 `dotenv`、Rust 的 `envy`。
 
+### Runtime Ops 默认阈值
+
+宿主还会根据 `config/host-values.yaml` 或 `backend/etc/config.yaml` 中的 `runtime_ops` 节点，传递运行治理的默认阈值：
+
+| 字段 | 默认值 | 含义 |
+|------|--------|------|
+| `heartbeat_seconds` | 15 | MCP 心跳周期（秒） |
+| `heartbeat_misses` | 3 | 连续丢失心跳次数后标记 STALE |
+| `quota_window_minutes` | 5 | 令牌桶/配额窗口大小（分钟） |
+| `restart_backoff_start_seconds` | 5 | 首次重启退避（秒） |
+| `restart_backoff_max_seconds` | 120 | 最大退避间隔（秒） |
+| `log_retention_days` | 7 | 本地日志保留天数（归档前） |
+| `cpu_default` | `500m` | 宿主分配的默认 CPU 限额 |
+| `memory_default` | `512Mi` | 宿主分配的默认内存限额 |
+| `network_profile` | `standard` | 宿主定义的网络隔离策略 |
+
+插件可以读取这些值，用于运行时的启动参数、配额配置以及日志轮转策略，但不得覆写宿主分配的端口或凭据。
+
 ---
 
 ## 🧩 五、端口分配策略

@@ -89,34 +89,34 @@ DO NOT keep these sample tasks in the generated tasks.md.
 
 ### Tests for US1 (write-first, must FAIL initially)
 
-- [ ] T101 [P] [US1] Integration test covering bootstrap sequence & port registry lock  
+- [X] T101 [P] [US1] Integration test covering bootstrap sequence & port registry lock  
       `backend/tests/integration/runtime_ops/test_bootstrap_port_registry_test.go`
-- [ ] T102 [US1] Service unit tests validating restart backoff counters & ledger updates  
+- [X] T102 [US1] Service unit tests validating restart backoff counters & ledger updates  
       `backend/internal/services/admin/runtime_ops/service_bootstrap_test.go`
-- [ ] T103 [P] [US1] Database migration smoke test ensuring tables and RLS exist  
+- [X] T103 [P] [US1] Database migration smoke test ensuring tables and RLS exist  
       `backend/tests/integration/runtime_ops/test_migrations_bootstrap_test.go`
-- [ ] T104 [P] [US1] Integration test verifying cgroup limits & filesystem sandbox during bootstrap  
+- [X] T104 [P] [US1] Integration test verifying cgroup limits & filesystem sandbox during bootstrap  
       `backend/tests/integration/runtime_ops/test_resource_isolation_test.go`
 
 ### Implementation for US1
 
-- [ ] T105 [US1] Define domain models (`RuntimeAssignment`, `PortReservation`) and enums  
+- [X] T105 [US1] Define domain models (`RuntimeAssignment`, `PortReservation`) and enums  
       `backend/internal/domain/models/runtime_ops/runtime_assignment.go`, `backend/internal/domain/models/runtime_ops/port_reservation.go`
-- [ ] T106 [US1] Implement repository methods for assignment creation, port locking, restart counters  
+- [X] T106 [US1] Implement repository methods for assignment creation, port locking, restart counters  
       `backend/internal/domain/repository/runtime_ops/runtime_assignment_repository.go`
-- [ ] T107 [US1] Implement service use-cases: unpack → allocate port → inject env → launch process → register health  
+- [X] T107 [US1] Implement service use-cases: unpack → allocate port → inject env → launch process → register health  
       `backend/internal/services/admin/runtime_ops/bootstrap_usecase.go`
-- [ ] T108 [US1] Create admin HTTP handlers for runtime launch & health status (thin, RBAC enforced)  
+- [X] T108 [US1] Create admin HTTP handlers for runtime launch & health status (thin, RBAC enforced)  
       `backend/internal/transport/http/admin/runtime_ops/handler_bootstrap.go`
 - [ ] T109 [US1] Wire metrics/logging for bootstrap (port registry gauge, restart counter)  
       `backend/internal/services/admin/runtime_ops/observability_bootstrap.go`
-- [ ] T110 [US1] Document runtime mode defaults & health probes, ensuring they layer atop `host_values.yaml` without overriding host assignments  
+- [X] T110 [US1] Document runtime mode defaults & health probes, ensuring they layer atop `host_values.yaml` without overriding host assignments  
       `backend/etc/config.example.yaml`, `docs/integration/03_runtime_and_ops/bootstrap.md`
-- [ ] T111 [US1] Integrate isolation manager application into bootstrap pipeline (CPU/memory/network caps, violation events)  
+- [X] T111 [US1] Integrate isolation manager application into bootstrap pipeline (CPU/memory/network caps, violation events)  
       `backend/internal/services/admin/runtime_ops/bootstrap_usecase.go`, `backend/internal/services/admin/runtime_ops/isolation.go`
-- [ ] T112 [US1] Enforce filesystem sandbox (mount whitelist, audit on violation) within runtime ops  
+- [X] T112 [US1] Enforce filesystem sandbox (mount whitelist, audit on violation) within runtime ops  
       `backend/internal/services/admin/runtime_ops/filesystem_sandbox.go`, `backend/internal/services/admin/runtime_ops/isolation.go`
-- [ ] T113 [US1] Documentation update for resource isolation expectations and sandbox directories  
+- [X] T113 [US1] Documentation update for resource isolation expectations and sandbox directories  
       `docs/integration/03_runtime_and_ops/bootstrap.md`
 
 **Checkpoint**: US1 is independently functional & testable (MVP).
