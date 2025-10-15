@@ -15,3 +15,10 @@ checks:
       target: backend/internal/services/**
       symbols:
         - direct_db_access
+  - id: service-repo-field
+    desc: Service 应组合 Repository（如 *FooRepository）而非裸 DB
+    assert:
+      type: grep
+      target: backend/internal/services/**
+      pattern:
+        - Repository

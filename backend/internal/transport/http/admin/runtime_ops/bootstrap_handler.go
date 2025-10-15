@@ -7,20 +7,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Handler exposes runtime ops HTTP endpoints.
-type Handler struct {
+// BootstrapHandler exposes runtime bootstrap endpoint.
+type BootstrapHandler struct {
 	svc *runtimeops.Service
 }
 
-// NewHandler builds a runtime ops handler.
-func NewHandler(svc *runtimeops.Service) *Handler {
+// NewBootstrapHandler builds a runtime ops bootstrap handler.
+func NewBootstrapHandler(svc *runtimeops.Service) *BootstrapHandler {
 	if svc == nil {
 		svc = runtimeops.NewService()
 	}
-	return &Handler{svc: svc}
+	return &BootstrapHandler{svc: svc}
 }
 
 // Bootstrap is a placeholder handler for launching plugin runtime instances.
-func (h *Handler) Bootstrap(c *gin.Context) {
+func (h *BootstrapHandler) Bootstrap(c *gin.Context) {
 	c.JSON(http.StatusNotImplemented, gin.H{"error": "runtime bootstrap endpoint not implemented"})
 }

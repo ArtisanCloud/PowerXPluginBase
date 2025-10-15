@@ -1,4 +1,4 @@
 package runtime_ops
 
-// AuditEvent represents a placeholder for runtime audit entries.
-type AuditEvent struct{}
+// RuntimeAuditEvent represents a placeholder for runtime audit entries.
+type RuntimeAuditEvent struct{}

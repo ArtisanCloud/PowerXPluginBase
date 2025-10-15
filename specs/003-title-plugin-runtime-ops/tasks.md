@@ -130,32 +130,32 @@ DO NOT keep these sample tasks in the generated tasks.md.
 
 ### Tests for US2
 
-- [ ] T201 [P] [US2] Integration test for REGISTER → READY → STALE lifecycle with JWT failures  
+- [X] T201 [P] [US2] Integration test for REGISTER → READY → STALE lifecycle with JWT failures  
       `backend/tests/integration/runtime_ops/test_mcp_session_lifecycle_test.go`
-- [ ] T202 [US2] Unit test for heartbeat scheduler enforcing 15s interval & 3-miss timeout  
+- [X] T202 [US2] Unit test for heartbeat scheduler enforcing 15s interval & 3-miss timeout  
       `backend/internal/services/admin/runtime_ops/heartbeat_scheduler_test.go`
-- [ ] T203 [P] [US2] Contract test covering `/api/v1/admin/runtime/sessions` registration endpoint  
+- [X] T203 [P] [US2] Contract test covering `/api/v1/admin/runtime/sessions` registration endpoint  
       `backend/tests/contract/runtime_ops/test_sessions_contract_test.go`
-- [ ] T204 [US2] Audit trail test ensuring REGISTER/CAPABILITY_SYNC/STALE events persist to runtime audit store  
+- [X] T204 [US2] Audit trail test ensuring REGISTER/CAPABILITY_SYNC/STALE events persist to runtime audit store  
       `backend/tests/integration/runtime_ops/test_mcp_audit_log_test.go`
 
 ### Implementation for US2
 
-- [ ] T205 [US2] Extend domain models with `MCPSession` states and JWT metadata  
+- [X] T205 [US2] Extend domain models with `MCPSession` states and JWT metadata  
       `backend/internal/domain/models/runtime_ops/mcp_session.go`
-- [ ] T206 [US2] Implement repository methods for session creation, heartbeat tracking, capability hash storage  
+- [X] T206 [US2] Implement repository methods for session creation, heartbeat tracking, capability hash storage  
       `backend/internal/domain/repository/runtime_ops/mcp_session_repository.go`
-- [ ] T207 [US2] Implement service logic for REGISTER/ACK/CAPABILITY_SYNC, heartbeat monitor, reconnection  
+- [X] T207 [US2] Implement service logic for REGISTER/ACK/CAPABILITY_SYNC, heartbeat monitor, reconnection  
       `backend/internal/services/admin/runtime_ops/mcp_session_usecase.go`
-- [ ] T208 [P] [US2] Add JWT validation & TLS enforcement helpers  
+- [X] T208 [P] [US2] Add JWT validation & TLS enforcement helpers  
       `backend/internal/services/admin/runtime_ops/security.go`
-- [ ] T209 [US2] Implement `/api/v1/admin/runtime/sessions` handlers with thin transport  
+- [X] T209 [US2] Implement `/api/v1/admin/runtime/sessions` handlers with thin transport  
       `backend/internal/transport/http/admin/runtime_ops/handler_sessions.go`
-- [ ] T210 [US2] Update metrics exposure (`powerx_mcp_sessions_total`, heartbeat latencies)  
+- [X] T210 [US2] Update metrics exposure (`powerx_mcp_sessions_total`, heartbeat latencies)  
       `backend/internal/services/admin/runtime_ops/observability_sessions.go`
-- [ ] T211 [US2] Documentation for MCP lifecycle and failure handling  
+- [X] T211 [US2] Documentation for MCP lifecycle and failure handling  
       `docs/integration/03_runtime_and_ops/mcp_sessions.md`
-- [ ] T212 [US2] Persist runtime audit events for REGISTER/ACK/CAPABILITY_SYNC/STALE transitions  
+- [X] T212 [US2] Persist runtime audit events for REGISTER/ACK/CAPABILITY_SYNC/STALE transitions  
       `backend/internal/services/admin/runtime_ops/mcp_session_usecase.go`, `backend/internal/domain/repository/runtime_ops/audit_repository.go`
 
 **Checkpoint**: US1 & US2 both independently pass.

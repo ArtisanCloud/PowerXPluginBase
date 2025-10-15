@@ -16,7 +16,7 @@ func RegisterAPIRoutes(rg *gin.RouterGroup, deps *app.Deps) {
 		admin.GET("/rbac", adminHandler.GetRBACInfo)     // 获取权限信息
 
 		runtimeOps := admin.Group("/runtime")
-		adminruntime.RegisterRoutes(runtimeOps)
+		adminruntime.RegisterRoutes(runtimeOps, deps)
 
 	}
 }
