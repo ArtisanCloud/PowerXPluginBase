@@ -1,0 +1,10 @@
+# Data Model: Plugin Runtime & Ops
+
+| Entity | Description | Key Fields | Relationships | Notes |
+|--------|-------------|------------|---------------|-------|
+| RuntimeAssignment | Tracks a deployed plugin instance and resource envelope | `id` (UUID), `plugin_id`, `tenant_scope`, `runtime_mode`, `port`, `host_id`, `status`, `cpu_limit`, `memory_limit`, `restart_count`, `ready_at`, `created_at` | `plugin_id` links to manifest metadata; `tenant_scope` references tenant directory | Status lifecycle: `allocating → starting → ready → unhealthy → terminated` |
+| PortReservation | Maintains Port Registry allocations | `id` (UUID), `plugin_instance_id`, `port`, `host_id`, `reserved_at`, `released_at`, `state` | `plugin_instance_id` FK → RuntimeAssignment | Enforces unique `(port, host_id, state='active')` |
+| MCPSession | Represents MCP connection state and heartbeat details | `id` (UUID), `plugin_instance_id`, `tenant_id`, `state`, `jwt_id`, `capabilities_hash`, `last_ping_at`, `missed_heartbeats`, `closed_at`, `created_at` | `plugin_instance_id` FK → RuntimeAssignment | States: `connecting`, `registered`, `ready`, `stale`, `closed` |
+| ObservabilityEnvelope | Correlates logs/metrics/traces | `id` (UUID), `plugin_instance_id`, `tenant_id`, `trace_id`, `log_path`, `metrics_endpoint`, `otel_exporter`, `retention_until` | `plugin_instance_id` FK → RuntimeAssignment | `retention_until` = `created_at + 7d` |
+| QuotaLedger | Aggregates quota usage by scope | `id` (UUID), `scope_type` (`core|plugin|tenant`), `scope_ref`, `window_start`, `window_end`, `tokens_consumed`, `cpu_seconds`, `bandwidth_mb`, `invocations`, `over_limit_action`, `reported_at` | `scope_ref` references tenant/plugin identifiers | Window duration defaults to 5 minutes |
+| MarketplaceOverage | Hourly summary for Marketplace notifications | `id` (UUID), `plugin_id`, `tenant_id`, `hour_window`, `quota_metric`, `breach_count`, `last_breach_at`, `reported` (bool) | `tenant_id` optional for plugin-wide breaches | Driven by QuotaLedger aggregation |

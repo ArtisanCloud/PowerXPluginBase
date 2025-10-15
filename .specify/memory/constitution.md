@@ -85,7 +85,9 @@ rulesets:
 
 ## Operational Constraints
 
-- **Database**：Postgres ≥ 13；每插件独立 schema；RLS 强制；迁移使用项目提供工具链。
+- **Language Versions**: Backend services MUST target Go 1.24; frontend/admin stacks MUST use Node 20 with TypeScript 4.x plus Nuxt 4 presets.
+- **Database Schema**: Plugin-managed tables deploy under the `powerx_plugin_base` schema defined in `plugin.yaml`; only local, isolated development may fall back to `public`.
+- **Database**：Postgres ≥ 13；插件使用 `plugin.yaml` 中声明的单一 schema（默认 `powerx_plugin_base`）；RLS 强制；迁移使用项目提供工具链。
 - **Runtime**：生产禁用 `POWERX_DEV_MODE`；配置 `POWERX_CTX_*`（issuer/audience）；服务监听 `POWERX_BIND_ADDR`。
 - **Networking（反代）**：宿主路由  
   `/_p/<plugin-id>/admin/* → web-admin/.output/**`  
