@@ -6,16 +6,22 @@ on:
       - 'docs/lifecycle/**'
       - 'docs/integration/01_plugin_lifecycle/**'
       - 'make-files/manifest.mk'
+      - 'make-files/compat.mk'
       - 'make-files/release.mk'
       - 'backend/cmd/manifestcheck/**'
+      - 'scripts/**'
+      - 'contracts/compatibility.yaml'
       - 'Makefile'
   push:
     branches: [ main ]
     paths:
       - 'docs/lifecycle/**'
       - 'make-files/manifest.mk'
+      - 'make-files/compat.mk'
       - 'make-files/release.mk'
       - 'backend/cmd/manifestcheck/**'
+      - 'scripts/**'
+      - 'contracts/compatibility.yaml'
 
 jobs:
   verify-manifest:
@@ -36,8 +42,14 @@ jobs:
       - name: Install web-admin deps
         run: npm ci
         working-directory: ./web-admin
+      - name: Install compatibility tooling deps
+        run: npm install --prefix scripts
       - name: Verify manifest parity
         run: make verify-manifest
+      - name: Validate capabilities
+        run: make check-capability
+      - name: Generate compatibility report
+        run: make check-compat
 
   dry-run-package:
     runs-on: ubuntu-latest

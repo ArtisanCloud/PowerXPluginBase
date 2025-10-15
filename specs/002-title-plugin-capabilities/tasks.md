@@ -116,11 +116,11 @@
 
 ## Phase 6 — Polish & Cross-Cutting
 
-- [ ] T021 [Polish] Extend lifecycle validation workflow to run `make check-capability` and `make check-compat`  
+- [X] T021 [Polish] Extend lifecycle validation workflow to run `make check-capability` and `make check-compat`  
       `.github/workflows/lifecycle-validation.yml`
-- [ ] T022 [P] [Polish] Update release checklist with capability/schema validation gates and compatibility report attachment  
+- [X] T022 [P] [Polish] Update release checklist with capability/schema validation gates and compatibility report attachment  
       `docs/lifecycle/checklists/release-checklist.md`
-- [ ] T023 [Polish] Refresh release template to call out capability descriptors, schema bundles, and diff artefacts  
+- [X] T023 [Polish] Refresh release template to call out capability descriptors, schema bundles, and diff artefacts  
       `docs/releases/release-template.md`
 
 ---
