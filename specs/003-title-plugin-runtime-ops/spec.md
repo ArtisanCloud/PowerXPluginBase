@@ -17,6 +17,7 @@
 - MCP session security layers will rely on JWT assertions signed by the host; plugins must verify signature, tenant scope, and expiry before accepting REGISTER completion.
 - Observability exports require Prometheus `/metrics` and OpenTelemetry spans; if the runtime cannot host an HTTP endpoint, the plugin must surface metrics via MCP `EVENT` messages in the agreed format.
 - Host-provided `host_values.yaml` injects DSN, schema (`px_*`), ports, and security tokens; runtime ops MUST consume these values without overriding host-managed assignments.
+- Installed plugins live under `plugins/installed/<plugin-id>/<version>/` with host-provisioned binaries (`backend/bin/plugin`, `backend/bin/migrate`), configuration (`config/host-values.yaml`), and manifest assets; runtime ops MUST coordinate with this layout when reading configs or emitting artefacts.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -119,9 +120,9 @@ Quota managers and billing analysts need multi-tier quotas and usage accounting 
 - **FR-019**: Over-limit handling MUST support actions `throttle`, `circuit_break`, `disable`, and `notify_marketplace`, configurable in manifest policies.
 - **FR-019a**: Marketplace notifications MUST aggregate over-limit events into hourly summaries by plugin and tenant before dispatch.
 - **FR-020**: Prometheus metrics MUST include `powerx_mcp_sessions_total`, `quota_usage`, `plugin_cost_total`, `plugin_restart_total`, and latency histograms with P95/P99 buckets.
-- **FR-021**: Alerting MUST define thresholds for health check failure rate, P95 latency, error rate, quota exhaustion, and billing anomaly, integrating with host alert channels.
-- **FR-022**: All runtime and MCP events MUST include tenant-aware audit trails stored for the retention period defined by platform policy.
-- **FR-023**: Debug tooling MUST allow developers to simulate MCP sessions and runtime bootstrap locally using sandbox tokens without bypassing security validation.
+- **FR-021**: Alerting MUST define thresholds for health check failure rate, P95 latency, error rate, quota exhaustion, and billing anomaly, wiring results to the host alerting stack (Alertmanager/marketplace notifier) using values sourced from `host_values.yaml` and manifest overrides.
+- **FR-022**: All runtime and MCP events MUST include tenant-aware audit trails stored for the retention period defined by platform policy, persisting entries to host-audited tables or log streams with immutable IDs.
+- **FR-023**: Debug tooling MUST allow developers to simulate MCP sessions and runtime bootstrap locally using sandbox tokens without bypassing security validation, reusing the same CLI flow that reads `config/host-values.yaml`.
 - **FR-024**: Runtime ops MUST treat host-generated `host_values.yaml` and environment variables (`POWERX_*`) as source-of-truth for connection info, schemas, and bind ports, augmenting but never conflicting with host startup orchestration.
 
 ### Key Entities *(include if feature involves data)*

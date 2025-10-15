@@ -3,6 +3,7 @@
 1. **Bootstrap environment**
    - Run `make dev-setup` to install Go modules and lint tools.
    - Copy `backend/etc/config.example.yaml` to `config.yaml`; merge with host-generated `host_values.yaml` so DSN、端口等仍由安装器注入；仅补充本地缺省值（如可观测性端点）。
+   - Familiarize with the installed layout `plugins/installed/<plugin-id>/<version>/` (`backend/bin/{plugin,migrate}`, `config/host-values.yaml`, `web-admin/`), because runtime ops tooling reads and emits artefacts relative to this structure.
 
 2. **Apply database migrations**
    - Execute `make migrate` to create `runtime_assignments`, `port_reservations`, `mcp_sessions`, `quota_ledger`, and `marketplace_overages` tables.

@@ -59,8 +59,8 @@ DO NOT keep these sample tasks in the generated tasks.md.
 
 > ⚠️ Gates: Host Contract {PX-HOST-001}, Tenant Isolation {PX-CTX-001}, Service-Centric {PX-SVC-001}, Observability {PX-OBS-001}, Packaging {PX-PKG-001}.
 
-- [ ] T010 Create migration for runtime entities (`runtime_assignments`, `port_reservations`, `mcp_sessions`, `quota_ledger`, `marketplace_overages`) with schema `powerx_plugin_base` and RLS policies  
-      `backend/internal/domain/repository/runtime_ops/migrations/2025Q4_runtime_ops.sql`
+- [ ] T010 Create migration for runtime entities (`runtime_assignments`, `port_reservations`, `mcp_sessions`, `runtime_audit_events`, `quota_ledger`, `marketplace_overages`) with schema `powerx_plugin_base` and RLS policies  
+      `backend/migrations/2025Q4_runtime_ops.sql`
 - [ ] T011 [P] Add runtime ops repositories scaffolding (interfaces + registrations) without business logic  
       `backend/internal/domain/repository/runtime_ops/runtime_ops_repository.go`, `backend/internal/domain/repository/runtime_ops/runtime_ops_repository_impl.go`
 - [ ] T012 [P] Extend service layer wiring (`services/admin/runtime_ops/service.go`) with constructor, dependencies, and placeholders  
@@ -71,6 +71,12 @@ DO NOT keep these sample tasks in the generated tasks.md.
       `backend/internal/services/admin/runtime_ops/observability.go`
 - [ ] T015 Ensure configuration surfaces defaults (heartbeat interval, quota window, restart backoff, log retention) while deferring DSN/ports to host-provided `host_values.yaml`  
       `backend/etc/config.yaml`, `backend/etc/config.example.yaml`, `backend/etc/host_values.yaml`, `backend/internal/config/config.go`
+- [ ] T016 Implement runtime isolation manager (CPU/memory/network limits) reading from manifest + `host_values.yaml`; expose structured violation events  
+      `backend/internal/services/admin/runtime_ops/isolation.go`, `backend/internal/config/config.go`
+- [ ] T017 [P] Create audit repository scaffolding and DTOs for tenant-scoped runtime/MCP events  
+      `backend/internal/domain/repository/runtime_ops/audit_repository.go`, `backend/internal/domain/models/runtime_ops/runtime_audit_event.go`
+- [ ] T018 Deliver debug CLI/scripts to simulate bootstrap & MCP heartbeat using sandbox tokens  
+      `scripts/dev/runtime_ops_debug.sh`, `specs/003-title-plugin-runtime-ops/quickstart.md`
 
 **Checkpoint**: Foundation ready → user stories can start (in parallel if staffed).
 
@@ -89,22 +95,28 @@ DO NOT keep these sample tasks in the generated tasks.md.
       `backend/internal/services/admin/runtime_ops/service_bootstrap_test.go`
 - [ ] T103 [P] [US1] Database migration smoke test ensuring tables and RLS exist  
       `backend/tests/integration/runtime_ops/test_migrations_bootstrap_test.go`
+- [ ] T104 [P] [US1] Integration test verifying cgroup limits & filesystem sandbox during bootstrap  
+      `backend/tests/integration/runtime_ops/test_resource_isolation_test.go`
 
 ### Implementation for US1
 
-- [ ] T104 [US1] Define domain models (`RuntimeAssignment`, `PortReservation`) and enums  
+- [ ] T105 [US1] Define domain models (`RuntimeAssignment`, `PortReservation`) and enums  
       `backend/internal/domain/models/runtime_ops/runtime_assignment.go`, `backend/internal/domain/models/runtime_ops/port_reservation.go`
-- [ ] T105 [US1] Implement repository methods for assignment creation, port locking, restart counters  
+- [ ] T106 [US1] Implement repository methods for assignment creation, port locking, restart counters  
       `backend/internal/domain/repository/runtime_ops/runtime_assignment_repository.go`
-- [ ] T106 [US1] Implement service use-cases: unpack → allocate port → inject env → launch process → register health  
+- [ ] T107 [US1] Implement service use-cases: unpack → allocate port → inject env → launch process → register health  
       `backend/internal/services/admin/runtime_ops/bootstrap_usecase.go`
-- [ ] T107 [US1] Create admin HTTP handlers for runtime launch & health status (thin, RBAC enforced)  
+- [ ] T108 [US1] Create admin HTTP handlers for runtime launch & health status (thin, RBAC enforced)  
       `backend/internal/transport/http/admin/runtime_ops/handler_bootstrap.go`
-- [ ] T108 [US1] Wire metrics/logging for bootstrap (port registry gauge, restart counter)  
+- [ ] T109 [US1] Wire metrics/logging for bootstrap (port registry gauge, restart counter)  
       `backend/internal/services/admin/runtime_ops/observability_bootstrap.go`
-- [ ] T109 [US1] Document runtime mode defaults & health probes, ensuring they layer atop `host_values.yaml` without overriding host assignments  
+- [ ] T110 [US1] Document runtime mode defaults & health probes, ensuring they layer atop `host_values.yaml` without overriding host assignments  
       `backend/etc/config.example.yaml`, `docs/integration/03_runtime_and_ops/bootstrap.md`
-- [ ] T110 [US1] Documentation update for bootstrap flow & operator steps  
+- [ ] T111 [US1] Integrate isolation manager application into bootstrap pipeline (CPU/memory/network caps, violation events)  
+      `backend/internal/services/admin/runtime_ops/bootstrap_usecase.go`, `backend/internal/services/admin/runtime_ops/isolation.go`
+- [ ] T112 [US1] Enforce filesystem sandbox (mount whitelist, audit on violation) within runtime ops  
+      `backend/internal/services/admin/runtime_ops/filesystem_sandbox.go`, `backend/internal/services/admin/runtime_ops/isolation.go`
+- [ ] T113 [US1] Documentation update for resource isolation expectations and sandbox directories  
       `docs/integration/03_runtime_and_ops/bootstrap.md`
 
 **Checkpoint**: US1 is independently functional & testable (MVP).
@@ -124,23 +136,27 @@ DO NOT keep these sample tasks in the generated tasks.md.
       `backend/internal/services/admin/runtime_ops/heartbeat_scheduler_test.go`
 - [ ] T203 [P] [US2] Contract test covering `/api/v1/admin/runtime/sessions` registration endpoint  
       `backend/tests/contract/runtime_ops/test_sessions_contract_test.go`
+- [ ] T204 [US2] Audit trail test ensuring REGISTER/CAPABILITY_SYNC/STALE events persist to runtime audit store  
+      `backend/tests/integration/runtime_ops/test_mcp_audit_log_test.go`
 
 ### Implementation for US2
 
-- [ ] T204 [US2] Extend domain models with `MCPSession` states and JWT metadata  
+- [ ] T205 [US2] Extend domain models with `MCPSession` states and JWT metadata  
       `backend/internal/domain/models/runtime_ops/mcp_session.go`
-- [ ] T205 [US2] Implement repository methods for session creation, heartbeat tracking, capability hash storage  
+- [ ] T206 [US2] Implement repository methods for session creation, heartbeat tracking, capability hash storage  
       `backend/internal/domain/repository/runtime_ops/mcp_session_repository.go`
-- [ ] T206 [US2] Implement service logic for REGISTER/ACK/CAPABILITY_SYNC, heartbeat monitor, reconnection  
+- [ ] T207 [US2] Implement service logic for REGISTER/ACK/CAPABILITY_SYNC, heartbeat monitor, reconnection  
       `backend/internal/services/admin/runtime_ops/mcp_session_usecase.go`
-- [ ] T207 [P] [US2] Add JWT validation & TLS enforcement helpers  
+- [ ] T208 [P] [US2] Add JWT validation & TLS enforcement helpers  
       `backend/internal/services/admin/runtime_ops/security.go`
-- [ ] T208 [US2] Implement `/api/v1/admin/runtime/sessions` handlers with thin transport  
+- [ ] T209 [US2] Implement `/api/v1/admin/runtime/sessions` handlers with thin transport  
       `backend/internal/transport/http/admin/runtime_ops/handler_sessions.go`
-- [ ] T209 [US2] Update metrics exposure (`powerx_mcp_sessions_total`, heartbeat latencies)  
+- [ ] T210 [US2] Update metrics exposure (`powerx_mcp_sessions_total`, heartbeat latencies)  
       `backend/internal/services/admin/runtime_ops/observability_sessions.go`
-- [ ] T210 [US2] Documentation for MCP lifecycle and failure handling  
+- [ ] T211 [US2] Documentation for MCP lifecycle and failure handling  
       `docs/integration/03_runtime_and_ops/mcp_sessions.md`
+- [ ] T212 [US2] Persist runtime audit events for REGISTER/ACK/CAPABILITY_SYNC/STALE transitions  
+      `backend/internal/services/admin/runtime_ops/mcp_session_usecase.go`, `backend/internal/domain/repository/runtime_ops/audit_repository.go`
 
 **Checkpoint**: US1 & US2 both independently pass.
 
@@ -174,6 +190,8 @@ DO NOT keep these sample tasks in the generated tasks.md.
       `backend/internal/config/config.go`, `backend/etc/config.yaml`, `backend/etc/host_values.yaml`
 - [ ] T309 [US3] Documentation for observability stack usage, dashboards, alert thresholds  
       `docs/integration/03_runtime_and_ops/observability.md`
+- [ ] T310 [US3] Configure alert thresholds & host alert channel integration (Prometheus rules / notifier)  
+      `backend/internal/services/admin/runtime_ops/alerting.go`, `backend/etc/config.yaml`, `docs/integration/03_runtime_and_ops/observability.md`
 
 **Checkpoint**: All targeted stories are independently functional.
 
@@ -207,6 +225,8 @@ DO NOT keep these sample tasks in the generated tasks.md.
       `backend/internal/services/admin/runtime_ops/observability_quota.go`
 - [ ] T409 [US4] Documentation for quota policies, breach responses, Marketplace notifications  
       `docs/integration/03_runtime_and_ops/quotas.md`
+- [ ] T410 [US4] Persist quota breach audit events & hourly Marketplace summaries to audit store  
+      `backend/internal/services/admin/runtime_ops/quota_usecase.go`, `backend/internal/domain/repository/runtime_ops/audit_repository.go`
 
 **Checkpoint**: All user stories complete with quota enforcement.
 

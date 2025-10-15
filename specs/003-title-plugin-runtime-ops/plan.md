@@ -9,7 +9,7 @@
 
 ## Summary
 
-Define host-side runtime governance for PowerX plugins covering bootstrap sequencing, MCP session lifecycle, observability outputs, and quota/billing enforcement. Implementation will extend RuntimeManager services, MCP controller flows, and platform observability/quotas to ensure deterministic startup, authenticated capability sync, standardized metrics/logs/traces, and multi-tier resource controls with Marketplace reporting.
+Define host-side runtime governance for PowerX plugins covering bootstrap sequencing, MCP session lifecycle, observability outputs, and quota/billing enforcement. Implementation will extend RuntimeManager services, MCP controller flows, platform observability/quotas, plus resource isolation, alerting, and audit facilities to ensure deterministic startup, authenticated capability sync, standardized metrics/logs/traces, and multi-tier resource controls with Marketplace reporting. All runtime ops must respect the PowerX installation layout under `plugins/installed/<plugin-id>/<version>/` (binaries, config/host-values.yaml, manifest assets).
 
 ---
 
@@ -22,8 +22,8 @@ Define host-side runtime governance for PowerX plugins covering bootstrap sequen
 -->
 
 **Language/Version**: Go 1.24 (backend services), Node 20 + Nuxt 4 with TypeScript 4.x (admin tooling references)  
-**Primary Dependencies**: Fiber HTTP stack, gRPC runtime, OpenTelemetry SDK, Prometheus exporter, Loki/Tempo clients, MCP controller libraries  
-**Storage**: PostgreSQL schema `powerx_plugin_base` (declared in `plugin.yaml` / `host_values.yaml`); tables for `runtime_assignments`, `port_reservations`, `plugin_sessions`, `quota_ledger` (new migrations required)  
+**Primary Dependencies**: Fiber HTTP stack, gRPC runtime, OpenTelemetry SDK, Prometheus exporter, Loki/Tempo clients, MCP controller libraries, cgroup/iptables helpers  
+**Storage**: PostgreSQL schema `powerx_plugin_base` (declared in `plugin.yaml` / `host_values.yaml`); tables for `runtime_assignments`, `port_reservations`, `mcp_sessions`, `runtime_audit_events`, `quota_ledger`, `marketplace_overages` (new migrations required)  
 **Testing**: `make test` (Go unit/integration), targeted MCP session simulations, Prometheus scrape smoke tests, chaos tests for restart/backoff  
 **Target Platform**: PowerX host Linux nodes running RuntimeManager + MCP controller  
 **Project Type**: Backend services with supporting documentation (no new UI screens)  
@@ -108,7 +108,7 @@ backend/
 │   ├── services/
 │   │   ├── admin/
 │   │   │   ├── templates/
-│   │   │   └── runtime_ops/        # New service orchestrating bootstrap, MCP, quotas
+│   │   │   └── runtime_ops/        # New service orchestrating bootstrap, MCP, quotas, isolation, alerts
 │   │   └── agent/
 │   ├── domain/models/
 │   │   └── runtime_ops/            # Domain entities for runtime ops
@@ -117,6 +117,7 @@ backend/
 │   ├── shared/                 # Shared tooling (logging, utils)
 │   └── mcp/controller/         # Session lifecycle coordination
 ├── etc/                        # Configuration incl. host_values.yaml injections & overrides
+├── migrations/                 # SQL migrations for runtime ops (audit, assignments, quotas)
 └── tests/
     ├── integration/
     ├── services/
@@ -126,7 +127,7 @@ docs/
 └── integration/03_runtime_and_ops/   # Operational guides & alerting thresholds
 ```
 
-**Structure Decision**: Extend existing backend layers (`internal/router` orchestrator → `internal/transport/http/admin` for routes → `internal/services/admin`) with a `runtime_ops` subdomain, plus matching `domain/models` and `domain/repository` folders. Documentation continues under `docs/integration/03_runtime_and_ops/`; structure aligns with current admin/agent conventions and remains transport-agnostic.
+**Structure Decision**: Extend existing backend layers (`internal/router` orchestrator → `internal/transport/http/admin` for routes → `internal/services/admin`) with a `runtime_ops` subdomain covering bootstrap, isolation, sessions, observability, quotas, and audits, plus matching `domain/models`/`domain/repository` folders and shared migrations under `backend/migrations/`. Documentation continues under `docs/integration/03_runtime_and_ops/`; structure aligns with current admin/agent conventions and remains transport-agnostic.
 
 ---
 
