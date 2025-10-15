@@ -76,15 +76,15 @@
 
 ### Tasks
 
-- [ ] T011 [US2] Implement capability validator that checks descriptor uniqueness, schema existence, and RBAC resource/action parity  
-      `backend/internal/contracts/capability_validator.go`
-- [ ] T012 [US2] Extend `backend/cmd/manifestcheck` to invoke the validator and emit structured errors  
+- [X] T011 [US2] Implement capability validator that checks descriptor uniqueness, schema existence, and RBAC resource/action parity  
+      `backend/internal/contracts/capability/validator.go`
+- [X] T012 [US2] Extend `backend/cmd/manifestcheck` to invoke the validator and emit structured errors  
       `backend/cmd/manifestcheck/main.go`
-- [ ] T013 [US2] Add validator unit tests covering missing schema, orphaned RBAC, and duplicate capability scenarios  
-      `backend/internal/contracts/capability_validator_test.go`
-- [ ] T014 [US2] Wire new validator into automation via `make check-capability`, reusing Go build cache for CLI execution  
-      `make-files/manifest.mk`, `Makefile`
-- [ ] T015 [US2] Document validator usage, expected outputs, and remediation steps  
+- [X] T013 [US2] Add validator unit tests covering missing schema, orphaned RBAC, and duplicate capability scenarios  
+      `backend/internal/contracts/capability/validator_test.go`
+- [X] T014 [US2] Wire new validator into automation via `make check-capability`, reusing Go build cache for CLI execution  
+      `make-files/manifest.mk`
+- [X] T015 [US2] Document validator usage, expected outputs, and remediation steps  
       `docs/lifecycle/tooling.md`
 
 **Checkpoint**: CI-ready validator ensures capability descriptors stay in sync with manifest + RBAC contracts.

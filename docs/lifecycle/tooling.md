@@ -11,6 +11,7 @@ This note inventories the existing build and release automation so lifecycle tas
 | `make migrate` | `make-files/migrate.mk` | Runs Go-based migrations (`backend/cmd/database`). | Ensure migration readiness checks appear in bootstrap checklist. |
 | `make release` | `make-files/project.mk` | Aggregates build artefacts and tags release metadata. | Lifecycle packaging steps will extend this via `make package-pxp`. |
 | `make package-pxp` | `make-files/release.mk` | Stages `.pxp` artefacts, produces hashes/audit log, prepares signature placeholder. | Run before Marketplace submission; upload staged directory for signing. |
+| `make check-capability` | `make-files/manifest.mk` | Loads capability descriptors, verifies schema paths, and enforces RBAC parity. | Run after updating `contracts/` to keep manifest + capability metadata in sync. |
 | `make test` | `make-files/test.mk` | Executes backend Go tests. | Include in validation stage before promotions. |
 
 ## Key Files & Directories
