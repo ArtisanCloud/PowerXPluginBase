@@ -17,6 +17,7 @@
    - Use `scripts/dev/register_plugin.sh --plugin-id example.plugin --runtime exec`.
    - Observe logs for `unpack → port assign → env injection → process launch → health probe registration`.
    - Check `backend/logs/runtime-manager.log` includes assigned port and environment block.
+   - Optional：执行 `scripts/dev/runtime_ops_debug.sh bootstrap` 以读取 `config.yaml` + `host-values.yaml` 并打印即将执行的启动参数。
 
 5. **Validate MCP session lifecycle**
    - Trigger REGISTER via `scripts/dev/mcp_register.sh --plugin-id example.plugin --tenant demo`.

@@ -17,6 +17,18 @@ database:
 runtime:
   run_migrate: true # 开发环境可以启用自动迁移
 
+# Runtime Ops 默认配置（宿主安装时由 host-values.yaml 覆盖端口/资源等）
+runtime_ops:
+  heartbeat_seconds: 15
+  heartbeat_misses: 3
+  quota_window_minutes: 5
+  restart_backoff_start_seconds: 5
+  restart_backoff_max_seconds: 120
+  log_retention_days: 7
+  cpu_default: "500m"
+  memory_default: "512Mi"
+  network_profile: "standard"
+
 # PowerX 上下文配置
 context:
   # 开发模式下可填入本地假数据；生产环境由宿主自动注入。

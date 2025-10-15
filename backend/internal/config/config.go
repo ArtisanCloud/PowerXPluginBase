@@ -24,6 +24,9 @@ type Config struct {
 	// 运行时配置
 	Runtime *RuntimeConfig `yaml:"runtime" json:"runtime"`
 
+	// RuntimeOpsDefaults 运行时治理默认值（可被 host-values.yaml 覆盖）
+	RuntimeOps *RuntimeOpsDefaults `yaml:"runtime_ops" json:"runtime_ops"`
+
 	// PowerX 上下文配置
 	Context *ContextConfig `yaml:"context" json:"context"`
 
@@ -66,6 +69,19 @@ type ServerConfig struct {
 // RuntimeConfig 运行时配置
 type RuntimeConfig struct {
 	RunMigrate bool `yaml:"run_migrate" json:"run_migrate"`
+}
+
+// RuntimeOpsDefaults 定义 runtime ops 所需的默认限值与窗口
+type RuntimeOpsDefaults struct {
+	HeartbeatSeconds           int    `yaml:"heartbeat_seconds" json:"heartbeat_seconds"`
+	HeartbeatMisses            int    `yaml:"heartbeat_misses" json:"heartbeat_misses"`
+	QuotaWindowMinutes         int    `yaml:"quota_window_minutes" json:"quota_window_minutes"`
+	RestartBackoffStartSeconds int    `yaml:"restart_backoff_start_seconds" json:"restart_backoff_start_seconds"`
+	RestartBackoffMaxSeconds   int    `yaml:"restart_backoff_max_seconds" json:"restart_backoff_max_seconds"`
+	LogRetentionDays           int    `yaml:"log_retention_days" json:"log_retention_days"`
+	CPUDefault                 string `yaml:"cpu_default" json:"cpu_default"`
+	MemoryDefault              string `yaml:"memory_default" json:"memory_default"`
+	NetworkProfile             string `yaml:"network_profile" json:"network_profile"`
 }
 
 // NotificationsConfig 通知配置
@@ -226,6 +242,17 @@ func getDefaultConfig() *Config {
 		},
 		Runtime: &RuntimeConfig{
 			RunMigrate: false,
+		},
+		RuntimeOps: &RuntimeOpsDefaults{
+			HeartbeatSeconds:           15,
+			HeartbeatMisses:            3,
+			QuotaWindowMinutes:         5,
+			RestartBackoffStartSeconds: 5,
+			RestartBackoffMaxSeconds:   120,
+			LogRetentionDays:           7,
+			CPUDefault:                 "500m",
+			MemoryDefault:              "512Mi",
+			NetworkProfile:             "standard",
 		},
 		Context: &ContextConfig{
 			TTL: 300 * time.Second, // 5分钟

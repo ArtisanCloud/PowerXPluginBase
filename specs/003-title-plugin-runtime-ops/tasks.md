@@ -59,23 +59,23 @@ DO NOT keep these sample tasks in the generated tasks.md.
 
 > ⚠️ Gates: Host Contract {PX-HOST-001}, Tenant Isolation {PX-CTX-001}, Service-Centric {PX-SVC-001}, Observability {PX-OBS-001}, Packaging {PX-PKG-001}.
 
-- [ ] T010 Create migration for runtime entities (`runtime_assignments`, `port_reservations`, `mcp_sessions`, `runtime_audit_events`, `quota_ledger`, `marketplace_overages`) with schema `powerx_plugin_base` and RLS policies  
+- [X] T010 Create migration for runtime entities (`runtime_assignments`, `port_reservations`, `mcp_sessions`, `runtime_audit_events`, `quota_ledger`, `marketplace_overages`) with schema `powerx_plugin_base` and RLS policies  
       `backend/migrations/2025Q4_runtime_ops.sql`
-- [ ] T011 [P] Add runtime ops repositories scaffolding (interfaces + registrations) without business logic  
+- [X] T011 [P] Add runtime ops repositories scaffolding (interfaces + registrations) without business logic  
       `backend/internal/domain/repository/runtime_ops/runtime_ops_repository.go`, `backend/internal/domain/repository/runtime_ops/runtime_ops_repository_impl.go`
-- [ ] T012 [P] Extend service layer wiring (`services/admin/runtime_ops/service.go`) with constructor, dependencies, and placeholders  
+- [X] T012 [P] Extend service layer wiring (`services/admin/runtime_ops/service.go`) with constructor, dependencies, and placeholders  
       `backend/internal/services/admin/runtime_ops/service.go`
-- [ ] T013 Update admin router bootstrap to mount runtime ops handlers behind `runtime.manage` scope  
+- [X] T013 Update admin router bootstrap to mount runtime ops handlers behind `runtime.manage` scope  
       `backend/internal/router/router.go`, `backend/internal/transport/http/admin/runtime_ops/routes.go`
-- [ ] T014 Configure observability exporters baseline (metrics registry, log fields) for runtime ops service  
+- [X] T014 Configure observability exporters baseline (metrics registry, log fields) for runtime ops service  
       `backend/internal/services/admin/runtime_ops/observability.go`
-- [ ] T015 Ensure configuration surfaces defaults (heartbeat interval, quota window, restart backoff, log retention) while deferring DSN/ports to host-provided `host_values.yaml`  
+- [X] T015 Ensure configuration surfaces defaults (heartbeat interval, quota window, restart backoff, log retention) while deferring DSN/ports to host-provided `host_values.yaml`  
       `backend/etc/config.yaml`, `backend/etc/config.example.yaml`, `backend/etc/host_values.yaml`, `backend/internal/config/config.go`
-- [ ] T016 Implement runtime isolation manager (CPU/memory/network limits) reading from manifest + `host_values.yaml`; expose structured violation events  
+- [X] T016 Implement runtime isolation manager (CPU/memory/network limits) reading from manifest + `host_values.yaml`; expose structured violation events  
       `backend/internal/services/admin/runtime_ops/isolation.go`, `backend/internal/config/config.go`
-- [ ] T017 [P] Create audit repository scaffolding and DTOs for tenant-scoped runtime/MCP events  
+- [X] T017 [P] Create audit repository scaffolding and DTOs for tenant-scoped runtime/MCP events  
       `backend/internal/domain/repository/runtime_ops/audit_repository.go`, `backend/internal/domain/models/runtime_ops/runtime_audit_event.go`
-- [ ] T018 Deliver debug CLI/scripts to simulate bootstrap & MCP heartbeat using sandbox tokens  
+- [X] T018 Deliver debug CLI/scripts to simulate bootstrap & MCP heartbeat using sandbox tokens  
       `scripts/dev/runtime_ops_debug.sh`, `specs/003-title-plugin-runtime-ops/quickstart.md`
 
 **Checkpoint**: Foundation ready → user stories can start (in parallel if staffed).
