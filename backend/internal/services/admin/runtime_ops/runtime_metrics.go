@@ -16,7 +16,7 @@ const (
 	metricCPUSeconds     = "powerx_plugin_cpu_seconds_total"
 	metricMemoryBytes    = "powerx_plugin_memory_bytes"
 	metricMCPSessions    = "powerx_plugin_mcp_sessions"
-	metricQuotaUsage     = "powerx_quota_usage"
+    metricQuotaUsage     = "powerx_plugin_quota_usage"
 	metricCostTotal      = "powerx_plugin_cost_total"
 	metricRestartTotal   = "powerx_plugin_restart_total"
 	metricHealthStatus   = "powerx_plugin_health_status"

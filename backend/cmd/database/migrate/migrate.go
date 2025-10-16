@@ -5,6 +5,7 @@ import (
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
+	runtimeopsmodel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/runtime_ops"
 	templatemodel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/template"
 	"gorm.io/gorm"
 )
@@ -15,6 +16,10 @@ func MigratePluginModels(ctx context.Context, db *gorm.DB) error {
 		&models.PluginCredential{},
 		&models.PluginTenantExt{},
 		&templatemodel.Template{},
+		&runtimeopsmodel.MCPSession{},
+		&runtimeopsmodel.RuntimeAuditEvent{},
+		&runtimeopsmodel.QuotaLedger{},
+		&runtimeopsmodel.MarketplaceOverage{},
 	)
 }
 

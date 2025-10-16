@@ -13,3 +13,18 @@ checks:
           - tenant_id
           - created_at
           - updated_at
+  - id: model-gorm-json-tags
+    desc: 持久化模型必须声明 gorm 列定义与 json 标签
+    assert:
+      type: grep
+      target: backend/internal/domain/models/**
+      pattern:
+        - "gorm:\""
+        - "json:\""
+  - id: model-register-migrate
+    desc: 所有表结构需在 migrate.go 中通过 AutoMigrate 注册
+    assert:
+      type: grep
+      target: backend/cmd/database/migrate/migrate.go
+      pattern:
+        - AutoMigrate(

@@ -14,5 +14,10 @@ func RegisterRoutes(router *gin.RouterGroup, deps *app.Deps) {
 	sessions := NewSessionsHandler(deps)
 	router.POST("/sessions/register", sessions.Register)
 
+	quotaHandler := NewQuotaHandler(deps, deps.Config.RuntimeOps)
+	quota := router.Group("/quota")
+	quota.GET("/status", quotaHandler.GetStatus)
+	quota.POST("/overrides", quotaHandler.SetOverride)
+
 	router.GET("/metrics", MetricsHandler)
 }

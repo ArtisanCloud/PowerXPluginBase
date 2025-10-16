@@ -204,29 +204,29 @@ DO NOT keep these sample tasks in the generated tasks.md.
 
 ### Tests for US4
 
-- [ ] T401 [P] [US4] Integration test for quota breach handling + Marketplace summary enqueue  
+- [X] T401 [P] [US4] Integration test for quota breach handling + Marketplace summary enqueue  
       `backend/tests/integration/runtime_ops/test_quota_breach_test.go`
-- [ ] T402 [US4] Unit test for token bucket refill (5 min window) and cost aggregation  
+- [X] T402 [US4] Unit test for token bucket refill (5 min window) and cost aggregation  
       `backend/internal/services/admin/runtime_ops/quota_manager_test.go`
 
 ### Implementation for US4
 
-- [ ] T403 [US4] Extend domain models for `QuotaLedger` and `MarketplaceOverage` aggregation  
+- [X] T403 [US4] Extend domain models for `QuotaLedger` and `MarketplaceOverage` aggregation  
       `backend/internal/domain/models/runtime_ops/quota_ledger.go`, `backend/internal/domain/models/runtime_ops/marketplace_overage.go`
-- [ ] T404 [US4] Implement repository methods for quota ledger writes & hourly summaries  
+- [X] T404 [US4] Implement repository methods for quota ledger writes & hourly summaries  
       `backend/internal/domain/repository/runtime_ops/quota_repository.go`
-- [ ] T405 [US4] Implement rate limiter/token bucket logic in service layer  
+- [X] T405 [US4] Implement rate limiter/token bucket logic in service layer  
       `backend/internal/services/admin/runtime_ops/quota_usecase.go`
-- [ ] T406 [US4] Integrate breach actions (`throttle`, `circuit_break`, `disable`, `notify_marketplace`)  
+- [X] T406 [US4] Integrate breach actions (`throttle`, `circuit_break`, `disable`, `notify_marketplace`)  
       `backend/internal/services/admin/runtime_ops/quota_actions.go`
-- [ ] T407 [P] [US4] Add admin endpoints or MCP events for quota status & overrides  
-      `backend/internal/transport/http/admin/runtime_ops/handler_quota.go`, `backend/internal/mcp/controller/quota_events.go`
-- [ ] T408 [US4] Update metrics (`quota_usage`, `plugin_cost_total`) and Marketplace report scheduler  
+- [X] T407 [P] [US4] Add admin endpoints or MCP events for quota status & overrides  
+      `backend/internal/transport/http/admin/runtime_ops/quota_handler.go`, `backend/internal/mcp/controller/quota_events.go`
+- [X] T408 [US4] Update metrics (`quota_usage`, `plugin_cost_total`) and Marketplace report scheduler  
       `backend/internal/services/admin/runtime_ops/observability_quota.go`
-- [ ] T409 [US4] Documentation for quota policies, breach responses, Marketplace notifications  
-      `docs/integration/03_runtime_and_ops/quotas.md`
-- [ ] T410 [US4] Persist quota breach audit events & hourly Marketplace summaries to audit store  
-      `backend/internal/services/admin/runtime_ops/quota_usecase.go`, `backend/internal/domain/repository/runtime_ops/audit_repository.go`
+- [X] T409 [US4] Documentation for quota policies, breach responses, Marketplace notifications  
+      `docs/integration/03_runtime_and_ops/Quotas_RateLimits_and_Costs.md`
+- [X] T410 [US4] Persist quota breach audit events & hourly Marketplace summaries to audit store  
+      `backend/internal/services/admin/runtime_ops/quota_usecase.go`, `backend/internal/domain/models/runtime_ops/runtime_audit_event.go`
 
 **Checkpoint**: All user stories complete with quota enforcement.
 

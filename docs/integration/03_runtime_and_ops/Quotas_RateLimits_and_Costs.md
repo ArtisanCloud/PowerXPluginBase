@@ -119,6 +119,17 @@ if !bucket.Allow() {
 [WARN] crm.contact.create rate limit exceeded (tenant=123)
 ```
 
+默认速率参数来自 `runtime_ops.quota_window_minutes`，宿主通过 `host-values.yaml` 注入：
+
+```yaml
+runtime_ops:
+  quota_window_minutes: 5
+  alerts:
+    quota_usage: 0.9
+```
+
+运行时代码读取该配置并驱动 `QuotaService` 中的令牌桶，配额利用率通过 `powerx_quota_usage` 指标上报。
+
 ---
 
 ## 🧩 六、多租户配额隔离策略
@@ -145,6 +156,23 @@ last_reset_at
 ```
 
 宿主每日重置统计器。
+
+### 配置入口 (`runtime_ops`)
+
+插件运行环境的配额与告警阈值统一由 `host-values.yaml` 注入：
+
+```yaml
+runtime_ops:
+  quota_window_minutes: 5
+  alerts:
+    quota_usage: 0.9
+    error_rate: 0.05
+  observability:
+    loki_endpoint: https://loki.powerx.local
+    tempo_endpoint: https://tempo.powerx.local
+```
+
+运行时代码通过 `backend/internal/config` 与 `QuotaService` 读取以上值，避免硬编码，确保不同环境可灵活调整策略。
 
 ---
 
@@ -219,6 +247,17 @@ powerx_plugin_rate_limited_total{plugin="crm"} 17
 ```
 
 管理员可在 PowerX Admin → 【插件运行监控】中查看配额、速率与成本趋势。
+
+表中指标来自运行时导出的 Prometheus 度量：
+
+| 指标 | 说明 |
+|------|------|
+| `powerx_plugin_quota_usage{scope,scope_ref}` | 当前配额使用率 (0~1) |
+| `powerx_plugin_cost_total{plugin_id,tenant_id}` | 累计成本合计 |
+| `powerx_plugin_restart_total{plugin_id,instance_id}` | 插件实例重启次数 |
+| `powerx_plugin_health_status{plugin_id,instance_id}` | 健康状态（1/0） |
+
+相关代码见 `runtime_metrics.go`，`QuotaService` 在每次请求时调用 `SetQuotaUsage`、`AddCost` 更新以上指标。
 
 ---
 
