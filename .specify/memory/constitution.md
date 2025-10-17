@@ -101,6 +101,7 @@ rulesets:
   - Nuxt 运行期基于 `runtimeConfig.public.apiBaseUrl` 适配「直连 `:8086/v1`」与「宿主反代 `/_p/<plugin-id>/api/v1`」。  
   - 打包产物**固定**在 `web-admin/.output/` 并**随发布包交付**。  
   - UI 组件遵循 Nuxt UI 3.3.x：`UModal v-model:open`、`USwitch`（无 `UToggle`）、`color ∈ {primary,secondary,success,info,warning,error,neutral}`。
+  - 共享 TypeScript 类型集中存放在 `web-admin/app/types/`，通过 `~/types/...` 引入；新增/更新类型需同步文档、生成器或脚手架规范。
 
 ## Development Workflow & Quality Gates
 

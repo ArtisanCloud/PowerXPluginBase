@@ -38,6 +38,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	// 初始化日志隐私掩码规则
+	masking := cfg.SecurityBaselineConfig().MaskingRules
+	if len(masking.PIIFields) > 0 {
+		placeholder := masking.LogRedaction.Placeholder
+		logger.ConfigurePrivacyMasker(masking.PIIFields, placeholder)
+	}
+
 	// ★ 在这里把 HTTP/GRPC 的占位符先解析掉（一定要在起服务之前）
 	//   - HTTP 用 PORT（由 PowerX 的 supervisor 注入）
 	cfg.Server.BindAddr = utils.ResolveDynamicAddr(cfg.Server.BindAddr, "PORT")

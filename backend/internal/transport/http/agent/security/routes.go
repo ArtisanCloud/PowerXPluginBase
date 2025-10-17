@@ -1,14 +1,25 @@
 package security
 
 import (
+	secobs "github.com/ArtisanCloud/PowerXPlugin/internal/observability/security"
+	agentsec "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent/security"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/gin-gonic/gin"
 )
 
-// RegisterRoutes wires the agent security namespace. Concrete handlers will be
-// implemented alongside ToolGrant and privacy middleware in later phases.
+// RegisterRoutes wires the agent security namespace (privacy consent endpoints).
 func RegisterRoutes(rg *gin.RouterGroup, deps *app.Deps) {
-	_ = deps
+	if rg == nil || deps == nil {
+		return
+	}
+	logger := deps.RuntimeLogger(deps.Ctx, "agent_security_privacy", nil)
+	guard := agentsec.NewPrivacyGuard(deps.DB, deps.Config, logger)
+	auditPath := deps.Config.SecurityBaselineConfig().ConsentDefaults.AuditChannel
+	auditWriter, _ := secobs.NewFileAuditWriter(auditPath)
+	h := NewPrivacyHandler(deps, guard, auditWriter)
 	sec := rg.Group("/security")
-	_ = sec
+	{
+		sec.GET("/privacy/consent", h.GetActiveConsent)
+		sec.POST("/privacy/lifecycle", h.AcknowledgeLifecycleEvent)
+	}
 }

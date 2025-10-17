@@ -10,8 +10,10 @@ import (
 	"gorm.io/gorm"
 )
 
+const defaultSchema = "public"
+
 var (
-	schemaName = "px_plugin" // 默认 schema
+	schemaName = defaultSchema // 默认 schema（本地开发使用 public）
 	once       sync.Once
 )
 

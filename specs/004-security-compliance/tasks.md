@@ -55,18 +55,18 @@
 
 ### Implementation for US1
 
-- [ ] T100 [P] [US1] Implement GORM models in `backend/internal/domain/models/privacy/{classification.go,consent_token.go,lifecycle_event.go}` with enums and JSONB fields per `data-model.md`.
-- [ ] T101 [US1] Create tenant-scoped migrations in `backend/internal/db/migrations/` for privacy tables and enable RLS policies aligning with `tenant_id`.
-- [ ] T102 [P] [US1] Build repositories in `backend/internal/domain/repository/privacy/` for classifications, consent tokens, and lifecycle events (CRUD + query helpers).
-- [ ] T103 [US1] Add services under `backend/internal/services/admin/security/privacy_service.go` and `backend/internal/services/agent/security/privacy_guard.go` handling consent validation, lifecycle logging, and host event hooks.
-- [ ] T104 [P] [US1] Implement `backend/internal/middleware/consent_guard/guard.go` consuming consent tokens and applying masking adapters.
-- [ ] T105 [US1] Wire admin HTTP handlers (`backend/internal/transport/http/admin/security/consent_handler.go`, `lifecycle_handler.go`) per OpenAPI contract, returning DTOs and status codes.
-- [ ] T106 [US1] Introduce agent-facing privacy endpoints in `backend/internal/transport/http/agent/security/privacy_handler.go` for consent status checks and lifecycle acknowledgements.
-- [ ] T107 [P] [US1] Extend log masking helpers in `backend/internal/logger/privacy_mask.go` and load rules from `backend/etc/security_baseline.yaml`.
-- [ ] T108 [US1] Append audit emission utility in `backend/internal/observability/security/audit_writer.go` to write consent and lifecycle events to `/logs/audit.log`.
-- [ ] T109 [US1] Build admin UI views in `web-admin/app/pages/security/consent.vue` and `events.vue` to list consent tokens and lifecycle evidence with masked previews.
-- [ ] T110 [US1] Implement outbound data gateway guard in `backend/internal/services/agent/security/privacy_guard.go` (host allow-list validation + TLS 1.3 enforcement) with tests under `backend/tests/security/privacy_guard_test.go`.
-- [ ] T111 [P] [US1] Add AI 数据合规处理：创建 `backend/internal/services/agent/security/ai_filter.go` 负责 prompt/response 脱敏与临时存储清理，并在 `backend/internal/middleware/consent_guard/guard.go` 中挂接。
+- [X] T100 [P] [US1] Implement GORM models in `backend/internal/domain/models/privacy/{classification.go,consent_token.go,lifecycle_event.go}` with enums and JSONB fields per `data-model.md`.
+- [X] T101 [US1] Create tenant-scoped migrations in `backend/internal/db/migrations/` for privacy tables and enable RLS policies aligning with `tenant_id`.
+- [X] T102 [P] [US1] Build repositories in `backend/internal/domain/repository/privacy/` for classifications, consent tokens, and lifecycle events (CRUD + query helpers).
+- [X] T103 [US1] Add services under `backend/internal/services/admin/security/privacy_service.go` and `backend/internal/services/agent/security/privacy_guard.go` handling consent validation, lifecycle logging, and host event hooks.
+- [X] T104 [P] [US1] Implement `backend/internal/middleware/consent_guard/guard.go` consuming consent tokens and applying masking adapters.
+- [X] T105 [US1] Wire admin HTTP handlers (`backend/internal/transport/http/admin/security/consent_handler.go`, `lifecycle_handler.go`) per OpenAPI contract, returning DTOs and status codes.
+- [X] T106 [US1] Introduce agent-facing privacy endpoints in `backend/internal/transport/http/agent/security/privacy_handler.go` for consent status checks and lifecycle acknowledgements.
+- [X] T107 [P] [US1] Extend log masking helpers in `backend/internal/logger/privacy_mask.go` and load rules from `backend/etc/security_baseline.yaml`.
+- [X] T108 [US1] Append audit emission utility in `backend/internal/observability/security/audit_writer.go` to write consent and lifecycle events to `/logs/audit.log`.
+- [X] T109 [US1] Build admin UI views in `web-admin/app/pages/security/consent.vue` and `events.vue` to list consent tokens and lifecycle evidence with masked previews.
+- [X] T110 [US1] Implement outbound data gateway guard in `backend/internal/services/agent/security/privacy_guard.go` (host allow-list validation + TLS 1.3 enforcement) with tests under `backend/tests/security/privacy_guard_test.go`.
+- [X] T111 [P] [US1] Add AI 数据合规处理：创建 `backend/internal/services/agent/security/ai_filter.go` 负责 prompt/response 脱敏与临时存储清理，并在 `backend/internal/middleware/consent_guard/guard.go` 中挂接。
 
 **Checkpoint**: Consent enforcement, masking, and lifecycle evidence verifiable end-to-end.
 

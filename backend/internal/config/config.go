@@ -136,9 +136,11 @@ type CacheConfig struct {
 
 // SecurityConfig 安全配置
 type SecurityConfig struct {
-	EnableCORS  bool            `yaml:"enable_cors" json:"enable_cors"`
-	CORSOrigins []string        `yaml:"cors_origins" json:"cors_origins"`
-	RateLimit   RateLimitConfig `yaml:"rate_limit" json:"rate_limit"`
+	EnableCORS       bool            `yaml:"enable_cors" json:"enable_cors"`
+	CORSOrigins      []string        `yaml:"cors_origins" json:"cors_origins"`
+	RateLimit        RateLimitConfig `yaml:"rate_limit" json:"rate_limit"`
+	GatewayAllowlist []string        `yaml:"gateway_allowlist" json:"gateway_allowlist"`
+	RequireTLS13     bool            `yaml:"require_tls13" json:"require_tls13"`
 }
 
 // RateLimitConfig 限流配置
@@ -368,6 +370,8 @@ func getDefaultConfig() *Config {
 				Enabled:           true,
 				RequestsPerMinute: 60,
 			},
+			GatewayAllowlist: []string{"localhost", "127.0.0.1"},
+			RequireTLS13:     false,
 		},
 		Monitoring: MonitoringConfig{
 			Metrics: MetricsConfig{
