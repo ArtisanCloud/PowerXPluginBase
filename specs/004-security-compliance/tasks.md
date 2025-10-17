@@ -26,9 +26,9 @@
 
 **Purpose**: Prepare shared configuration and workspace scaffolding required by all stories.
 
-- [ ] T001 [Setup] Create baseline config stub `backend/etc/security_baseline.yaml` with sections for `masking_rules`, `baseline_version`, `tool_grant`, and `consent_defaults`.
-- [ ] T002 [Setup] Document new security configuration keys in `backend/etc/README.md`, referencing default retention (90 days) and audit pipeline outputs.
-- [ ] T003 [Setup] Add security artifact directories (`build/security/.gitkeep`, `dist/security/.gitkeep`) and update `.gitignore` to retain generated reports.
+- [X] T001 [Setup] Create baseline config stub `backend/etc/security_baseline.yaml` with sections for `masking_rules`, `baseline_version`, `tool_grant`, and `consent_defaults`.
+- [X] T002 [Setup] Document new security configuration keys in `backend/etc/README.md`, referencing default retention (90 days) and audit pipeline outputs.
+- [X] T003 [Setup] Add security artifact directories (`build/security/.gitkeep`, `dist/security/.gitkeep`) and update `.gitignore` to retain generated reports.
 
 ---
 

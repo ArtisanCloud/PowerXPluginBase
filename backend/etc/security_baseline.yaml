@@ -1,0 +1,23 @@
+# Default security baseline configuration.
+# Values may be overridden per environment via host-provided config bundles.
+
+baseline_version: "2025.10"
+
+masking_rules:
+  pii_fields:
+    - email
+    - phone_number
+    - national_id
+  log_redaction:
+    enabled: true
+    placeholder: "[REDACTED]"
+
+tool_grant:
+  ttl_hours: 24
+  renewal_threshold_minutes: 60
+  revoke_on_logout: true
+
+consent_defaults:
+  retention_days: 90
+  audit_channel: "logs/audit.log"
+  export_bucket: ""
