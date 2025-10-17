@@ -81,17 +81,17 @@ backend/
 │   ├── domain/models/
 │   │   ├── privacy/
 │   │   ├── security/
-│   │   └── toolgrant/
+│   │   └── tool_grant/
 │   ├── domain/repository/
 │   │   ├── privacy/
 │   │   ├── security/
 │   │   └── toolgrant/
 │   ├── services/
 │   │   ├── admin/security/
-│   │   └── agent/toolgrant/
+│   │   └── agent/tool_grant/
 │   ├── middleware/
 │   │   ├── consent_guard/
-│   │   └── toolgrant_verifier/
+│   │   └── tool_grant_verifier/
 │   ├── transport/
 │   │   ├── http/
 │   │   │   ├── admin/security/
