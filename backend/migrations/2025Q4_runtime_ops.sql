@@ -24,6 +24,8 @@ ALTER TABLE powerx_plugin_base.runtime_assignments
 
 CREATE INDEX IF NOT EXISTS idx_runtime_assignments_plugin ON powerx_plugin_base.runtime_assignments (plugin_id);
 CREATE INDEX IF NOT EXISTS idx_runtime_assignments_tenant ON powerx_plugin_base.runtime_assignments (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_runtime_assignments_status_host ON powerx_plugin_base.runtime_assignments (status, host_id);
+CREATE INDEX IF NOT EXISTS idx_runtime_assignments_ready_at ON powerx_plugin_base.runtime_assignments (ready_at DESC);
 
 -- Port reservations enforce unique port usage per instance
 CREATE TABLE IF NOT EXISTS powerx_plugin_base.port_reservations (
@@ -55,6 +57,7 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.mcp_sessions (
 
 CREATE INDEX IF NOT EXISTS idx_mcp_sessions_state ON powerx_plugin_base.mcp_sessions (state);
 CREATE INDEX IF NOT EXISTS idx_mcp_sessions_tenant ON powerx_plugin_base.mcp_sessions (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_mcp_sessions_assignment ON powerx_plugin_base.mcp_sessions (runtime_assignment_id);
 
 -- Runtime audit log for immutable events
 CREATE TABLE IF NOT EXISTS powerx_plugin_base.runtime_audit_events (
@@ -68,6 +71,7 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.runtime_audit_events (
 
 CREATE INDEX IF NOT EXISTS idx_runtime_audit_plugin ON powerx_plugin_base.runtime_audit_events (plugin_id);
 CREATE INDEX IF NOT EXISTS idx_runtime_audit_tenant ON powerx_plugin_base.runtime_audit_events (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_runtime_audit_type_time ON powerx_plugin_base.runtime_audit_events (event_type, occurred_at DESC);
 
 -- Quota ledger aggregates consumption by scope
 CREATE TABLE IF NOT EXISTS powerx_plugin_base.quota_ledger (
@@ -87,6 +91,7 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.quota_ledger (
 
 CREATE INDEX IF NOT EXISTS idx_quota_ledger_scope ON powerx_plugin_base.quota_ledger (scope_type, scope_ref);
 CREATE INDEX IF NOT EXISTS idx_quota_ledger_window ON powerx_plugin_base.quota_ledger (window_start, window_end);
+CREATE INDEX IF NOT EXISTS idx_quota_ledger_reported_at ON powerx_plugin_base.quota_ledger (reported_at);
 
 -- Marketplace hourly overage summaries
 CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_overages (
@@ -104,6 +109,7 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_overages (
 
 CREATE INDEX IF NOT EXISTS idx_marketplace_overages_window ON powerx_plugin_base.marketplace_overages (hour_window);
 CREATE INDEX IF NOT EXISTS idx_marketplace_overages_plugin_tenant ON powerx_plugin_base.marketplace_overages (plugin_id, tenant_id);
+CREATE INDEX IF NOT EXISTS idx_marketplace_overages_unreported ON powerx_plugin_base.marketplace_overages (plugin_id, tenant_id) WHERE reported = false;
 
 COMMIT;
 

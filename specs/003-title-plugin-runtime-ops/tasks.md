@@ -216,7 +216,7 @@ DO NOT keep these sample tasks in the generated tasks.md.
 - [X] T404 [US4] Implement repository methods for quota ledger writes & hourly summaries  
       `backend/internal/domain/repository/runtime_ops/quota_repository.go`
 - [X] T405 [US4] Implement rate limiter/token bucket logic in service layer  
-      `backend/internal/services/admin/runtime_ops/quota_usecase.go`
+      `backend/internal/services/admin/runtime_ops/quota_service.go`
 - [X] T406 [US4] Integrate breach actions (`throttle`, `circuit_break`, `disable`, `notify_marketplace`)  
       `backend/internal/services/admin/runtime_ops/quota_actions.go`
 - [X] T407 [P] [US4] Add admin endpoints or MCP events for quota status & overrides  
@@ -226,7 +226,7 @@ DO NOT keep these sample tasks in the generated tasks.md.
 - [X] T409 [US4] Documentation for quota policies, breach responses, Marketplace notifications  
       `docs/integration/03_runtime_and_ops/Quotas_RateLimits_and_Costs.md`
 - [X] T410 [US4] Persist quota breach audit events & hourly Marketplace summaries to audit store  
-      `backend/internal/services/admin/runtime_ops/quota_usecase.go`, `backend/internal/domain/models/runtime_ops/runtime_audit_event.go`
+      `backend/internal/services/admin/runtime_ops/quota_service.go`, `backend/internal/domain/models/runtime_ops/runtime_audit_event.go`
 
 **Checkpoint**: All user stories complete with quota enforcement.
 
@@ -234,19 +234,19 @@ DO NOT keep these sample tasks in the generated tasks.md.
 
 ## Phase 7 — Polish & Cross-Cutting
 
-- [ ] T900 [P] Finalize docs (`quickstart.md`, `docs/integration/03_runtime_and_ops/*`) to match implementation  
+- [X] T900 [P] Finalize docs (`quickstart.md`, `docs/integration/03_runtime_and_ops/*`) to match implementation  
       `specs/003-title-plugin-runtime-ops/quickstart.md`, `docs/integration/03_runtime_and_ops/`
-- [ ] T901 Refactor shared utilities (reuse logging helpers, reduce duplication)  
+- [X] T901 Refactor shared utilities (reuse logging helpers, reduce duplication)  
       `backend/internal/shared/*`
-- [ ] T902 Performance tuning: DB indexes for runtime ops tables, adjust Prometheus scrape config  
+- [X] T902 Performance tuning: DB indexes for runtime ops tables, adjust Prometheus scrape config  
       `backend/internal/domain/repository/runtime_ops/migrations/*.sql`, `backend/etc/config.yaml`
-- [ ] T903 [P] Additional regression/unit tests across services  
+- [X] T903 [P] Additional regression/unit tests across services  
       `backend/internal/services/admin/runtime_ops/*_test.go`
-- [ ] T904 Security review & RBAC audit for new endpoints/roles  
+- [X] T904 Security review & RBAC audit for new endpoints/roles  
       `backend/internal/transport/http/admin/runtime_ops/routes.go`, `plugin/plugin.yaml`
-- [ ] T905 Validate quickstart script & load generator align with latest config  
+- [X] T905 Validate quickstart script & load generator align with latest config  
       `specs/003-title-plugin-runtime-ops/quickstart.md`, `scripts/dev/*`
-- [ ] T906 Release prep (`make release`, manifest updates, checksum verification)  
+- [X] T906 Release prep (`make release`, manifest updates, checksum verification)  
       `make-files/build.mk`, `plugin/plugin.yaml`, `docs/releases/`
 
 ---

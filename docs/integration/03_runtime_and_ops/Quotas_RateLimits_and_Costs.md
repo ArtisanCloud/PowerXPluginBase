@@ -128,7 +128,7 @@ runtime_ops:
     quota_usage: 0.9
 ```
 
-运行时代码读取该配置并驱动 `QuotaService` 中的令牌桶，配额利用率通过 `powerx_quota_usage` 指标上报。
+运行时代码读取该配置并驱动 `QuotaService` 中的令牌桶，配额利用率通过 `powerx_plugin_quota_usage` 指标上报。
 
 ---
 
@@ -240,11 +240,13 @@ GROUP BY plugin_id, tenant_id;
 PowerX 监控系统（Prometheus / Grafana）暴露如下指标：
 
 ```
-powerx_plugin_quota_usage{plugin="crm", tenant="123"} 0.83
-powerx_plugin_calls_total{plugin="crm"} 8421
-powerx_plugin_cost_total{plugin="crm"} 42.13
-powerx_plugin_rate_limited_total{plugin="crm"} 17
+powerx_plugin_request_total{plugin_id="crm", capability="bootstrap"} 8421
+powerx_plugin_quota_usage{plugin_id="crm", scope="tenant", scope_ref="123"} 0.83
+powerx_plugin_cost_total{plugin_id="crm", tenant_id="123"} 42.13
+powerx_mcp_sessions_total{plugin_id="crm"} 3
 ```
+
+> 使用 `scripts/dev/quota_burst.sh --tenant demo --qps 20 --duration 15` 可以在本地快速触发配额消耗并观察上述指标的变化。
 
 管理员可在 PowerX Admin → 【插件运行监控】中查看配额、速率与成本趋势。
 

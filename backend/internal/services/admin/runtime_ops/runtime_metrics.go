@@ -15,8 +15,8 @@ const (
 	metricLatencySeconds = "powerx_plugin_latency_seconds"
 	metricCPUSeconds     = "powerx_plugin_cpu_seconds_total"
 	metricMemoryBytes    = "powerx_plugin_memory_bytes"
-	metricMCPSessions    = "powerx_plugin_mcp_sessions"
-    metricQuotaUsage     = "powerx_plugin_quota_usage"
+	metricMCPSessions    = "powerx_mcp_sessions_total"
+	metricQuotaUsage     = "powerx_plugin_quota_usage"
 	metricCostTotal      = "powerx_plugin_cost_total"
 	metricRestartTotal   = "powerx_plugin_restart_total"
 	metricHealthStatus   = "powerx_plugin_health_status"
@@ -42,6 +42,14 @@ var (
 		metricHealthStatus:   "Health status of plugin instances (1=healthy,0=unhealthy)",
 	}
 )
+
+func resetMetrics() {
+	metricsMu.Lock()
+	defer metricsMu.Unlock()
+	counters = map[string]map[string]float64{}
+	gauges = map[string]map[string]float64{}
+	histograms = map[string]*histogramMetric{}
+}
 
 var defaultBuckets = []float64{0.1, 0.5, 1, 2, 5, 10}
 

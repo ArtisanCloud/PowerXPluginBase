@@ -2,10 +2,12 @@ package http
 
 import (
 	"fmt"
+	"strings"
 
 	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
+	adminruntime "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/runtime_ops"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/templates"
 	agentapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/agent"
 	"github.com/gin-gonic/gin"
@@ -15,6 +17,7 @@ import (
 type Registry struct {
 	engine *gin.Engine
 	deps   *app.Deps
+	rbac   map[string]authx.Permission
 }
 
 // NewRegistry 创建 API 注册器
@@ -22,6 +25,7 @@ func NewRegistry(engine *gin.Engine, deps *app.Deps) *Registry {
 	return &Registry{
 		engine: engine,
 		deps:   deps,
+		rbac:   map[string]authx.Permission{},
 	}
 }
 
@@ -30,6 +34,8 @@ func (r *Registry) RegisterAPIRoutes(gApi *gin.RouterGroup) {
 	admin.RegisterAPIRoutes(gApi, r.deps)
 	agentapi.RegisterAPIRoutes(gApi, r.deps)
 	templates.RegisterAPIRoutes(gApi, r.deps)
+
+	r.mergeRBAC(adminruntime.RBACEntries(r.apiPrefix()))
 }
 
 func (r *Registry) PrintRegisteredRoutes() {
@@ -44,5 +50,31 @@ func (r *Registry) PrintRegisteredRoutes() {
 
 // RBACMap 汇总所有模块的 RBAC 声明。
 func (r *Registry) RBACMap() map[string]authx.Permission {
-	return map[string]authx.Permission{}
+	out := make(map[string]authx.Permission, len(r.rbac))
+	for route, perm := range r.rbac {
+		out[route] = perm
+	}
+	return out
+}
+
+func (r *Registry) mergeRBAC(entries map[string]authx.Permission) {
+	if entries == nil {
+		return
+	}
+	for route, perm := range entries {
+		r.rbac[route] = perm
+	}
+}
+
+func (r *Registry) apiPrefix() string {
+	prefix := "/api/v1"
+	if r.deps != nil && r.deps.Config != nil && r.deps.Config.Server != nil {
+		if p := strings.TrimSpace(r.deps.Config.Server.APIPrefix); p != "" {
+			if !strings.HasPrefix(p, "/") {
+				p = "/" + p
+			}
+			prefix = p
+		}
+	}
+	return prefix
 }

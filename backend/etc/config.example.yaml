@@ -62,6 +62,7 @@ security:
 monitoring:
   metrics:
     enabled: true
+    path: "/api/v1/admin/runtime/metrics"
   health_check:
     enabled: true
 

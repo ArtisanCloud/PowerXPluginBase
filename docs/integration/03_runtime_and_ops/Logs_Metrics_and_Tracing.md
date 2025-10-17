@@ -145,7 +145,7 @@ runtime_ops:
 插件应暴露 Prometheus 格式指标端点：
 
 ```
-GET /metrics
+GET /api/v1/admin/runtime/metrics
 → Content-Type: text/plain; version=0.0.4
 ```
 
@@ -173,8 +173,8 @@ plugin_latency_seconds_count 1020
 | `powerx_plugin_latency_seconds`  | histogram | 请求耗时分布        |
 | `powerx_plugin_cpu_seconds_total`| counter   | CPU 使用量         |
 | `powerx_plugin_memory_bytes`     | gauge     | 内存占用            |
-| `powerx_plugin_mcp_sessions`     | gauge     | 当前 MCP 连接数     |
-| `powerx_quota_usage`             | gauge     | 配额使用率 (0~1)    |
+| `powerx_mcp_sessions_total`      | gauge     | 当前 MCP 连接数     |
+| `powerx_plugin_quota_usage`      | gauge     | 配额使用率 (0~1)    |
 | `powerx_plugin_cost_total`       | counter   | 累计成本（插件/租户） |
 | `powerx_plugin_restart_total`    | counter   | 重启次数            |
 | `powerx_plugin_health_status`    | gauge     | 健康状态（1=健康）    |
@@ -182,7 +182,7 @@ plugin_latency_seconds_count 1020
 宿主统一抓取：
 
 ```
-http://127.0.0.1:<PORT>/metrics
+http://127.0.0.1:<PORT>/api/v1/admin/runtime/metrics
 ```
 
 > 插件必须在 manifest 中声明 metrics 端点（见 [Runtime_Env_and_Ports.md](./Runtime_Env_and_Ports.md)）。
@@ -330,7 +330,7 @@ func main() {
 ## ⚙️ 十二、开发与测试建议
 
 - 使用 `POWERX_ENV=dev` 输出详细日志；
-- 在本地测试 `/metrics` 与 `/healthz`；
+- 在本地测试 `/api/v1/admin/runtime/metrics` 与 `/healthz`；
 - 在 CI 中集成日志与指标验证：
 
   ```bash

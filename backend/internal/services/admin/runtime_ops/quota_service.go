@@ -11,6 +11,7 @@ import (
 	repo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository"
 	runtimeRepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/runtime_ops"
 	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -83,6 +84,9 @@ func (s *QuotaService) AllowRequest(ctx context.Context, scopeType, scopeRef, pl
 
 // RecordUsage writes ledger entry for reporting.
 func (s *QuotaService) RecordUsage(ctx context.Context, entry *model.QuotaLedger) (*model.QuotaLedger, error) {
+	if entry != nil && entry.ID == "" {
+		entry.ID = uuid.NewString()
+	}
 	return s.repo.RecordUsage(ctx, entry)
 }
 
@@ -98,6 +102,7 @@ func (s *QuotaService) RecordBreach(ctx context.Context, pluginID, scopeRef, cap
 		return err
 	}
 	event := &model.RuntimeAuditEvent{
+		ID:         uuid.NewString(),
 		PluginID:   pluginID,
 		TenantID:   strconv.FormatUint(tenantID, 10),
 		EventType:  "quota_breach",
@@ -110,6 +115,9 @@ func (s *QuotaService) RecordBreach(ctx context.Context, pluginID, scopeRef, cap
 
 // ScheduleMarketplaceSummary persists overage summary for Marketplace reporting.
 func (s *QuotaService) ScheduleMarketplaceSummary(ctx context.Context, summary *model.MarketplaceOverage) (*model.MarketplaceOverage, error) {
+	if summary != nil && summary.ID == "" {
+		summary.ID = uuid.NewString()
+	}
 	return s.repo.CreateOverage(ctx, summary)
 }
 

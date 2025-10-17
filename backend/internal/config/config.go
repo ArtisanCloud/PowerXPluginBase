@@ -298,8 +298,8 @@ func getDefaultConfig() *Config {
 		},
 		Monitoring: MonitoringConfig{
 			Metrics: MetricsConfig{
-				Enabled: false,
-				Path:    "/metrics",
+				Enabled: true,
+				Path:    "/api/v1/admin/runtime/metrics",
 			},
 			HealthCheck: HealthCheckConfig{
 				Enabled: true,

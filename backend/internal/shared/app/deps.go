@@ -1,15 +1,55 @@
 package app
 
 import (
-    "context"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/config"
-    "github.com/ArtisanCloud/PowerXPlugin/internal/grpc/client"
-    "gorm.io/gorm"
+	"context"
+	"strconv"
+
+	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/grpc/client"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
+// Deps bundles shared infrastructure dependencies for handlers and services.
 type Deps struct {
-    DB           *gorm.DB
-    Ctx          *context.Context
-    PowerXClient *client.PowerXServiceClient
-    Config       *config.Config
+	DB           *gorm.DB
+	Ctx          context.Context
+	PowerXClient *client.PowerXServiceClient
+	Config       *config.Config
+}
+
+// RuntimeDefaults returns the configured runtime ops defaults (if any).
+func (d *Deps) RuntimeDefaults() *config.RuntimeOpsDefaults {
+	if d == nil || d.Config == nil {
+		return nil
+	}
+	return d.Config.RuntimeOps
+}
+
+// RuntimeLogger provides a structured logger enriched with runtime metadata.
+func (d *Deps) RuntimeLogger(ctx context.Context, component string, extra logger.Fields) *logrus.Entry {
+	if extra == nil {
+		extra = logger.Fields{}
+	}
+	if ctx == nil && d != nil {
+		ctx = d.Ctx
+	}
+
+	var tenantID string
+	if tid, ok := authx.TenantIDFromContext(ctx); ok && tid > 0 {
+		tenantID = strconv.FormatUint(tid, 10)
+	}
+
+	traceID := ""
+	if ctx != nil {
+		if v := ctx.Value("request_id"); v != nil {
+			if s, ok := v.(string); ok {
+				traceID = s
+			}
+		}
+	}
+
+	return logger.WithRuntimeFields(PluginID, tenantID, traceID, component, extra)
 }

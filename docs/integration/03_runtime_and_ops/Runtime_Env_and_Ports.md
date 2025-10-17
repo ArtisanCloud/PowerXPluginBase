@@ -332,6 +332,15 @@ runtime:
 
 ---
 
+## 🔐 Admin Runtime APIs & RBAC
+
+- 管理端路由统一挂载在 `/api/v1/admin/runtime`，由宿主的 JWT + RBAC 中间件保护。
+- 所有 `POST` 操作（如 `/bootstrap`、`/sessions/register`、`/quota/overrides`）需要 `runtime.ops:manage` 权限。
+- 只读接口（`GET /quota/status`）要求 `runtime.ops:read`，指标抓取（`GET /metrics`）使用 `runtime.ops:observe`，便于将 Prometheus 权限委托给宿主平台账号。
+- 在 `plugin.yaml` 的 `rbac.resources` 与 `permissions` 中新增 `runtime.ops` 资源后，宿主安装流程会自动同步该策略，确保 `runtime.manage` Scope 生效。
+
+---
+
 ## 📚 延伸阅读
 
 - [MCP_Session_and_Registration.md](./MCP_Session_and_Registration.md)

@@ -12,6 +12,7 @@
 3. **Start runtime manager in dev mode**
    - Run `make run` or `go run ./backend/cmd/plugin --config ./config.yaml`.
    - Confirm `/v1/runtime/healthz` responds `200 OK`.
+   - Use `scripts/dev/runtime_ops_debug.sh inspect` to确认 `runtime_ops` 与 `monitoring.metrics.path=/api/v1/admin/runtime/metrics` 已生效。
 
 4. **Launch sample plugin instance**
    - Use `scripts/dev/register_plugin.sh --plugin-id example.plugin --runtime exec`.
@@ -24,14 +25,14 @@
    - Simulate heartbeat loss with `scripts/dev/mcp_drop.sh` and confirm state transitions to `stale` within ~45s.
 
 6. **Inspect observability outputs**
-   - Scrape metrics: `curl http://localhost:9090/_p/example.plugin/metrics` and ensure quota, session, restart series exist.
+   - Scrape metrics: `scripts/dev/runtime_ops_debug.sh metrics` 或手动请求 `http://127.0.0.1:8086/api/v1/admin/runtime/metrics`，确认 `powerx_plugin_quota_usage`、`powerx_plugin_cost_total`、`powerx_mcp_sessions_total` 等系列存在。
    - Tail logs under `/var/lib/powerx/plugins/example.plugin/logs/`; confirm JSON schema with `trace_id`, `tenant_id`.
    - Use `scripts/dev/emit_trace.sh` to push a test span and verify it appears in Tempo with name `plugin.example.plugin.bootstrap`.
 
 7. **Exercise quota breach flow**
-   - Run load generator `scripts/dev/quota_burst.sh --tenant demo --qps 20`.
-   - Confirm HTTP 429 or MCP throttle events after token bucket depletion.
-   - Check Prometheus `quota_usage` approaches 1.0 and hourly Marketplace summary queue populated.
+   - Run load generator `scripts/dev/quota_burst.sh --tenant demo --capability bootstrap --qps 20 --duration 15`.
+   - Confirm HTTP 429 or MCP throttle events after token bucket depletion（日志中可见 `quota_breach` 审计事件）。
+   - Check Prometheus `powerx_plugin_quota_usage` 接近 1.0，`powerx_plugin_cost_total` 按租户累积；必要时再运行 `scripts/dev/runtime_ops_debug.sh metrics`。
 
 8. **Run test suites**
    - `make test` for unit/integration coverage.
