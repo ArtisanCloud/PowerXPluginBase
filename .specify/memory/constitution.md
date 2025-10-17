@@ -72,6 +72,7 @@ rulesets:
 - Repo 封装数据访问细节；HTTP 与 gRPC **复用同一** Service。
 - 依赖通过容器注入（配置、日志、客户端），保证可测试与可重放构造。
 - 新增子域须沿用目录分层：`internal/transport/http/{admin,agent,...}/<domain>` → `internal/services/{admin,agent,...}/<domain>` → `internal/domain/{models,repository}/<domain>`，目录名使用 lower_snake_case，避免自定义层级。
+ - Repository 必须内嵌 `*repository.BaseRepository[T]` 并提供 `NewXXXRepository` 构造函数；禁止直接暴露裸 `*gorm.DB` 字段以维持一致的读写封装。
 
 ### IV. Observable & Testable Delivery（可观测与可测试）
 

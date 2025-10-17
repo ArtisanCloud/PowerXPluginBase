@@ -3,7 +3,7 @@ package logger
 import "strings"
 
 var (
-	maskFieldSet   = map[string]struct{}{}
+	maskFieldSet    = map[string]struct{}{}
 	maskPlaceholder = "[REDACTED]"
 )
 

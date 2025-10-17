@@ -104,15 +104,15 @@
 
 ### Implementation for US3
 
-- [ ] T300 [P] [US3] Implement models `backend/internal/domain/models/tool_grant/{revocation.go,usage_event.go}` capturing JWT `jti`, tenant, and metadata.
-- [ ] T301 [US3] Add migrations for tool grant revocations and usage events with TTL cleanup indexes.
-- [ ] T302 [P] [US3] Build repositories `backend/internal/domain/repository/tool_grant/{revocation_repository.go,usage_repository.go}`.
-- [ ] T303 [US3] Implement service layer `backend/internal/services/agent/tool_grant/service.go` for issuance, validation, renewal, and revocation orchestration.
-- [ ] T304 [P] [US3] Develop middleware `backend/internal/middleware/tool_grant_verifier/middleware.go` enforcing token validation and revocation checks.
-- [ ] T305 [US3] Expose agent verifier endpoint `backend/internal/transport/http/agent/security/toolgrant_handler.go` per contract, and admin revoke endpoint `backend/internal/transport/http/admin/security/toolgrant_handler.go`.
-- [ ] T306 [US3] Emit ToolGrant audit events via `backend/internal/observability/security/tool_grant_events.go`, forwarding to `/logs/audit.log` and metrics.
-- [ ] T307 [US3] Update admin UI `web-admin/app/pages/security/toolgrants.vue` to inspect active grants, revocations, and usage events.
-- [ ] T308 [US3] 对 `backend/internal/middleware/tool_grant_verifier/middleware.go` 进行性能基准测试（基准文件 `backend/internal/middleware/tool_grant_verifier/middleware_benchmark_test.go`），验证延迟增幅 <5%。
+- [X] T300 [P] [US3] Implement models `backend/internal/domain/models/tool_grant/{revocation.go,usage_event.go}` capturing JWT `jti`, tenant, and metadata.
+- [X] T301 [US3] Add migrations for tool grant revocations and usage events with TTL cleanup indexes.
+- [X] T302 [P] [US3] Build repositories `backend/internal/domain/repository/tool_grant/{revocation_repository.go,usage_repository.go}`.
+- [X] T303 [US3] Implement service layer `backend/internal/services/agent/tool_grant/service.go` for issuance, validation, renewal, and revocation orchestration.
+- [X] T304 [P] [US3] Develop middleware `backend/internal/middleware/tool_grant_verifier/middleware.go` enforcing token validation and revocation checks.
+- [X] T305 [US3] Expose agent verifier endpoint `backend/internal/transport/http/agent/security/toolgrant_handler.go` per contract, and admin revoke endpoint `backend/internal/transport/http/admin/security/toolgrant_handler.go`.
+- [X] T306 [US3] Emit ToolGrant audit events via `backend/internal/observability/security/tool_grant_events.go`, forwarding to `/logs/audit.log` and metrics.
+- [X] T307 [US3] Update admin UI `web-admin/app/pages/security/toolgrants.vue` to inspect active grants, revocations, and usage events.
+- [X] T308 [US3] 对 `backend/internal/middleware/tool_grant_verifier/middleware.go` 进行性能基准测试（基准文件 `backend/internal/middleware/tool_grant_verifier/middleware_benchmark_test.go`），验证延迟增幅 <5%。
 
 **Checkpoint**: ToolGrant lifecycle enforced with middleware and admin control.
 

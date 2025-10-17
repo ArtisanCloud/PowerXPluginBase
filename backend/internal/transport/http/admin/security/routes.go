@@ -13,6 +13,7 @@ func RegisterRoutes(rg *gin.RouterGroup, deps *app.Deps) {
 	}
 	auditWriter := CreateAuditWriter(deps.Config)
 	consent := NewConsentHandler(deps, auditWriter)
+	toolgrant := NewToolGrantHandler(deps)
 	audit := NewAuditReportHandler(deps, auditWriter)
 	sec := rg.Group("/security")
 	{
@@ -20,6 +21,9 @@ func RegisterRoutes(rg *gin.RouterGroup, deps *app.Deps) {
 		sec.POST("/consent-tokens/:tokenId/revoke", consent.RevokeConsentToken)
 		sec.GET("/lifecycle-events", consent.ListLifecycleEvents)
 		sec.GET("/audit-reports", audit.ListReports)
+		sec.POST("/toolgrants/revoke", toolgrant.Revoke)
+		sec.GET("/toolgrants/revocations", toolgrant.ListRevocations)
+		sec.GET("/toolgrants/usage", toolgrant.ListUsageEvents)
 	}
 }
 
@@ -32,6 +36,9 @@ func RBACEntries(prefix string) map[string]authx.Permission {
 		prefix + "/admin/security/consent-tokens":          {Resource: "admin.security.consent", Action: "read"},
 		prefix + "/admin/security/consent-tokens/:tokenId": {Resource: "admin.security.consent", Action: "write"},
 		prefix + "/admin/security/lifecycle-events":        {Resource: "admin.security.lifecycle", Action: "read"},
-		prefix + "/admin/security/audit-reports":          {Resource: "admin.security.audit", Action: "read"},
- 	}
+		prefix + "/admin/security/audit-reports":           {Resource: "admin.security.audit", Action: "read"},
+		prefix + "/admin/security/toolgrants/revoke":       {Resource: "admin.security.toolgrant", Action: "write"},
+		prefix + "/admin/security/toolgrants/revocations":  {Resource: "admin.security.toolgrant", Action: "read"},
+		prefix + "/admin/security/toolgrants/usage":        {Resource: "admin.security.toolgrant", Action: "read"},
+	}
 }

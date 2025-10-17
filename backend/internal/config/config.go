@@ -141,6 +141,7 @@ type SecurityConfig struct {
 	RateLimit        RateLimitConfig `yaml:"rate_limit" json:"rate_limit"`
 	GatewayAllowlist []string        `yaml:"gateway_allowlist" json:"gateway_allowlist"`
 	RequireTLS13     bool            `yaml:"require_tls13" json:"require_tls13"`
+	ToolGrantSecret  string          `yaml:"toolgrant_secret" json:"toolgrant_secret"`
 }
 
 // RateLimitConfig 限流配置
@@ -372,6 +373,7 @@ func getDefaultConfig() *Config {
 			},
 			GatewayAllowlist: []string{"localhost", "127.0.0.1"},
 			RequireTLS13:     false,
+			ToolGrantSecret:  "dev-toolgrant-secret",
 		},
 		Monitoring: MonitoringConfig{
 			Metrics: MetricsConfig{
@@ -649,6 +651,9 @@ func loadEnvConfig(cfg *Config) {
 	}
 	if schema := resolveConfigValue(os.Getenv("POWERX_DB_SCHEMA")); schema != "" {
 		cfg.Database.Schema = schema
+	}
+	if secret := resolveConfigValue(os.Getenv("POWERX_TOOLGRANT_SECRET")); secret != "" {
+		cfg.Security.ToolGrantSecret = secret
 	}
 
 	// 运行时配置

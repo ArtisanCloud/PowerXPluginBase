@@ -17,9 +17,11 @@ func RegisterRoutes(rg *gin.RouterGroup, deps *app.Deps) {
 	auditPath := deps.Config.SecurityBaselineConfig().ConsentDefaults.AuditChannel
 	auditWriter, _ := secobs.NewFileAuditWriter(auditPath)
 	h := NewPrivacyHandler(deps, guard, auditWriter)
+	toolgrant := NewToolGrantHandler(deps)
 	sec := rg.Group("/security")
 	{
 		sec.GET("/privacy/consent", h.GetActiveConsent)
 		sec.POST("/privacy/lifecycle", h.AcknowledgeLifecycleEvent)
+		sec.POST("/toolgrants/verify", toolgrant.Verify)
 	}
 }

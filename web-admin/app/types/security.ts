@@ -46,3 +46,25 @@ export interface AuditReport {
 export interface AuditReportListResponse {
   data: AuditReport[]
 }
+
+export interface ToolGrantRevocation {
+  id: string
+  tenant_id: string
+  toolgrant_id: string
+  revoked_at: string
+  revoked_by: string
+  reason?: string
+  ttl_expiry: string
+  created_at: string
+}
+
+export interface ToolGrantUsageEvent {
+  id: string
+  tenant_id: string
+  toolgrant_id: string
+  event_type: string
+  capability: string
+  agent_id: string
+  occurred_at: string
+  metadata?: Record<string, any>
+}

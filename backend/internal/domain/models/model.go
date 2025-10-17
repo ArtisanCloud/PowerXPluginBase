@@ -33,4 +33,6 @@ const (
 	TablePrivacyLifecycleEvents     = "privacy_lifecycle_events"
 	TableSecurityBaselineChecklists = "security_baseline_checklists"
 	TableSecurityAuditReports       = "security_audit_reports"
+	TableToolGrantRevocations       = "tool_grant_revocations"
+	TableToolGrantUsageEvents       = "tool_grant_usage_events"
 )

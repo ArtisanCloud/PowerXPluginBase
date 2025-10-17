@@ -65,7 +65,7 @@ func main() {
 	if cfg.GRPCUpstream != nil && cfg.GRPCUpstream.TenantID > 0 {
 		// 延迟依赖：仅当配置未提供 STS client 时，尝试 DB 加载；若配置已有，则优先生效
 		if cfg.GRPCUpstream.STSClientID == "" || cfg.GRPCUpstream.STSClientSecret == "" {
-			repo := repository.NewCredentialsRepo(queryDB)
+			repo := repository.NewCredentialsRepository(queryDB)
 			svc := agent.NewCredentialService(cfg, repo)
 			if cid, sec, err := svc.LoadDecryptedCredentials(rootCtx, cfg.GRPCUpstream.TenantID, app.PluginID); err == nil {
 				cfg.GRPCUpstream.STSClientID = cid

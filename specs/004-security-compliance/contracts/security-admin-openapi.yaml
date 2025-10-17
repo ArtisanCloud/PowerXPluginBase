@@ -126,6 +126,66 @@ paths:
       responses:
         "204":
           description: Revoked
+  /admin/security/toolgrants/revocations:
+    get:
+      summary: List toolgrant revocations
+      operationId: listToolGrantRevocations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Revocations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ToolGrantRevocation"
+  /admin/security/toolgrants/usage:
+    get:
+      summary: List toolgrant usage events
+      operationId: listToolGrantUsage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: toolgrant_id
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Usage events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ToolGrantUsageEvent"
   /admin/security/audit-reports:
     get:
       summary: List security audit reports
@@ -394,6 +454,52 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/VulnerabilityAdvisory"
+    ToolGrantRevocation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+        toolgrant_id:
+          type: string
+        revoked_at:
+          type: string
+          format: date-time
+        revoked_by:
+          type: string
+        reason:
+          type: string
+          nullable: true
+        ttl_expiry:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    ToolGrantUsageEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+        toolgrant_id:
+          type: string
+        event_type:
+          type: string
+        capability:
+          type: string
+        agent_id:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
     SecurityError:
       type: object
       required: [error_code, message]

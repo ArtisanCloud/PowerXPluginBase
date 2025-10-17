@@ -6,8 +6,8 @@ import (
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	secobs "github.com/ArtisanCloud/PowerXPlugin/internal/observability/security"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	adminsec "github.com/ArtisanCloud/PowerXPlugin/internal/services/admin/security"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/gin-gonic/gin"
 )
 
