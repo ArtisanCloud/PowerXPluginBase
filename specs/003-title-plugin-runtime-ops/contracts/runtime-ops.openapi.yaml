@@ -1,0 +1,262 @@
+openapi: 3.1.0
+info:
+  title: PowerX Plugin Runtime Operations API
+  version: 0.1.0
+servers:
+  - url: /_p/{pluginId}/api/v1/runtime
+    variables:
+      pluginId:
+        default: "{plugin_id}"
+paths:
+  /assignments:
+    post:
+      summary: Launch a plugin instance
+      operationId: launchAssignment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LaunchRequest'
+      responses:
+        '202':
+          description: Assignment created and bootstrap started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+        '409':
+          description: Port allocation or quota conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /assignments/{assignmentId}/health:
+    get:
+      summary: Fetch health status
+      operationId: getAssignmentHealth
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AssignmentId'
+      responses:
+        '200':
+          description: Health payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+  /sessions:
+    post:
+      summary: Register MCP session from plugin runtime
+      operationId: registerSession
+      security:
+        - mcpAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterSessionRequest'
+      responses:
+        '200':
+          description: Session registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '401':
+          description: Invalid JWT or tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /quotas/breaches:
+    post:
+      summary: Record quota breach summary for Marketplace reporting
+      operationId: reportQuotaBreach
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuotaBreachSummary'
+      responses:
+        '202':
+          description: Summary accepted
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    mcpAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    AssignmentId:
+      name: assignmentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    LaunchRequest:
+      type: object
+      required:
+        - runtime_mode
+        - tenant_scope
+        - resources
+      properties:
+        runtime_mode:
+          type: string
+          enum: [exec, docker, http-proxy, php-fpm, remote]
+        tenant_scope:
+          type: string
+        resources:
+          type: object
+          properties:
+            cpu_limit:
+              type: string
+              example: "500m"
+            memory_limit:
+              type: string
+              example: "512Mi"
+            network_profile:
+              type: string
+        env:
+          type: object
+          additionalProperties:
+            type: string
+    Assignment:
+      type: object
+      required:
+        - id
+        - plugin_id
+        - tenant_scope
+        - runtime_mode
+        - port
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        plugin_id:
+          type: string
+        tenant_scope:
+          type: string
+        runtime_mode:
+          type: string
+        port:
+          type: integer
+        status:
+          type: string
+          enum: [allocating, starting, ready, unhealthy, terminated]
+        restart_count:
+          type: integer
+        ready_at:
+          type: string
+          format: date-time
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [passing, warning, critical]
+        last_check:
+          type: string
+          format: date-time
+        restart_backoff:
+          type: string
+          description: Next restart delay if probe keeps failing
+    RegisterSessionRequest:
+      type: object
+      required:
+        - plugin_instance_id
+        - tenant_id
+        - jwt
+        - capabilities
+      properties:
+        plugin_instance_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+        jwt:
+          type: string
+          description: Host-issued REGISTER token
+        capabilities:
+          type: array
+          items:
+            type: string
+        heartbeat_interval_seconds:
+          type: integer
+          default: 15
+    Session:
+      type: object
+      required:
+        - id
+        - state
+        - heartbeat_interval_seconds
+      properties:
+        id:
+          type: string
+          format: uuid
+        state:
+          type: string
+          enum: [connecting, registered, ready, stale, closed]
+        heartbeat_interval_seconds:
+          type: integer
+        missed_heartbeats:
+          type: integer
+    QuotaBreachSummary:
+      type: object
+      required:
+        - plugin_id
+        - tenant_id
+        - window_start
+        - window_end
+        - breaches
+      properties:
+        plugin_id:
+          type: string
+        tenant_id:
+          type: string
+        window_start:
+          type: string
+          format: date-time
+        window_end:
+          type: string
+          format: date-time
+        breaches:
+          type: array
+          items:
+            type: object
+            required:
+              - metric
+              - count
+              - action_applied
+            properties:
+              metric:
+                type: string
+                enum: [quota_usage, cpu_seconds, bandwidth_mb, invocations]
+              count:
+                type: integer
+              action_applied:
+                type: string
+                enum: [throttle, circuit_break, disable, notify_marketplace]
+              observed_peak:
+                type: number
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string

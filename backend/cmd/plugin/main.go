@@ -25,7 +25,7 @@ import (
 
 func main() {
 
-	ctx := context.Background()
+	rootCtx := context.Background()
 
 	if os.Getenv("CONFIG_PATH") == "" && os.Getenv("POWERX_PLUGIN_CONFIG_DIR") != "" {
 		os.Setenv("CONFIG_PATH", os.Getenv("POWERX_PLUGIN_CONFIG_DIR"))
@@ -49,7 +49,7 @@ func main() {
 	}
 
 	// 初始化插件
-	queryDB, err := bootstrap.BootstrapPlugin(ctx, cfg)
+	queryDB, err := bootstrap.BootstrapPlugin(rootCtx, cfg)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to bootstrap plugin")
 	}
@@ -60,7 +60,7 @@ func main() {
 		if cfg.GRPCUpstream.STSClientID == "" || cfg.GRPCUpstream.STSClientSecret == "" {
 			repo := repository.NewCredentialsRepo(queryDB)
 			svc := agent.NewCredentialService(cfg, repo)
-			if cid, sec, err := svc.LoadDecryptedCredentials(ctx, cfg.GRPCUpstream.TenantID, app.PluginID); err == nil {
+			if cid, sec, err := svc.LoadDecryptedCredentials(rootCtx, cfg.GRPCUpstream.TenantID, app.PluginID); err == nil {
 				cfg.GRPCUpstream.STSClientID = cid
 				cfg.GRPCUpstream.STSClientSecret = sec
 				logger.Info("Loaded STS credentials for tenant from DB")
@@ -71,11 +71,11 @@ func main() {
 	}
 
 	// 初始化 PowerX gRPC Client 客户端
-	pxc := bootstrap.BootstrapGRPCClient(ctx, cfg.GRPCUpstream)
+	pxc := bootstrap.BootstrapGRPCClient(rootCtx, cfg.GRPCUpstream)
 
 	deps := &app.Deps{
 		DB:           queryDB,
-		Ctx:          &ctx,
+		Ctx:          rootCtx,
 		PowerXClient: pxc,
 		Config:       cfg,
 	}
@@ -85,7 +85,7 @@ func main() {
 	engine := r.Setup()
 
 	// 创建 gRPC 服务器（可选）
-	gs, err := server.NewGRPCServer(ctx, cfg.GRPCServer)
+	gs, err := server.NewGRPCServer(rootCtx, cfg.GRPCServer)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create gRPC server")
 	}
@@ -106,7 +106,7 @@ func main() {
 	}
 
 	// 使用 errgroup 并发启动服务器
-	g, ctx := errgroup.WithContext(context.Background())
+	g, ctx := errgroup.WithContext(rootCtx)
 
 	// 启动 HTTP 服务器
 	g.Go(func() error {

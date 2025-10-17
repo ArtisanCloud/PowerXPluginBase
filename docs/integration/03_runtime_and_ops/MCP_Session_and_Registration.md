@@ -131,7 +131,7 @@ plugin_sessions(session_id, plugin_id, version, tenant, status, last_heartbeat)
 
 ## 🧩 七、心跳与断线重连
 
-插件需每隔 10 秒发送一次心跳包：
+插件需每隔 **15 秒** 发送一次心跳包（默认值可通过 `runtime_ops.heartbeat_seconds` 调整）：
 
 ```json
 { "type": "PING", "timestamp": "2025-10-13T10:00:30Z" }
@@ -143,11 +143,22 @@ plugin_sessions(session_id, plugin_id, version, tenant, status, last_heartbeat)
 { "type": "PONG", "timestamp": "2025-10-13T10:00:30Z" }
 ```
 
-若 3 次未收到心跳：
+若连续 **3 次** 未收到心跳（`runtime_ops.heartbeat_misses`）：
 
 - 宿主标记状态为 `STALE`；
 - 触发 `MCP_RECONNECT`；
 - 若仍失败，则执行重启或降级处理。
+
+宿主在 `config/host-values.yaml` 中下发的 `runtime_ops` 配置同样约束 MCP 会话：
+
+```yaml
+runtime_ops:
+  heartbeat_seconds: 15
+  heartbeat_misses: 3
+  quota_window_minutes: 5
+```
+
+插件与调试脚本应读取上述配置，而不是在代码中写死心跳或窗口参数。
 
 ---
 
