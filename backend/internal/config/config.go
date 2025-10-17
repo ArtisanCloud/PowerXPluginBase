@@ -33,6 +33,9 @@ type Config struct {
 	// 安全配置
 	Security *SecurityConfig `yaml:"security" json:"security"`
 
+	// SecurityBaseline 保存从 security_baseline.yaml 解析出的安全基线默认值。
+	SecurityBaseline *SecurityBaselineConfig `yaml:"-" json:"security_baseline"`
+
 	// 监控配置
 	Monitoring MonitoringConfig `yaml:"monitoring" json:"monitoring"`
 
@@ -73,17 +76,17 @@ type RuntimeConfig struct {
 
 // RuntimeOpsDefaults 定义 runtime ops 所需的默认限值与窗口
 type RuntimeOpsDefaults struct {
-	HeartbeatSeconds           int    `yaml:"heartbeat_seconds" json:"heartbeat_seconds"`
-	HeartbeatMisses            int    `yaml:"heartbeat_misses" json:"heartbeat_misses"`
-	QuotaWindowMinutes         int    `yaml:"quota_window_minutes" json:"quota_window_minutes"`
-	RestartBackoffStartSeconds int    `yaml:"restart_backoff_start_seconds" json:"restart_backoff_start_seconds"`
-	RestartBackoffMaxSeconds   int    `yaml:"restart_backoff_max_seconds" json:"restart_backoff_max_seconds"`
-	LogRetentionDays           int    `yaml:"log_retention_days" json:"log_retention_days"`
-	CPUDefault                 string `yaml:"cpu_default" json:"cpu_default"`
-	MemoryDefault              string `yaml:"memory_default" json:"memory_default"`
-	NetworkProfile             string `yaml:"network_profile" json:"network_profile"`
+	HeartbeatSeconds           int                 `yaml:"heartbeat_seconds" json:"heartbeat_seconds"`
+	HeartbeatMisses            int                 `yaml:"heartbeat_misses" json:"heartbeat_misses"`
+	QuotaWindowMinutes         int                 `yaml:"quota_window_minutes" json:"quota_window_minutes"`
+	RestartBackoffStartSeconds int                 `yaml:"restart_backoff_start_seconds" json:"restart_backoff_start_seconds"`
+	RestartBackoffMaxSeconds   int                 `yaml:"restart_backoff_max_seconds" json:"restart_backoff_max_seconds"`
+	LogRetentionDays           int                 `yaml:"log_retention_days" json:"log_retention_days"`
+	CPUDefault                 string              `yaml:"cpu_default" json:"cpu_default"`
+	MemoryDefault              string              `yaml:"memory_default" json:"memory_default"`
+	NetworkProfile             string              `yaml:"network_profile" json:"network_profile"`
 	Observability              ObservabilityConfig `yaml:"observability" json:"observability"`
-	Alerts                     AlertThresholds    `yaml:"alerts" json:"alerts"`
+	Alerts                     AlertThresholds     `yaml:"alerts" json:"alerts"`
 }
 
 // ObservabilityConfig captures metrics/logging exporters.
@@ -142,6 +145,47 @@ type SecurityConfig struct {
 type RateLimitConfig struct {
 	Enabled           bool `yaml:"enabled" json:"enabled"`
 	RequestsPerMinute int  `yaml:"requests_per_minute" json:"requests_per_minute"`
+}
+
+// SecurityBaselineConfig 定义安全基线文件中的核心字段。
+type SecurityBaselineConfig struct {
+	BaselineVersion string                  `yaml:"baseline_version" json:"baseline_version"`
+	MaskingRules    MaskingRulesConfig      `yaml:"masking_rules" json:"masking_rules"`
+	AuditLog        AuditLogConfig          `yaml:"audit_log" json:"audit_log"`
+	ToolGrant       ToolGrantBaselineConfig `yaml:"tool_grant" json:"tool_grant"`
+	ConsentDefaults ConsentDefaultsConfig   `yaml:"consent_defaults" json:"consent_defaults"`
+}
+
+// MaskingRulesConfig 控制日志/数据脱敏策略。
+type MaskingRulesConfig struct {
+	PIIFields    []string           `yaml:"pii_fields" json:"pii_fields"`
+	LogRedaction LogRedactionConfig `yaml:"log_redaction" json:"log_redaction"`
+}
+
+// LogRedactionConfig 描述日志脱敏行为。
+type LogRedactionConfig struct {
+	Enabled     bool   `yaml:"enabled" json:"enabled"`
+	Placeholder string `yaml:"placeholder" json:"placeholder"`
+}
+
+// ToolGrantBaselineConfig 控制 ToolGrant 生命周期策略。
+type ToolGrantBaselineConfig struct {
+	TTLHours                int  `yaml:"ttl_hours" json:"ttl_hours"`
+	RenewalThresholdMinutes int  `yaml:"renewal_threshold_minutes" json:"renewal_threshold_minutes"`
+	RevokeOnLogout          bool `yaml:"revoke_on_logout" json:"revoke_on_logout"`
+}
+
+// ConsentDefaultsConfig 定义宿主未提供策略时的默认隐私行为。
+type ConsentDefaultsConfig struct {
+	RetentionDays int    `yaml:"retention_days" json:"retention_days"`
+	AuditChannel  string `yaml:"audit_channel" json:"audit_channel"`
+	ExportBucket  string `yaml:"export_bucket" json:"export_bucket"`
+}
+
+// AuditLogConfig 描述审计日志的保留策略与导出脚本。
+type AuditLogConfig struct {
+	RetentionDays int    `yaml:"retention_days" json:"retention_days"`
+	ExportScript  string `yaml:"export_script" json:"export_script"`
 }
 
 // MonitoringConfig 监控配置
@@ -228,6 +272,8 @@ func Load() (*Config, error) {
 		logrus.WithError(err).Warn("Failed to load YAML config, using defaults only")
 	}
 
+	loadSecurityBaselineConfig(cfg)
+
 	// 宿主注入的环境变量优先级最高，用于覆盖敏感配置（例如数据库凭据）
 	loadEnvConfig(cfg)
 
@@ -247,6 +293,33 @@ func Load() (*Config, error) {
 }
 
 // getDefaultConfig 获取默认配置
+func defaultSecurityBaselineConfig() *SecurityBaselineConfig {
+	return &SecurityBaselineConfig{
+		BaselineVersion: "2025.10",
+		MaskingRules: MaskingRulesConfig{
+			PIIFields: []string{"email", "phone_number", "national_id"},
+			LogRedaction: LogRedactionConfig{
+				Enabled:     true,
+				Placeholder: "[REDACTED]",
+			},
+		},
+		AuditLog: AuditLogConfig{
+			RetentionDays: 365,
+			ExportScript:  "scripts/security/audit_export.sh",
+		},
+		ToolGrant: ToolGrantBaselineConfig{
+			TTLHours:                24,
+			RenewalThresholdMinutes: 60,
+			RevokeOnLogout:          true,
+		},
+		ConsentDefaults: ConsentDefaultsConfig{
+			RetentionDays: 90,
+			AuditChannel:  "logs/audit.log",
+			ExportBucket:  "",
+		},
+	}
+}
+
 func getDefaultConfig() *Config {
 	return &Config{
 		Server: &ServerConfig{
@@ -260,28 +333,28 @@ func getDefaultConfig() *Config {
 		Runtime: &RuntimeConfig{
 			RunMigrate: false,
 		},
-	RuntimeOps: &RuntimeOpsDefaults{
-		HeartbeatSeconds:           15,
-		HeartbeatMisses:            3,
-		QuotaWindowMinutes:         5,
-		RestartBackoffStartSeconds: 5,
-		RestartBackoffMaxSeconds:   120,
-		LogRetentionDays:           7,
-		CPUDefault:                 "500m",
-		MemoryDefault:              "512Mi",
-		NetworkProfile:             "standard",
-		Observability: ObservabilityConfig{
-			LokiEndpoint:  "",
-			TempoEndpoint: "",
+		RuntimeOps: &RuntimeOpsDefaults{
+			HeartbeatSeconds:           15,
+			HeartbeatMisses:            3,
+			QuotaWindowMinutes:         5,
+			RestartBackoffStartSeconds: 5,
+			RestartBackoffMaxSeconds:   120,
+			LogRetentionDays:           7,
+			CPUDefault:                 "500m",
+			MemoryDefault:              "512Mi",
+			NetworkProfile:             "standard",
+			Observability: ObservabilityConfig{
+				LokiEndpoint:  "",
+				TempoEndpoint: "",
+			},
+			Alerts: AlertThresholds{
+				HealthFailureRate: 0.5,
+				P95LatencyMs:      500,
+				ErrorRate:         0.05,
+				QuotaUsage:        0.9,
+				BillingAnomaly:    0.2,
+			},
 		},
-		Alerts: AlertThresholds{
-			HealthFailureRate: 0.5,
-			P95LatencyMs:      500,
-			ErrorRate:         0.05,
-			QuotaUsage:        0.9,
-			BillingAnomaly:    0.2,
-		},
-	},
 		Context: &ContextConfig{
 			TTL: 300 * time.Second, // 5分钟
 		},
@@ -333,6 +406,7 @@ func getDefaultConfig() *Config {
 			Cert:   "",
 			Key:    "",
 		},
+		SecurityBaseline: defaultSecurityBaselineConfig(),
 	}
 }
 
@@ -380,6 +454,123 @@ func loadYAMLConfig(cfg *Config) error {
 
 	logrus.WithField("config_file", configFile).Info("YAML config loaded successfully")
 	return nil
+}
+
+func loadSecurityBaselineConfig(cfg *Config) {
+	if cfg == nil {
+		return
+	}
+
+	baselinePath := locateSecurityBaseline()
+	if baselinePath == "" {
+		if cfg.SecurityBaseline == nil {
+			cfg.SecurityBaseline = defaultSecurityBaselineConfig()
+		}
+		return
+	}
+
+	data, err := os.ReadFile(baselinePath)
+	if err != nil {
+		logrus.WithError(err).Warnf("Failed to read security baseline config %s", baselinePath)
+		return
+	}
+
+	baseline := defaultSecurityBaselineConfig()
+	if err := yaml.Unmarshal(data, baseline); err != nil {
+		logrus.WithError(err).Warnf("Failed to parse security baseline config %s", baselinePath)
+		return
+	}
+
+	cfg.SecurityBaseline = baseline
+	logrus.WithField("baseline_file", baselinePath).Info("Security baseline config loaded successfully")
+}
+
+func locateSecurityBaseline() string {
+	candidates := resolveSecurityBaselineCandidates()
+	for _, candidate := range candidates {
+		if candidate == "" {
+			continue
+		}
+		info, err := os.Stat(candidate)
+		if err != nil || info.IsDir() {
+			continue
+		}
+		return candidate
+	}
+	return ""
+}
+
+func resolveSecurityBaselineCandidates() []string {
+	var candidates []string
+
+	if raw := os.Getenv("CONFIG_PATH"); raw != "" {
+		resolved := resolveConfigValue(raw)
+		if resolved != "" {
+			info, err := os.Stat(resolved)
+			if err == nil && info.IsDir() {
+				candidates = append(candidates, filepath.Join(resolved, "security_baseline.yaml"))
+			} else {
+				dir := filepath.Dir(resolved)
+				candidates = append(candidates, filepath.Join(dir, "security_baseline.yaml"))
+			}
+		}
+	}
+
+	candidates = append(candidates,
+		filepath.Join("config", "security_baseline.yaml"),
+		filepath.Join("backend", "etc", "security_baseline.yaml"),
+		"security_baseline.yaml",
+	)
+
+	return candidates
+}
+
+// SecurityBaselineConfig returns the loaded security baseline configuration,
+// falling back to defaults when unavailable.
+func (c *Config) SecurityBaselineConfig() *SecurityBaselineConfig {
+	if c == nil {
+		return defaultSecurityBaselineConfig()
+	}
+	if c.SecurityBaseline == nil {
+		return defaultSecurityBaselineConfig()
+	}
+	return c.SecurityBaseline
+}
+
+// ToolGrantTTL returns the ToolGrant TTL derived from the baseline (default 24h).
+func (c *Config) ToolGrantTTL() time.Duration {
+	baseline := c.SecurityBaselineConfig()
+	if baseline.ToolGrant.TTLHours <= 0 {
+		return 24 * time.Hour
+	}
+	return time.Duration(baseline.ToolGrant.TTLHours) * time.Hour
+}
+
+// ConsentRetentionDays returns the retention window for consent data (default 90 days).
+func (c *Config) ConsentRetentionDays() int {
+	baseline := c.SecurityBaselineConfig()
+	if baseline.ConsentDefaults.RetentionDays <= 0 {
+		return 90
+	}
+	return baseline.ConsentDefaults.RetentionDays
+}
+
+// AuditLogRetentionDays returns the number of days audit logs must be retained (default 365).
+func (c *Config) AuditLogRetentionDays() int {
+	baseline := c.SecurityBaselineConfig()
+	if baseline.AuditLog.RetentionDays <= 0 {
+		return 365
+	}
+	return baseline.AuditLog.RetentionDays
+}
+
+// AuditLogExportScript returns the recommended export helper script path.
+func (c *Config) AuditLogExportScript() string {
+	baseline := c.SecurityBaselineConfig()
+	if baseline.AuditLog.ExportScript == "" {
+		return "scripts/security/audit_export.sh"
+	}
+	return baseline.AuditLog.ExportScript
 }
 
 func resolveConfigCandidates() []string {
@@ -719,6 +910,17 @@ func (c *Config) Validate() error {
 	// 安全配置验证
 	if c.Security.RateLimit.Enabled && c.Security.RateLimit.RequestsPerMinute <= 0 {
 		return NewConfigError("rate limit requests per minute must be positive when enabled")
+	}
+
+	baseline := c.SecurityBaselineConfig()
+	if baseline.ToolGrant.TTLHours <= 0 {
+		return NewConfigError("security baseline: tool_grant.ttl_hours must be positive")
+	}
+	if baseline.ConsentDefaults.RetentionDays <= 0 {
+		return NewConfigError("security baseline: consent_defaults.retention_days must be positive")
+	}
+	if baseline.AuditLog.RetentionDays <= 0 {
+		return NewConfigError("security baseline: audit_log.retention_days must be positive")
 	}
 
 	// 日志配置验证

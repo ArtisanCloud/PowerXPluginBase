@@ -12,6 +12,10 @@ masking_rules:
     enabled: true
     placeholder: "[REDACTED]"
 
+audit_log:
+  retention_days: 365
+  export_script: "scripts/security/audit_export.sh"
+
 tool_grant:
   ttl_hours: 24
   renewal_threshold_minutes: 60

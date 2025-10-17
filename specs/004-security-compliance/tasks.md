@@ -36,12 +36,12 @@
 
 **Purpose**: Core plumbing that must exist before user stories start.
 
-- [ ] T010 [Foundational] Add empty module scaffolds and package docs for `backend/internal/domain/models/{privacy,security,tool_grant}` and matching `domain/repository`/`services` directories.
-- [ ] T011 [Foundational] Extend dependency injection in `backend/internal/shared/app/deps.go` to register new security-related repositories/services via placeholders.
-- [ ] T012 [Foundational] Update router grouping in `backend/internal/transport/http/routes.go` and `backend/internal/transport/http/admin/routes.go` to mount `/admin/security` and `/agent/security` namespaces (handlers wired later).
-- [ ] T013 [Foundational] Expose configuration handles in `backend/internal/config/config.go` for security baseline, consent defaults, and tool grant TTL (read from `security_baseline.yaml`).
-- [ ] T014 [Foundational] Seed logging hook in `backend/internal/logger/runtime.go` to accept privacy masking adapters (actual masking logic lands with US1).
-- [ ] T015 [Foundational] Configure audit log retention & export tooling: add rotation policy (365 天在线) and CLI/export script under `scripts/security/audit_export.sh` documented in `docs/security/audit-logs.md`.
+- [X] T010 [Foundational] Add empty module scaffolds and package docs for `backend/internal/domain/models/{privacy,security,tool_grant}` and matching `domain/repository`/`services` directories.
+- [X] T011 [Foundational] Extend dependency injection in `backend/internal/shared/app/deps.go` to register new security-related repositories/services via placeholders.
+- [X] T012 [Foundational] Update router grouping in `backend/internal/transport/http/routes.go` and `backend/internal/transport/http/admin/routes.go` to mount `/admin/security` and `/agent/security` namespaces (handlers wired later).
+- [X] T013 [Foundational] Expose configuration handles in `backend/internal/config/config.go` for security baseline, consent defaults, and tool grant TTL (read from `security_baseline.yaml`).
+- [X] T014 [Foundational] Seed logging hook in `backend/internal/logger/runtime.go` to accept privacy masking adapters (actual masking logic lands with US1).
+- [X] T015 [Foundational] Configure audit log retention & export tooling: add rotation policy (365 天在线) and CLI/export script under `scripts/security/audit_export.sh` documented in `docs/security/audit-logs.md`.
 
 **Checkpoint**: Foundational plumbing ready — user stories can progress independently.
 

@@ -109,6 +109,7 @@ rulesets:
 - **CI**：`make test`、迁移冒烟、（有前端则）Nuxt lint/build；未绿灯不合并。
 - **Release Readiness**：交付包含 `plugin.yaml`、manifest/RBAC、版本号与 `docs/` 更新。
 - **Incidents**：前滚修复并补测试；回滚需保持 schema 兼容。
+- **Documentation Hygiene**：禁止提交无实际内容的 `doc.go` 或其它文档占位文件；同样禁止生成仅含空结构或注释占位的源码文件（如 `registry.go` 模板）。若目录需要说明或占位，必须写入具备实际指导意义的注释/实现，否则直接删除该文件。
 
 ## Governance
 

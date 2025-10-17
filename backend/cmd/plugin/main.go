@@ -4,6 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/ArtisanCloud/PowerXPlugin/internal/bootstrap"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	dbpkg "github.com/ArtisanCloud/PowerXPlugin/internal/db"
@@ -14,12 +20,6 @@ import (
 	agent "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/utils"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-
 	"golang.org/x/sync/errgroup"
 )
 
