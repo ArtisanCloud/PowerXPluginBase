@@ -37,5 +37,5 @@ type DataClassification struct {
 
 // TableName overrides the default table name.
 func (*DataClassification) TableName() string {
-	return models.S("privacy_data_classifications")
+	return models.S(models.TablePrivacyDataClassifications)
 }

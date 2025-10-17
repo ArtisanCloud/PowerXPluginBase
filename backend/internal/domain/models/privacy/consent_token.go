@@ -33,7 +33,7 @@ type ConsentToken struct {
 
 // TableName overrides the default table name.
 func (*ConsentToken) TableName() string {
-	return models.S("privacy_consent_tokens")
+	return models.S(models.TablePrivacyConsentTokens)
 }
 
 // ScopeValues returns the parsed list of asset keys granted by this consent.

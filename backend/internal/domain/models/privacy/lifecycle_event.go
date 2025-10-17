@@ -36,5 +36,5 @@ type LifecycleEvent struct {
 
 // TableName overrides the default table name.
 func (*LifecycleEvent) TableName() string {
-	return models.S("privacy_lifecycle_events")
+	return models.S(models.TablePrivacyLifecycleEvents)
 }

@@ -80,17 +80,17 @@
 
 ### Implementation for US2
 
-- [ ] T200 [P] [US2] Define models `backend/internal/domain/models/security/baseline_checklist.go` and `audit_report.go` reflecting checklist/version metadata.
-- [ ] T201 [US2] Add migrations for baseline checklists and audit reports with indexes supporting report queries.
-- [ ] T202 [US2] Implement repositories in `backend/internal/domain/repository/security/{checklist_repository.go,audit_report_repository.go}` to persist run metadata.
-- [ ] T203 [US2] Create service orchestrators in `backend/internal/services/admin/security/baseline_service.go` to launch scans and evaluate pass/fail thresholds.
-- [ ] T204 [US2] Author `make-files/security.mk` plus `Makefile` hook for `make security-audit`, invoking golangci-lint, govulncheck, gosec, npm audit, trivy, and cosign verification with outputs in `build/security/`.
-- [ ] T205 [P] [US2] Implement HTTP handlers `backend/internal/transport/http/admin/security/audit_report_handler.go` for listing audit reports and retrieving artifacts.
-- [ ] T206 [US2] Surface audit results in `web-admin/app/pages/security/baseline.vue` with download links and status badges.
-- [ ] T207 [US2] Update CI pipeline templates (`.github/workflows/` or equivalent) to run `make security-audit` and fail on High/Critical findings per FR-011A.
-- [ ] T208 [US2] Produce SARIF/JSON documentation in `docs/security/audit-pipeline.md`, describing command usage and waiver process.
-- [ ] T209 [P] [US2] 加固 Nuxt 安全配置：在 `web-admin/nuxt.config.ts` 中启用 CSP、SRI、严格的 `cors`/`headers`，并在 `web-admin/app/plugins/csrf.ts` 增加 CSRF token 注入。
-- [ ] T210 [US2] 编写前端安全验证脚本 `web-admin/tests/security/headers.spec.ts`，确认 CSRF/CSP/SRI 头与 token 生效。
+- [X] T200 [P] [US2] Define models `backend/internal/domain/models/security/baseline_checklist.go` and `audit_report.go` reflecting checklist/version metadata.
+- [X] T201 [US2] Add migrations for baseline checklists and audit reports with indexes supporting report queries.
+- [X] T202 [US2] Implement repositories in `backend/internal/domain/repository/security/{checklist_repository.go,audit_report_repository.go}` to persist run metadata.
+- [X] T203 [US2] Create service orchestrators in `backend/internal/services/admin/security/baseline_service.go` to launch scans and evaluate pass/fail thresholds.
+- [X] T204 [US2] Author `make-files/security.mk` plus `Makefile` hook for `make security-audit`, invoking golangci-lint, govulncheck, gosec, npm audit, trivy, and cosign verification with outputs in `build/security/`.
+- [X] T205 [P] [US2] Implement HTTP handlers `backend/internal/transport/http/admin/security/audit_report_handler.go` for listing audit reports and retrieving artifacts.
+- [X] T206 [US2] Surface audit results in `web-admin/app/pages/security/baseline.vue` with download links and status badges.
+- [X] T207 [US2] Update CI pipeline templates (`.github/workflows/` or equivalent) to run `make security-audit` and fail on High/Critical findings per FR-011A.
+- [X] T208 [US2] Produce SARIF/JSON documentation in `docs/security/audit-pipeline.md`, describing command usage and waiver process.
+- [X] T209 [P] [US2] 加固 Nuxt 安全配置：在 `web-admin/nuxt.config.ts` 中启用 CSP、SRI、严格的 `cors`/`headers`，并在 `web-admin/app/plugins/csrf.ts` 增加 CSRF token 注入。
+- [X] T210 [US2] 编写前端安全验证脚本 `web-admin/tests/security/headers.spec.ts`，确认 CSRF/CSP/SRI 头与 token 生效。
 
 **Checkpoint**: Security baseline pipeline operational with UI/API visibility.
 

@@ -25,9 +25,12 @@ type BaseNoTenantModel struct {
 }
 
 const (
-	TablePluginTenantExt = "plugin_tenant_ext"
-	TableTemplate        = "template"
-
-	// extend dev
-
+	TablePluginTenantExt            = "plugin_tenant_ext"
+	TableTemplate                   = "template"
+	TablePluginCredentials          = "plugin_credentials"
+	TablePrivacyDataClassifications = "privacy_data_classifications"
+	TablePrivacyConsentTokens       = "privacy_consent_tokens"
+	TablePrivacyLifecycleEvents     = "privacy_lifecycle_events"
+	TableSecurityBaselineChecklists = "security_baseline_checklists"
+	TableSecurityAuditReports       = "security_audit_reports"
 )

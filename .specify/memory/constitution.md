@@ -90,6 +90,7 @@ rulesets:
 - **Database Schema**: Plugin-managed tables deploy under the `powerx_plugin_base` schema defined in `plugin.yaml`; only local, isolated development may fall back to `public`.
 - **Database**：Postgres ≥ 13；插件使用 `plugin.yaml` 中声明的单一 schema（默认 `powerx_plugin_base`）；RLS 强制；迁移使用项目提供工具链。
 - **Model Declaration**：所有需要持久化的领域模型必须显式声明 `gorm` 列定义与 `json` 标签，并在 `backend/cmd/database/migrate/migrate.go` 中注册，确保 `AutoMigrate` 同步表结构。
+  - 表名常量统一集中在 `backend/internal/domain/models/model.go`；`TableName()` 必须通过 `models.S(<TABLE_CONSTANT>)` 返回，禁止直接使用硬编码字符串。
 - **Configuration Layout**：后端运行配置统一存放 `backend/etc/`（含 manifest runtime overrides）；禁止在仓库其他目录自定义配置副本。
 - **Runtime**：生产禁用 `POWERX_DEV_MODE`；配置 `POWERX_CTX_*`（issuer/audience）；服务监听 `POWERX_BIND_ADDR`。
 - **Networking（反代）**：宿主路由  
@@ -102,6 +103,7 @@ rulesets:
   - 打包产物**固定**在 `web-admin/.output/` 并**随发布包交付**。  
   - UI 组件遵循 Nuxt UI 3.3.x：`UModal v-model:open`、`USwitch`（无 `UToggle`）、`color ∈ {primary,secondary,success,info,warning,error,neutral}`。
   - 共享 TypeScript 类型集中存放在 `web-admin/app/types/`，通过 `~/types/...` 引入；新增/更新类型需同步文档、生成器或脚手架规范。
+  - Go 代码中的导入别名必须使用 UpperCamel 命名（例如 `runtimeOpsModel`、`securityModel`），避免 snake_case 或简写影响可读性。
 
 ## Development Workflow & Quality Gates
 

@@ -29,3 +29,20 @@ export interface LifecycleEventResponse {
 export interface LifecycleEventListResponse {
   data: LifecycleEventResponse[]
 }
+
+export interface AuditReport {
+  id: string
+  baseline_id: string
+  initiated_by: string
+  status: string
+  findings?: Record<string, any>
+  artifact_path?: string
+  sarif_path?: string
+  report_hash?: string
+  checklist_version: string
+  created_at: string
+}
+
+export interface AuditReportListResponse {
+  data: AuditReport[]
+}
