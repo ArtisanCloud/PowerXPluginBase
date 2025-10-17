@@ -1,6 +1,6 @@
 id: com.powerx.plugins.base
 name: Base template Plugin
-version: 0.1.0
+version: 0.2.0
 channel: dev
 min_core: 0.6.0
 max_core: 0.8.0
