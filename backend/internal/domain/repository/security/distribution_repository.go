@@ -14,15 +14,15 @@ import (
 
 // DistributionRepository manages advisory distribution persistence helpers.
 type DistributionRepository struct {
-	db *gorm.DB
-	*repository.BaseRepository[secmodel.AdvisoryDistribution]
+	db   *gorm.DB
+	base *repository.BaseRepository[secmodel.AdvisoryDistribution]
 }
 
 // NewDistributionRepository constructs the repository.
 func NewDistributionRepository(db *gorm.DB) *DistributionRepository {
 	return &DistributionRepository{
-		db:             db,
-		BaseRepository: repository.NewBaseRepository[secmodel.AdvisoryDistribution](db),
+		db:   db,
+		base: repository.NewBaseRepository[secmodel.AdvisoryDistribution](db),
 	}
 }
 
