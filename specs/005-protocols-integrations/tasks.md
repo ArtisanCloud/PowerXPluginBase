@@ -19,15 +19,15 @@
 
 **Purpose**: 创建 integration 目录结构、安装依赖、准备配置和本地工具。
 
-- [ ] T001 [Setup] 根据 `plan.md` 创建后端/前端目录骨架  
+- [X] T001 [Setup] 根据 `plan.md` 创建后端/前端目录骨架  
       `backend/internal/services/integration/`, `backend/internal/domain/repository/integration/`, `backend/internal/observability/integration/`, `web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/`
-- [ ] T002 [P] [Setup] 安装/更新 Go module 与 Nuxt 依赖（含脚本）  
+- [X] T002 [P] [Setup] 安装/更新 Go module 与 Nuxt 依赖（含脚本）  
       `make dev-setup`, `npm install --prefix web-admin`
-- [ ] T003 [Setup] 初始化 integration 配置项（1 MB 阈值、重试策略、轮换周期）  
+- [X] T003 [Setup] 初始化 integration 配置项（1 MB 阈值、重试策略、轮换周期）  
       `backend/etc/config.yaml`, `backend/internal/config/config.go`
-- [ ] T004 [P] [Setup] 准备幂等缓存后端（优先 Redis，PostgreSQL 回退）并配置 docker-compose  
+- [X] T004 [P] [Setup] 准备幂等缓存后端（优先 Redis，PostgreSQL 回退）并配置 docker-compose  
       `config/docker-compose.integration.yml`
-- [ ] T005 [Setup] 更新 `AGENTS.md` / 团队 README 说明新的语言、依赖及测试入口  
+- [X] T005 [Setup] 更新 `AGENTS.md` / 团队 README 说明新的语言、依赖及测试入口  
       `AGENTS.md`
 
 ---

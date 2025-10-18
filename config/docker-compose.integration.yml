@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  integration-redis:
+    image: redis:7-alpine
+    container_name: integration-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - integration-redis-data:/data
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+  integration-webhook-mock:
+    image: hashicorp/http-echo:0.2.3
+    container_name: integration-webhook-mock
+    command: ["-text=ok"]
+    ports:
+      - "7080:5678"
+
+volumes:
+  integration-redis-data:
