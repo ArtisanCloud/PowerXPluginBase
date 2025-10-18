@@ -68,3 +68,23 @@ export interface ToolGrantUsageEvent {
   occurred_at: string
   metadata?: Record<string, any>
 }
+
+export interface VulnerabilityAdvisory {
+  id: string
+  reference: string
+  severity: string
+  status: string
+  affected_versions: string[]
+  patched_in_version?: string
+  summary: string
+  details_markdown?: string
+  published_at?: string
+  patched_at?: string
+  closed_at?: string
+  sla_deadline?: string
+  created_at: string
+}
+
+export interface VulnerabilityAdvisoryListResponse {
+  data: VulnerabilityAdvisory[]
+}

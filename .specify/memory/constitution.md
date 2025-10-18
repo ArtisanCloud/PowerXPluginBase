@@ -77,6 +77,7 @@ rulesets:
 ### IV. Observable & Testable Delivery（可观测与可测试）
 
 - 结构化日志（含 request_id/tenant_id）、`/healthz`、必要指标钩子。
+- 事件、遥测、审计等观测器/Emitter 统一放置在 `backend/internal/observability/<domain>`，由 Service/作业统一调用，避免 Handler 与 Service 内部混杂日志装饰。
 - 变更须配套测试：Service 单测、多租户集成测、迁移冒烟；迁移可幂等、可回滚，并受 `POWERX_RUN_MIGRATE` 控制。
 
 ### V. Minimal Footprint & Versioned Releases（轻量与版本化）

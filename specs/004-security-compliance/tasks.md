@@ -126,15 +126,15 @@
 
 ### Implementation for US4
 
-- [ ] T400 [P] [US4] Add models `backend/internal/domain/models/security/{advisory.go,distribution.go}` representing advisories and delivery receipts.
-- [ ] T401 [US4] Create migrations for advisories/distributions with severity/status indexes and notification tracking.
-- [ ] T402 [P] [US4] Build repositories `backend/internal/domain/repository/security/{advisory_repository.go,distribution_repository.go}`.
-- [ ] T403 [US4] Implement `backend/internal/services/admin/security/advisory_service.go` handling lifecycle (report → patch → publish → close) and SLA computation.
-- [ ] T404 [US4] Add admin endpoints `backend/internal/transport/http/admin/security/advisory_handler.go` for create/list/publish operations per OpenAPI contract.
-- [ ] T405 [US4] Implement event emitters in `backend/internal/observability/security/advisory_events.go` firing `plugin.vulnerability.detected`/`remediated` and queuing marketplace/webhook notifications.
-- [ ] T406 [US4] Update packaging pipeline (`Makefile`, `build/package.sh` or equivalent) to bundle signed advisories into `dist/security/` alongside `.pxp`.
-- [ ] T407 [P] [US4] Build admin UI `web-admin/app/pages/security/advisories.vue` for managing advisories and viewing distribution status.
-- [ ] T408 [US4] Document response playbook in `docs/security/vulnerability-response.md` including SLA tables and communication channels.
+- [X] T400 [P] [US4] Add models `backend/internal/domain/models/security/{advisory.go,distribution.go}` representing advisories and delivery receipts.
+- [X] T401 [US4] Create migrations for advisories/distributions with severity/status indexes and notification tracking.
+- [X] T402 [P] [US4] Build repositories `backend/internal/domain/repository/security/{advisory_repository.go,distribution_repository.go}`.
+- [X] T403 [US4] Implement `backend/internal/services/admin/security/advisory_service.go` handling lifecycle (report → patch → publish → close) and SLA computation.
+- [X] T404 [US4] Add admin endpoints `backend/internal/transport/http/admin/security/advisory_handler.go` for create/list/publish operations per OpenAPI contract.
+- [X] T405 [US4] Implement event emitters in `backend/internal/observability/security/advisory_events.go` firing `plugin.vulnerability.detected`/`remediated` and queuing marketplace/webhook notifications.
+- [X] T406 [US4] Update packaging pipeline (`Makefile`, `build/package.sh` or equivalent) to bundle signed advisories into `dist/security/` alongside `.pxp`.
+- [X] T407 [P] [US4] Build admin UI `web-admin/app/pages/security/advisories.vue` for managing advisories and viewing distribution status.
+- [X] T408 [US4] Document response playbook in `docs/security/vulnerability-response.md` including SLA tables and communication channels.
 
 **Checkpoint**: Vulnerability response loop validated with signed advisories and notifications.
 

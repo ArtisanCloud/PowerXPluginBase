@@ -6,6 +6,9 @@ PACKAGE_FRONTEND_DIR ?= $(PACKAGE_VERSION_DIR)/web-admin
 PACKAGE_HASH_FILE ?= $(PACKAGE_VERSION_DIR)/hashes.txt
 PACKAGE_AUDIT_LOG ?= $(PACKAGE_VERSION_DIR)/audit.log
 PACKAGE_SIGNATURE ?= $(PACKAGE_VERSION_DIR)/signature.json
+ADVISORY_SOURCE_DIR ?= build/security/advisories
+ADVISORY_DIST_ROOT ?= dist/security
+ADVISORY_DIST_VERSION ?= $(ADVISORY_DIST_ROOT)/$(VERSION)
 
 .PHONY: package-pxp
 package-pxp: verify-manifest build frontend-build
@@ -34,3 +37,11 @@ package-pxp: verify-manifest build frontend-build
 	} > $(PACKAGE_AUDIT_LOG)
 	@printf '{\n  "status": "pending",\n  "signed_by": "",\n  "signed_at": "",\n  "note": "Upload package to signing service to finalize signatures"\n}\n' > $(PACKAGE_SIGNATURE)
 	@echo "[package] Artefacts staged. Hashes recorded in $(PACKAGE_HASH_FILE)"
+	@rm -rf $(ADVISORY_DIST_VERSION)
+	@mkdir -p $(ADVISORY_DIST_VERSION)
+	@if [ -d "$(ADVISORY_SOURCE_DIR)" ] && [ -n "$$(ls -A $(ADVISORY_SOURCE_DIR) 2>/dev/null)" ]; then \
+		echo "[package] Bundling advisories from $(ADVISORY_SOURCE_DIR) into $(ADVISORY_DIST_VERSION)"; \
+		cp -R $(ADVISORY_SOURCE_DIR)/. $(ADVISORY_DIST_VERSION)/; \
+	else \
+		echo "[package] No advisories found at $(ADVISORY_SOURCE_DIR); skipping bundle"; \
+	fi
