@@ -142,11 +142,11 @@
 
 ## Phase 7 — Polish & Cross-Cutting
 
-- [ ] T900 [P] Polish Update `specs/004-security-compliance/quickstart.md` with final command examples and screenshots as features land.
-- [ ] T901 Polish Refresh `docs/` and `README.md` sections covering consent workflow, security audit, ToolGrant usage, and vulnerability response.
-- [ ] T902 [P] Polish Ensure telemetry/metrics dashboards are configured (`backend/internal/observability/security/metrics.go`) and wired to existing exporters.
-- [ ] T903 Polish Run full validation suite (`make test`, `make security-audit`, Nuxt build) and capture artifact hashes in release checklist.
-- [ ] T904 Polish Prepare release notes + manifest updates for marketplace submission, including new `manifest.data_usage` and `security_baseline_version`.
+- [X] T900 [P] Polish Update `specs/004-security-compliance/quickstart.md` with final command examples and screenshots as features land.
+- [X] T901 Polish Refresh `docs/` and `README.md` sections covering consent workflow, security audit, ToolGrant usage, and vulnerability response.
+- [X] T902 [P] Polish Ensure telemetry/metrics dashboards are configured (`backend/internal/observability/security/metrics.go`) and wired to existing exporters.
+- [X] T903 Polish Run full validation suite (`make test`, `make security-audit`, Nuxt build) and capture artifact hashes in release checklist.
+- [X] T904 Polish Prepare release notes + manifest updates for marketplace submission, including new `manifest.data_usage` and `security_baseline_version`.
 
 ---
 

@@ -66,6 +66,7 @@ func (s *Service) Issue(ctx context.Context, tenantID, toolID, agentID string, c
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, err := token.SignedString(s.signingKey)
 	if err != nil {
+		seclog.RecordToolGrantEvent("issuance_failed", tenantID)
 		return "", err
 	}
 	_, recErr := s.repo.RecordUsageEvent(ctx, &tgmodel.UsageEvent{
@@ -83,6 +84,7 @@ func (s *Service) Issue(ctx context.Context, tenantID, toolID, agentID string, c
 		"agent_id":     agentID,
 		"toolgrant_id": claims.ID,
 	})
+	seclog.RecordToolGrantEvent("issued", tenantID)
 	return signed, nil
 }
 
@@ -102,6 +104,7 @@ func (s *Service) Revoke(ctx context.Context, tenantID, toolGrantID, reason, act
 		TtlExpiry:   ttlExpiry,
 	})
 	if err != nil {
+		seclog.RecordToolGrantEvent("revocation_failed", tenantID)
 		return err
 	}
 	_, recErr := s.repo.RecordUsageEvent(ctx, &tgmodel.UsageEvent{
@@ -119,6 +122,7 @@ func (s *Service) Revoke(ctx context.Context, tenantID, toolGrantID, reason, act
 		"reason":       reason,
 		"actor":        actor,
 	})
+	seclog.RecordToolGrantEvent("revoked", tenantID)
 	return nil
 }
 

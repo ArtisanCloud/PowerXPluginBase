@@ -20,6 +20,7 @@ make security-audit
 - Generates reports under `build/security/<timestamp>/`.
 - Inspect `report.json` and `report.sarif`; upload to Marketplace submission if applicable.
 - Pipeline fails on High/Critical findings unless explicitly waived.
+- Use `scripts/security/audit_export.sh` to sync signed log bundles into `dist/security/` when preparing a release.
 
 ## 4. Exercise Consent & ToolGrant Flows
 - Start services: `make run`.
@@ -27,6 +28,7 @@ make security-audit
 - Issue ToolGrant: `curl -X POST http://localhost:8086/_core/toolgrants -d '{...}'`.
 - Invoke protected endpoint with returned JWT; expect `200`.
 - Revoke ToolGrant via `scripts/dev/toolgrant_revoke.sh <jti>`; subsequent requests return `403` with `error_code=TOOLGRANT_REVOKED`.
+- Inspect active grants and revocations in the admin UI at `/_p/<plugin-id>/admin/security/toolgrants`.
 
 ## 5. Trigger Lifecycle Events
 - Publish erase event: `scripts/dev/events/emit.sh data.lifecycle.erase tenant-001`.
@@ -35,13 +37,15 @@ make security-audit
 
 ## 6. Vulnerability Response Drill
 - File mock vulnerability: `scripts/dev/security/report_vuln.sh CRITICAL PX-ADV-2025-TEST`.
-- Implement hotfix branch; rebuild `.pxp`: `make build && make package`.
-- Publish advisory: `scripts/dev/security/publish_advisory.sh PX-ADV-2025-TEST`.
-- Confirm signed bundle stored in `dist/security/` and notifications sent (check `security_advisory_distributions`).
+- Implement hotfix branch; rebuild `.pxp`: `make build && make package-pxp`.
+- Publish advisory via API or UI:
+  - CLI: `scripts/dev/security/publish_advisory.sh PX-ADV-2025-TEST`
+  - UI: `/_p/<plugin-id>/admin/security/advisories`
+- Confirm signed bundles stored in `dist/security/<version>/` and notifications sent (check `security_advisory_distributions` table and audit events).
 
 ## 7. Operational Checklist Before Release
-- [ ] `make test` and `make security-audit` green.
-- [ ] Nuxt admin build passes `npm run build` and `npm run lint`.
+- [ ] `make test`, `make security-audit`, and `npm run build` succeed (document failures with waivers if blocked by tooling).
+- [ ] Run `make package-pxp` to stage backend binaries, frontend bundle, and `build/security/advisories` into `dist/security/`.
 - [ ] Manifest updated with `data_usage`, `security_baseline_version`, consent scopes.
-- [ ] `.pxp` package signed; cosign verification succeeds.
-- [ ] Advisory backlog empty or documented with waivers.
+- [ ] `.pxp` and advisory bundles signed (`cosign verify-blob dist/security/<version>/*.json`).
+- [ ] Advisory backlog empty or documented with waivers; capture artifact hashes in release checklist.

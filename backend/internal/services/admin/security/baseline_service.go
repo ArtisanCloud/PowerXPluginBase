@@ -9,6 +9,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	secmodel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/security"
 	secrepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/security"
+	secobs "github.com/ArtisanCloud/PowerXPlugin/internal/observability/security"
 	"github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -97,6 +98,7 @@ func (s *BaselineService) RunAudit(ctx context.Context, initiatedBy, checklistVe
 	report.Status = status
 	report.Findings = findings
 	report.CreatedAt = time.Now().UTC()
+	secobs.RecordAuditReport(status)
 	return report, nil
 }
 
@@ -106,6 +108,7 @@ func (s *BaselineService) RecordAuditResult(ctx context.Context, id string, stat
 	if err := s.repo.UpdateAuditReportStatus(ctx, id, status, payload); err != nil {
 		return err
 	}
+	secobs.RecordAuditReport(status)
 	updates := map[string]interface{}{}
 	if artifactPath != "" {
 		updates["artifact_path"] = artifactPath

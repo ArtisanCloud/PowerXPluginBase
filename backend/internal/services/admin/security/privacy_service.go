@@ -49,8 +49,10 @@ func (s *PrivacyService) RevokeConsentToken(ctx context.Context, tenantID, token
 		reason = "revoked_by_admin"
 	}
 	if err := s.repo.RevokeConsentToken(ctx, tenantID, tokenID, reason); err != nil {
+		secobs.RecordConsentEvent(privmodel.LifecycleEventConsentRevoke, privmodel.LifecycleStatusFailed)
 		return err
 	}
+	secobs.RecordConsentEvent(privmodel.LifecycleEventConsentRevoke, privmodel.LifecycleStatusSucceeded)
 	if actor == "" {
 		actor = "admin"
 	}
@@ -96,8 +98,10 @@ func (s *PrivacyService) IssueConsentToken(ctx context.Context, token *privmodel
 	}
 	out, err := s.repo.IssueConsentToken(ctx, token, scope)
 	if err != nil {
+		secobs.RecordConsentEvent(privmodel.LifecycleEventConsentRenew, privmodel.LifecycleStatusFailed)
 		return nil, err
 	}
+	secobs.RecordConsentEvent(privmodel.LifecycleEventConsentRenew, privmodel.LifecycleStatusSucceeded)
 	_, logErr := s.repo.CreateLifecycleEvent(ctx, &privmodel.LifecycleEvent{
 		TenantID:   token.TenantID,
 		EventType:  privmodel.LifecycleEventConsentRenew,

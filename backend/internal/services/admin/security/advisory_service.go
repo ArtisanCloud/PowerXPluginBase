@@ -103,6 +103,7 @@ func (s *AdvisoryService) CreateAdvisory(ctx context.Context, params CreateAdvis
 		"sla_deadline": deadline.UTC().Format(time.RFC3339),
 	}
 	secobs.EmitAdvisoryDetected(s.logger, result, meta)
+	secobs.RecordAdvisoryLifecycle(severity, secmodel.AdvisoryStatusOpen)
 	return result, nil
 }
 
@@ -113,7 +114,12 @@ func (s *AdvisoryService) ListAdvisories(ctx context.Context, severities, status
 		Statuses:   statuses,
 		Limit:      limit,
 	}
-	return s.advisories.List(ctx, filter)
+	advisories, err := s.advisories.List(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	secobs.UpdateOpenAdvisories(groupOpenBySeverity(advisories))
+	return advisories, nil
 }
 
 // PublishAdvisory promotes the advisory to published and queues notifications.
@@ -204,6 +210,8 @@ func (s *AdvisoryService) PublishAdvisory(ctx context.Context, params PublishAdv
 		"channels":           channelsToInterfaces(distributions),
 	}
 	secobs.EmitAdvisoryRemediated(s.logger, advisory, meta)
+	secobs.RecordAdvisoryLifecycle(advisory.Severity, advisory.Status)
+	s.refreshOpenGauge(ctx)
 	return advisory, distributions, nil
 }
 
@@ -219,7 +227,13 @@ func (s *AdvisoryService) CloseAdvisory(ctx context.Context, id string) (*secmod
 	}); err != nil {
 		return nil, err
 	}
-	return s.advisories.GetByID(ctx, id)
+	updated, err := s.advisories.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	secobs.RecordAdvisoryLifecycle(updated.Severity, secmodel.AdvisoryStatusClosed)
+	s.refreshOpenGauge(ctx)
+	return updated, nil
 }
 
 func computeSLADeadline(severity string, from time.Time) time.Time {
@@ -281,4 +295,35 @@ func channelsToInterfaces(distributions []*secmodel.AdvisoryDistribution) []stri
 		out = append(out, dist.Channel)
 	}
 	return out
+}
+
+func (s *AdvisoryService) refreshOpenGauge(ctx context.Context) {
+	openList, err := s.advisories.List(ctx, secrepo.AdvisoryListFilter{
+		Statuses: []string{secmodel.AdvisoryStatusOpen},
+	})
+	if err != nil {
+		if s.logger != nil {
+			s.logger.WithError(err).Debug("failed to refresh advisory open gauge")
+		}
+		return
+	}
+	secobs.UpdateOpenAdvisories(groupOpenBySeverity(openList))
+}
+
+func groupOpenBySeverity(advisories []*secmodel.Advisory) map[string]int {
+	counts := map[string]int{}
+	for _, adv := range advisories {
+		if adv == nil {
+			continue
+		}
+		if adv.Status != secmodel.AdvisoryStatusOpen {
+			continue
+		}
+		key := adv.Severity
+		if key == "" {
+			key = "unknown"
+		}
+		counts[key]++
+	}
+	return counts
 }
