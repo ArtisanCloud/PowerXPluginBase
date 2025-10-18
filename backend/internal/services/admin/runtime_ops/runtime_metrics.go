@@ -7,6 +7,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	secmetrics "github.com/ArtisanCloud/PowerXPlugin/internal/observability/security"
 )
 
 const (
@@ -225,6 +227,8 @@ func renderMetrics(w io.Writer) {
 			fmt.Fprintf(w, "%s_count{%s} %g\n", name, labelKey, hist.Count)
 		}
 	}
+
+	secmetrics.RenderMetrics(w)
 }
 
 func sortedKeys(m map[string]float64) []string {

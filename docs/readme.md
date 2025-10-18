@@ -26,6 +26,7 @@
 2. [开发者指南](./developer/backend.md)
 3. [插件协议规范](./contract/plugin_yaml_spec.md)
 4. [部署与调试](./deploy/docker_guide.md)
-5. [FAQ](./references/faq.md)
+5. [安全与合规指南](./integration/04_security_and_compliance/Data_Privacy_and_GDPR.md)
+6. [FAQ](./references/faq.md)
 
 ---

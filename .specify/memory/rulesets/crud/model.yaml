@@ -21,6 +21,16 @@ checks:
       pattern:
         - "gorm:\""
         - "json:\""
+  - id: model-table-constants
+    desc: 所有 TableName() 函数必须引用模型常量（backend/internal/domain/models/model.go）
+    assert:
+      type: grep
+      target: backend/internal/domain/models/**
+      pattern:
+        - "TableName() string"
+        - "models.S("
+      deny:
+        - "models.S(\""
   - id: model-register-migrate
     desc: 所有表结构需在 migrate.go 中通过 AutoMigrate 注册
     assert:

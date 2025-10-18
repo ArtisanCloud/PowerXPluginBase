@@ -4,6 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/ArtisanCloud/PowerXPlugin/internal/bootstrap"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	dbpkg "github.com/ArtisanCloud/PowerXPlugin/internal/db"
@@ -14,12 +20,6 @@ import (
 	agent "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/utils"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-
 	"golang.org/x/sync/errgroup"
 )
 
@@ -36,6 +36,13 @@ func main() {
 	if err != nil {
 		fmt.Printf("Failed to load config: %v\n", err)
 		os.Exit(1)
+	}
+
+	// 初始化日志隐私掩码规则
+	masking := cfg.SecurityBaselineConfig().MaskingRules
+	if len(masking.PIIFields) > 0 {
+		placeholder := masking.LogRedaction.Placeholder
+		logger.ConfigurePrivacyMasker(masking.PIIFields, placeholder)
 	}
 
 	// ★ 在这里把 HTTP/GRPC 的占位符先解析掉（一定要在起服务之前）
@@ -58,7 +65,7 @@ func main() {
 	if cfg.GRPCUpstream != nil && cfg.GRPCUpstream.TenantID > 0 {
 		// 延迟依赖：仅当配置未提供 STS client 时，尝试 DB 加载；若配置已有，则优先生效
 		if cfg.GRPCUpstream.STSClientID == "" || cfg.GRPCUpstream.STSClientSecret == "" {
-			repo := repository.NewCredentialsRepo(queryDB)
+			repo := repository.NewCredentialsRepository(queryDB)
 			svc := agent.NewCredentialService(cfg, repo)
 			if cid, sec, err := svc.LoadDecryptedCredentials(rootCtx, cfg.GRPCUpstream.TenantID, app.PluginID); err == nil {
 				cfg.GRPCUpstream.STSClientID = cid

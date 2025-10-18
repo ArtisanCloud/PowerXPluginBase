@@ -72,10 +72,12 @@ rulesets:
 - Repo 封装数据访问细节；HTTP 与 gRPC **复用同一** Service。
 - 依赖通过容器注入（配置、日志、客户端），保证可测试与可重放构造。
 - 新增子域须沿用目录分层：`internal/transport/http/{admin,agent,...}/<domain>` → `internal/services/{admin,agent,...}/<domain>` → `internal/domain/{models,repository}/<domain>`，目录名使用 lower_snake_case，避免自定义层级。
+ - Repository 必须内嵌 `*repository.BaseRepository[T]` 并提供 `NewXXXRepository` 构造函数；禁止直接暴露裸 `*gorm.DB` 字段以维持一致的读写封装。
 
 ### IV. Observable & Testable Delivery（可观测与可测试）
 
 - 结构化日志（含 request_id/tenant_id）、`/healthz`、必要指标钩子。
+- 事件、遥测、审计等观测器/Emitter 统一放置在 `backend/internal/observability/<domain>`，由 Service/作业统一调用，避免 Handler 与 Service 内部混杂日志装饰。
 - 变更须配套测试：Service 单测、多租户集成测、迁移冒烟；迁移可幂等、可回滚，并受 `POWERX_RUN_MIGRATE` 控制。
 
 ### V. Minimal Footprint & Versioned Releases（轻量与版本化）
@@ -90,6 +92,7 @@ rulesets:
 - **Database Schema**: Plugin-managed tables deploy under the `powerx_plugin_base` schema defined in `plugin.yaml`; only local, isolated development may fall back to `public`.
 - **Database**：Postgres ≥ 13；插件使用 `plugin.yaml` 中声明的单一 schema（默认 `powerx_plugin_base`）；RLS 强制；迁移使用项目提供工具链。
 - **Model Declaration**：所有需要持久化的领域模型必须显式声明 `gorm` 列定义与 `json` 标签，并在 `backend/cmd/database/migrate/migrate.go` 中注册，确保 `AutoMigrate` 同步表结构。
+  - 表名常量统一集中在 `backend/internal/domain/models/model.go`；`TableName()` 必须通过 `models.S(<TABLE_CONSTANT>)` 返回，禁止直接使用硬编码字符串。
 - **Configuration Layout**：后端运行配置统一存放 `backend/etc/`（含 manifest runtime overrides）；禁止在仓库其他目录自定义配置副本。
 - **Runtime**：生产禁用 `POWERX_DEV_MODE`；配置 `POWERX_CTX_*`（issuer/audience）；服务监听 `POWERX_BIND_ADDR`。
 - **Networking（反代）**：宿主路由  
@@ -101,6 +104,8 @@ rulesets:
   - Nuxt 运行期基于 `runtimeConfig.public.apiBaseUrl` 适配「直连 `:8086/v1`」与「宿主反代 `/_p/<plugin-id>/api/v1`」。  
   - 打包产物**固定**在 `web-admin/.output/` 并**随发布包交付**。  
   - UI 组件遵循 Nuxt UI 3.3.x：`UModal v-model:open`、`USwitch`（无 `UToggle`）、`color ∈ {primary,secondary,success,info,warning,error,neutral}`。
+  - 共享 TypeScript 类型集中存放在 `web-admin/app/types/`，通过 `~/types/...` 引入；新增/更新类型需同步文档、生成器或脚手架规范。
+  - Go 代码中的导入别名必须使用 UpperCamel 命名（例如 `runtimeOpsModel`、`securityModel`），避免 snake_case 或简写影响可读性。
 
 ## Development Workflow & Quality Gates
 
@@ -109,6 +114,7 @@ rulesets:
 - **CI**：`make test`、迁移冒烟、（有前端则）Nuxt lint/build；未绿灯不合并。
 - **Release Readiness**：交付包含 `plugin.yaml`、manifest/RBAC、版本号与 `docs/` 更新。
 - **Incidents**：前滚修复并补测试；回滚需保持 schema 兼容。
+- **Documentation Hygiene**：禁止提交无实际内容的 `doc.go` 或其它文档占位文件；同样禁止生成仅含空结构或注释占位的源码文件（如 `registry.go` 模板）。若目录需要说明或占位，必须写入具备实际指导意义的注释/实现，否则直接删除该文件。
 
 ## Governance
 

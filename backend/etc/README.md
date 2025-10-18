@@ -58,6 +58,15 @@ Base 插件的配置来源按照以下优先级生效：
    go run ./cmd/plugin
    ```
 
+## 安全基线配置
+
+- `backend/etc/security_baseline.yaml` 提供默认的安全与合规基线，可在部署时由宿主覆盖。
+  - `baseline_version`：基线版本号，便于审计追踪。
+  - `masking_rules`：日志和数据脱敏规则（PII 列表、掩码占位符等）。
+  - `tool_grant`：ToolGrant 生命周期配置（TTL、续期阈值、登出即撤销）。
+  - `consent_defaults`：宿主未下发策略时的隐私默认值，例如 90 天数据保留、审计日志通道、导出目的地。
+- 宿主可在其配置包中注入替代文件，并结合 `CONFIG_PATH` 定位，实现环境化定制。
+
 ## 常用环境变量
 
 | 变量名 | 说明 |

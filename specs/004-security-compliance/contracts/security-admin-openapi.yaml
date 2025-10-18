@@ -1,0 +1,513 @@
+openapi: 3.1.0
+info:
+  title: PowerX Plugin Security & Compliance API
+  version: 0.1.0
+  description: >
+    Admin and agent endpoints that implement privacy, ToolGrant, and vulnerability
+    response requirements for the PowerX base plugin.
+servers:
+  - url: https://{host}/_p/{pluginId}/api/v1
+    variables:
+      host:
+        default: tenant.powerx.host
+      pluginId:
+        default: com.powerx.plugin.base
+paths:
+  /admin/security/consent-tokens:
+    get:
+      summary: List active consent tokens
+      operationId: listConsentTokens
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ACTIVE, REVOKED, EXPIRED]
+      responses:
+        "200":
+          description: Consent tokens found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConsentTokenList"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/security/consent-tokens/{tokenId}/revoke:
+    post:
+      summary: Revoke consent token
+      operationId: revokeConsentToken
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevokeConsentBody"
+      responses:
+        "204":
+          description: Consent revoked
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/security/lifecycle-events:
+    get:
+      summary: Retrieve privacy lifecycle evidence
+      operationId: listLifecycleEvents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: event_type
+          in: query
+          schema:
+            type: string
+            enum: [RETENTION_START, RETENTION_PURGE, EXPORT, ERASURE, CONSENT_REVOKE, CONSENT_RENEW]
+      responses:
+        "200":
+          description: Events returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LifecycleEventList"
+  /agent/security/toolgrants/verify:
+    post:
+      summary: Verify ToolGrant token
+      operationId: verifyToolGrant
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyToolGrantBody"
+      responses:
+        "200":
+          description: Token valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ToolGrantVerification"
+        "403":
+          description: Token invalid or revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SecurityError"
+  /admin/security/toolgrants/revoke:
+    post:
+      summary: Revoke ToolGrant
+      operationId: revokeToolGrant
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevokeToolGrantBody"
+      responses:
+        "204":
+          description: Revoked
+  /admin/security/toolgrants/revocations:
+    get:
+      summary: List toolgrant revocations
+      operationId: listToolGrantRevocations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Revocations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ToolGrantRevocation"
+  /admin/security/toolgrants/usage:
+    get:
+      summary: List toolgrant usage events
+      operationId: listToolGrantUsage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: toolgrant_id
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Usage events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ToolGrantUsageEvent"
+  /admin/security/audit-reports:
+    get:
+      summary: List security audit reports
+      operationId: listSecurityAuditReports
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Reports
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SecurityAuditReportList"
+  /admin/security/advisories:
+    post:
+      summary: Create vulnerability advisory
+      operationId: createAdvisory
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAdvisoryBody"
+      responses:
+        "201":
+          description: Advisory created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VulnerabilityAdvisory"
+    get:
+      summary: List advisories
+      operationId: listAdvisories
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [CRITICAL, HIGH, MEDIUM, LOW]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [OPEN, PATCHED, PUBLISHED, CLOSED]
+      responses:
+        "200":
+          description: Advisories
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VulnerabilityAdvisoryList"
+  /admin/security/advisories/{advisoryId}/publish:
+    post:
+      summary: Publish advisory and trigger notifications
+      operationId: publishAdvisory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: advisoryId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublishAdvisoryBody"
+      responses:
+        "200":
+          description: Advisory published
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VulnerabilityAdvisory"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Forbidden:
+      description: Caller lacks permission or ToolGrant scope.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SecurityError"
+    NotFound:
+      description: Resource missing.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SecurityError"
+  schemas:
+    ConsentToken:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+        scope:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+    ConsentTokenList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConsentToken"
+    RevokeConsentBody:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+        requested_by:
+          type: string
+    LifecycleEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+        event_type:
+          type: string
+        asset_key:
+          type: string
+        status:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+        payload:
+          type: object
+    LifecycleEventList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/LifecycleEvent"
+    VerifyToolGrantBody:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+    ToolGrantVerification:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        capability:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          nullable: true
+    RevokeToolGrantBody:
+      type: object
+      required: [toolgrant_id, reason]
+      properties:
+        toolgrant_id:
+          type: string
+        reason:
+          type: string
+        requested_by:
+          type: string
+    SecurityAuditReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+        findings:
+          type: object
+    SecurityAuditReportList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/SecurityAuditReport"
+    CreateAdvisoryBody:
+      type: object
+      required: [reference, severity, summary, affected_versions]
+      properties:
+        reference:
+          type: string
+        severity:
+          type: string
+        summary:
+          type: string
+        details_markdown:
+          type: string
+        affected_versions:
+          type: array
+          items:
+            type: string
+        sla_deadline:
+          type: string
+          format: date-time
+    PublishAdvisoryBody:
+      type: object
+      required: [patched_in_version]
+      properties:
+        patched_in_version:
+          type: string
+        notify_channels:
+          type: array
+          items:
+            type: string
+    VulnerabilityAdvisory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        reference:
+          type: string
+        severity:
+          type: string
+        status:
+          type: string
+        affected_versions:
+          type: array
+          items:
+            type: string
+        patched_in_version:
+          type: string
+          nullable: true
+        summary:
+          type: string
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+    VulnerabilityAdvisoryList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/VulnerabilityAdvisory"
+    ToolGrantRevocation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+        toolgrant_id:
+          type: string
+        revoked_at:
+          type: string
+          format: date-time
+        revoked_by:
+          type: string
+        reason:
+          type: string
+          nullable: true
+        ttl_expiry:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    ToolGrantUsageEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+        toolgrant_id:
+          type: string
+        event_type:
+          type: string
+        capability:
+          type: string
+        agent_id:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+    SecurityError:
+      type: object
+      required: [error_code, message]
+      properties:
+        error_code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true

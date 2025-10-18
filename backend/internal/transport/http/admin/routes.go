@@ -3,6 +3,7 @@ package admin
 import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	adminruntime "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/runtime_ops"
+	adminsecurity "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/security"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,5 +19,6 @@ func RegisterAPIRoutes(rg *gin.RouterGroup, deps *app.Deps) {
 		runtimeOps := admin.Group("/runtime")
 		adminruntime.RegisterRoutes(runtimeOps, deps)
 
+		adminsecurity.RegisterRoutes(admin, deps)
 	}
 }

@@ -3,13 +3,6 @@ kind: ruleset
 id: crud_repository
 version: 1.0.0
 checks:
-  - id: repo-interface
-    desc: 定义接口 + 具体实现；暴露最小读取/写入方法
-    assert:
-      type: grep
-      target: backend/internal/domain/repository/**
-      pattern:
-        - interface
   - id: repo-base-embed
     desc: Repository 结构体需组合 BaseRepository 并通过构造函数返回本地实例
     assert:

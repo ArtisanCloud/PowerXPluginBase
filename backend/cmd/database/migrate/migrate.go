@@ -5,8 +5,10 @@ import (
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
-	runtimeopsmodel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/runtime_ops"
-	templatemodel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/template"
+	runtimeOpsModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/runtime_ops"
+	securityModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/security"
+	templateModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/template"
+	toolgrantModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/tool_grant"
 	"gorm.io/gorm"
 )
 
@@ -15,11 +17,15 @@ func MigratePluginModels(ctx context.Context, db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.PluginCredential{},
 		&models.PluginTenantExt{},
-		&templatemodel.Template{},
-		&runtimeopsmodel.MCPSession{},
-		&runtimeopsmodel.RuntimeAuditEvent{},
-		&runtimeopsmodel.QuotaLedger{},
-		&runtimeopsmodel.MarketplaceOverage{},
+		&templateModel.Template{},
+		&runtimeOpsModel.MCPSession{},
+		&runtimeOpsModel.RuntimeAuditEvent{},
+		&runtimeOpsModel.QuotaLedger{},
+		&runtimeOpsModel.MarketplaceOverage{},
+		&securityModel.BaselineChecklist{},
+		&securityModel.AuditReport{},
+		&toolgrantModel.Revocation{},
+		&toolgrantModel.UsageEvent{},
 	)
 }
 

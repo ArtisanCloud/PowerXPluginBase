@@ -98,3 +98,15 @@ build/
 .nuxt_pid
 *.bin
 
+# 保留安全审计目录结构
+!build/
+build/*
+!build/security/
+build/security/*
+!build/security/.gitkeep
+
+!dist/
+dist/*
+!dist/security/
+dist/security/*
+!dist/security/.gitkeep

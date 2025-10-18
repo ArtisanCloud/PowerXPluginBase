@@ -27,4 +27,4 @@ mod-tidy: ## 整理 Go 模块依赖
 	cd $(BACKEND_DIR) && go mod tidy
 
 .PHONY: check
-check: lint test ## 运行 lint + test
+check: lint test security-audit ## 运行 lint + test + security audit

@@ -5,6 +5,20 @@ name: Base template Plugin
 version: 0.2.0
 description: "PowerX 基础任务管理插件，提供任务、权限与 Agent 能力"
 corex_version: ">=0.6.0"
+security_baseline_version: "2025.10"
+data_usage:
+  - purpose: "tenant_data_classification"
+    type: "pii_inventory"
+    retention: "365d"
+    requires_consent: true
+  - purpose: "toolgrant_audit_trail"
+    type: "operational_log"
+    retention: "90d"
+    requires_consent: true
+  - purpose: "security_advisory_distribution"
+    type: "security_notification"
+    retention: "365d"
+    requires_consent: false
 
 runtime:
   kind: process

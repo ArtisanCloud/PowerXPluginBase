@@ -1,34 +1,34 @@
 package contracts
 
 import (
-    "net/http"
-    "time"
+	"net/http"
+	"time"
 
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 )
 
 // —— 通用构造器（HTTP/gRPC 均可复用） —— //
 func MakeSuccess(data interface{}, message string, requestID string) APIResponse {
-    return APIResponse{
-        Success:   true,
-        Data:      data,
-        Message:   message,
-        Timestamp: time.Now(),
-        RequestID: requestID,
-    }
+	return APIResponse{
+		Success:   true,
+		Data:      data,
+		Message:   message,
+		Timestamp: time.Now(),
+		RequestID: requestID,
+	}
 }
 
 func MakeError(code, message string, details interface{}, requestID string) APIResponse {
-    return APIResponse{
-        Success: false,
-        Error: &APIError{
-            Code:    code,
-            Message: message,
-            Details: details,
-        },
-        Timestamp: time.Now(),
-        RequestID: requestID,
-    }
+	return APIResponse{
+		Success: false,
+		Error: &APIError{
+			Code:    code,
+			Message: message,
+			Details: details,
+		},
+		Timestamp: time.Now(),
+		RequestID: requestID,
+	}
 }
 
 // ResponseSuccess 返回成功响应
@@ -105,7 +105,7 @@ func ResponseUnauthorized(c *gin.Context, message string) {
 
 // ResponseServiceUnavailable 返回服务不可用响应
 func ResponseServiceUnavailable(c *gin.Context, message string, details interface{}) {
-    ResponseErrorWithDetails(c, http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", message, details)
+	ResponseErrorWithDetails(c, http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", message, details)
 }
 
 // getRequestID 获取请求ID

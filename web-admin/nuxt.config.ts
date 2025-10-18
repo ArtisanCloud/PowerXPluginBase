@@ -20,6 +20,13 @@ export default defineNuxtConfig({
   app: {
     baseURL: INSIDE_POWERX ? pluginAdminBase : "/",
     buildAssetsDir: "/assets/",
+    head: {
+      meta: [
+        { name: "referrer", content: "no-referrer" },
+        { httpEquiv: "X-Content-Type-Options", content: "nosniff" },
+        { name: "permissions-policy", content: "camera=(), microphone=(), geolocation=()" },
+      ],
+    },
   },
 
   css: ["~/assets/css/main.css", "@/assets/scss/main.scss"],
@@ -83,7 +90,9 @@ export default defineNuxtConfig({
       "/**": {
         headers: {
           "X-Frame-Options": "SAMEORIGIN",
-          "Content-Security-Policy": "frame-ancestors 'self'",
+          "Content-Security-Policy": `default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ${INSIDE_POWERX ? pluginApiBase : localApiBase}; font-src 'self' data:; frame-ancestors 'self';`,
+          "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+          "Referrer-Policy": "no-referrer",
         },
       },
     },
