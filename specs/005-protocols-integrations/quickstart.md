@@ -84,6 +84,31 @@ cd web-admin && npm run dev  # 启动管理界面
    - 通过 `GET $API_BASE/admin/integration/webhooks/{id}/attempts` 查看最近投递记录，若状态为 `DLQ` 可调用 `POST $API_BASE/admin/integration/webhooks/attempts/{attemptId}/replay` 重新排队。
 4. **Secrets 轮换**  
    - 创建外部凭证，触发轮换，确认双密钥过渡和审计日志。
+   - API 示例：
+     ```bash
+     curl -X POST \
+       "$API_BASE/admin/integration/secrets" \
+       -H "Authorization: Bearer $TOKEN" \
+       -H "Content-Type: application/json" \
+       -d '{
+         "integration_type": "external.crm",
+         "rotation_interval_days": 30,
+         "generate": true,
+         "metadata": {"owner": "ops"}
+       }'
+     ```
+   - 轮换流程：
+     ```bash
+     # 生成新的 pending secret（返回的一次性密钥需立即保存）
+     curl -X POST "$API_BASE/admin/integration/secrets/$SECRET_ID/rotate" -H "Authorization: Bearer $TOKEN" -d '{"generate": true}'
+
+     # 完成切换后提交确认
+     curl -X POST "$API_BASE/admin/integration/secrets/$SECRET_ID/rotate/complete" -H "Authorization: Bearer $TOKEN"
+
+     # 如需吊销
+     curl -X POST "$API_BASE/admin/integration/secrets/$SECRET_ID/revoke" -H "Authorization: Bearer $TOKEN"
+     ```
+   - 使用 `GET $API_BASE/admin/integration/secrets/$SECRET_ID/audit` 查看审计记录，Secret Rotation Worker 会对即将到期的凭证写入指标 `powerx_integration_secrets_rotations_due`。
 
 ## 6. 测试
 ```bash

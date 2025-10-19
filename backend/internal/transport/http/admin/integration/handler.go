@@ -11,7 +11,7 @@ import (
 	repo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/integration"
 	service "github.com/ArtisanCloud/PowerXPlugin/internal/services/integration"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
-	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/middleware"
+	httpmw "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/middleware"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -258,7 +258,7 @@ func (h *Handler) ReplayAttempt(c *gin.Context) {
 }
 
 func tenantIDFromContext(c *gin.Context) (string, error) {
-	if tenantID, ok := middleware.TenantIDFromContext(c); ok && tenantID > 0 {
+	if tenantID, ok := httpmw.TenantIDFromContext(c); ok && tenantID > 0 {
 		return strconv.FormatUint(tenantID, 10), nil
 	}
 	return "", errors.New("tenant context missing")

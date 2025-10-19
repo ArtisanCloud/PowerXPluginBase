@@ -130,23 +130,23 @@
 
 ### Implementation for US3
 
-- [ ] T300 [US3] 建模 SecretCredential、审计记录结构  
+- [X] T300 [US3] 建模 SecretCredential、审计记录结构  
       `backend/internal/domain/models/integration/secret_credential.go`
-- [ ] T301 [P] [US3] 实现 Secrets 仓储（CRUD、轮换计划、挂账状态）  
+- [X] T301 [P] [US3] 实现 Secrets 仓储（CRUD、轮换计划、挂账状态）  
       `backend/internal/domain/repository/integration/secret_repository.go`
-- [ ] T302 [US3] 实现 SecretsService：创建/轮换/吊销、触发审计事件  
+- [X] T302 [US3] 实现 SecretsService：创建/轮换/吊销、触发审计事件  
       `backend/internal/services/integration/secret_service.go`
-- [ ] T303 [P] [US3] 集成宿主 Secrets Manager（STS 凭证交换、双密钥切换）  
+- [X] T303 [P] [US3] 集成宿主 Secrets Manager（STS 凭证交换、双密钥切换）  
       `backend/internal/services/integration/secret_provider.go`
-- [ ] T304 [US3] HTTP Admin API：Secrets 管理、轮换触发、审计查询  
+- [X] T304 [US3] HTTP Admin API：Secrets 管理、轮换触发、审计查询  
       `backend/internal/transport/http/admin/integration/secret_handler.go`
-- [ ] T305 [P] [US3] 定时轮换提醒任务 + 告警（复用 scheduler）  
+- [X] T305 [P] [US3] 定时轮换提醒任务 + 告警（复用 scheduler）  
       `backend/internal/jobs/integration/secret_rotation_worker.go`
-- [ ] T306 [US3] 管理前端页面（凭证列表、轮换、吊销操作、历史记录）  
+- [X] T306 [US3] 管理前端页面（凭证列表、轮换、吊销操作、历史记录）  
       `web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/secrets.vue`, `web-admin/app/types/integration.ts`
-- [ ] T307 [US3] 更新 Quickstart 与运维 runbook（轮换流程、告警确认）  
+- [X] T307 [US3] 更新 Quickstart 与运维 runbook（轮换流程、告警确认）  
       `specs/005-protocols-integrations/quickstart.md`, `docs/security/vulnerability-response.md`
-- [ ] T308 [US3] 将凭证创建/轮换/吊销操作纳入审批流程并记录审计  
+- [X] T308 [US3] 将凭证创建/轮换/吊销操作纳入审批流程并记录审计  
       `backend/internal/services/integration/secret_service.go`, `backend/internal/transport/http/admin/integration/secret_handler.go`, `backend/internal/domain/repository/integration/approval_repository.go`
 
 **Checkpoint**: Secrets 生命周期闭环可独立验收。

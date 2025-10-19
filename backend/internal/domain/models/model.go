@@ -39,4 +39,5 @@ const (
 	TableToolGrantUsageEvents            = "tool_grant_usage_events"
 	TableIntegrationWebhookSubscriptions = "integration_webhook_subscriptions"
 	TableIntegrationWebhookAttempts      = "integration_webhook_attempts"
+	TableIntegrationSecrets              = "integration_secrets"
 )

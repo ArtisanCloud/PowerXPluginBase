@@ -36,3 +36,25 @@ export interface IntegrationWebhookAttempt {
   created_at: string
   updated_at: string
 }
+
+export interface IntegrationSecret {
+  id: string
+  tenant_id: string
+  integration_type: string
+  current_secret_ref?: string
+  pending_secret_ref?: string
+  rotation_interval_days: number
+  last_rotated_at?: string | null
+  next_rotation_due_at?: string | null
+  status: string
+  metadata?: Record<string, any>
+  created_at: string
+  updated_at: string
+}
+
+export interface IntegrationSecretAuditEntry {
+  action: string
+  actor: string
+  timestamp: string
+  details?: Record<string, any>
+}
