@@ -24,6 +24,10 @@ paths:
                 $ref: '#/components/schemas/EnvelopeResponse'
         '400':
           description: Validation error (missing fields, invalid scope)
+        '403':
+          description: Scope not permitted by GrantMatrix
+        '500':
+          description: Internal server error
   /grant-matrix:
     get:
       summary: List effective GrantMatrix entries

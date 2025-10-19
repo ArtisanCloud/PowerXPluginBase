@@ -66,25 +66,25 @@
 
 ### Implementation for US1
 
-- [ ] T100 [US1] 建模 IntegrationEnvelope、DTO 与验证逻辑  
+- [X] T100 [US1] 建模 IntegrationEnvelope、DTO 与验证逻辑  
       `backend/internal/domain/models/integration/envelope.go`, `backend/internal/transport/http/integration/dto_envelope.go`
-- [ ] T101 [P] [US1] 实现幂等记录仓储（Redis + Postgres 回退）  
+- [X] T101 [P] [US1] 实现幂等记录仓储（Redis + Postgres 回退）  
       `backend/internal/domain/repository/integration/idempotency_repository.go`
-- [ ] T102 [P] [US1] 实现 GrantMatrix 查询与 scope 校验服务  
+- [X] T102 [P] [US1] 实现 GrantMatrix 查询与 scope 校验服务  
       `backend/internal/services/integration/grant_matrix_service.go`
-- [ ] T103 [US1] 实现 DispatchService（Envelope 校验 → 幂等检测 → 调用宿主）  
+- [X] T103 [US1] 实现 DispatchService（Envelope 校验 → 幂等检测 → 调用宿主）  
       `backend/internal/services/integration/dispatch_service.go`
-- [ ] T104 [US1] HTTP Handler：解析请求、调用服务、写入观测指标  
+- [X] T104 [US1] HTTP Handler：解析请求、调用服务、写入观测指标  
       `backend/internal/transport/http/integration/dispatch_handler.go`
-- [ ] T105 [P] [US1] gRPC Server：映射同一服务层  
+- [X] T105 [P] [US1] gRPC Server：映射同一服务层  
       `backend/internal/transport/grpc/integration/dispatch_server.go`
-- [ ] T106 [P] [US1] MCP Session 适配（握手验证 ToolGrant，建立流式上下文）  
+- [X] T106 [P] [US1] MCP Session 适配（握手验证 ToolGrant，建立流式上下文）  
       `backend/internal/mcp/integration/session_adapter.go`
-- [ ] T107 [US1] 将 dispatch 路由/RBAC/GrantMatrix 元数据写入 OpenAPI 与配置  
+- [X] T107 [US1] 将 dispatch 路由/RBAC/GrantMatrix 元数据写入 OpenAPI 与配置  
       `specs/005-protocols-integrations/contracts/integration-openapi.yaml`, `backend/internal/transport/http/routes.go`, `backend/internal/shared/app/rbac.go`
-- [ ] T108 [US1] 观测指标与日志增强：请求计数、错误分类、幂等重放标记  
+- [X] T108 [US1] 观测指标与日志增强：请求计数、错误分类、幂等重放标记  
       `backend/internal/observability/integration/metrics.go`, `backend/internal/services/integration/dispatch_service.go`
-- [ ] T109 [US1] 更新 Quickstart：添加 Envelope 调用与校验步骤  
+- [X] T109 [US1] 更新 Quickstart：添加 Envelope 调用与校验步骤  
       `specs/005-protocols-integrations/quickstart.md`
 
 **Checkpoint**: `/dispatch` + ToolScope 校验可独立演示；即完成 MVP。

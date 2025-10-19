@@ -3,23 +3,47 @@ package integration
 import (
 	"net/http"
 
+	integrationService "github.com/ArtisanCloud/PowerXPlugin/internal/services/integration"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
-// Handler 提供 integration HTTP API 的占位实现。
+// Handler 提供 integration HTTP API 的入口。
 type Handler struct {
-	deps *app.Deps
+	deps     *app.Deps
+	dispatch *integrationService.DispatchService
+	logger   *logrus.Entry
 }
 
 // NewHandler 构造新的 Handler。
 func NewHandler(deps *app.Deps) *Handler {
-	return &Handler{deps: deps}
+	var logger *logrus.Entry
+	if deps != nil {
+		logger = deps.RuntimeLogger(deps.Ctx, "integration_http", nil)
+	}
+	h := &Handler{
+		deps:   deps,
+		logger: logger,
+	}
+	h.dispatch = h.buildDispatchService()
+	return h
 }
 
-// Dispatch 模拟统一分发端点。
-func (h *Handler) Dispatch(c *gin.Context) {
-	respondPlaceholder(c, http.StatusAccepted, "integration dispatch pipeline pending implementation")
+func (h *Handler) buildDispatchService() *integrationService.DispatchService {
+	if h.deps == nil {
+		return nil
+	}
+
+	logger := h.logger
+	if logger == nil {
+		logger = logrus.WithField("component", "integration_http")
+	}
+	service := integrationService.BuildDispatchService(h.deps, logger)
+	if service == nil {
+		return nil
+	}
+	return service
 }
 
 // ListGrantMatrix 返回当前 GrantMatrix 视图。

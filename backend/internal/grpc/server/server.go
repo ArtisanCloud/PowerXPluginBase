@@ -10,6 +10,10 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
 
 	cfgpkg "github.com/ArtisanCloud/PowerXPlugin/internal/config"
+	integrationService "github.com/ArtisanCloud/PowerXPlugin/internal/services/integration"
+	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
+	grpcTransport "github.com/ArtisanCloud/PowerXPlugin/internal/transport/grpc"
+	integrationTransport "github.com/ArtisanCloud/PowerXPlugin/internal/transport/grpc/integration"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -26,8 +30,8 @@ type Server struct {
 	config *cfgpkg.GRPCServer
 }
 
-// New 创建新的插件 gRPC 服务器
-func NewGRPCServer(ctx context.Context, c *cfgpkg.GRPCServer) (*Server, error) {
+// NewGRPCServer 创建新的插件 gRPC 服务器
+func NewGRPCServer(ctx context.Context, deps *app.Deps, c *cfgpkg.GRPCServer) (*Server, error) {
 	if !c.Enable {
 		logger.Info("gRPC server is disabled")
 		return nil, nil
@@ -76,8 +80,10 @@ func NewGRPCServer(ctx context.Context, c *cfgpkg.GRPCServer) (*Server, error) {
 	// 注册反射服务（开发和调试用）
 	reflection.Register(s)
 
-	// TODO: 在这里注册你的插件 gRPC 服务
-	// 例如：pluginv1.RegisterTemplatePluginServiceServer(s, NewTemplateServer(deps))
+	dispatchService := integrationService.BuildDispatchService(deps, logger.WithField("component", "integration.dispatch_factory"))
+	grpcTransport.Register(s, grpcTransport.Registrar{
+		Integration: integrationTransport.NewServer(dispatchService, logger.WithField("component", "integration.grpc")),
+	})
 
 	//logger.WithField("address", lis.Addr().String()).Info("gRPC server configured")
 	logger.Info("gRPC server configured")

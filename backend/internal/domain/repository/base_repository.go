@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"gorm.io/gorm"
@@ -34,6 +35,51 @@ func (r *BaseRepository[T]) WithDB(db *gorm.DB) *BaseRepository[T] {
 
 func (r *BaseRepository[T]) OnConflictDoNothing() clause.OnConflict {
 	return clause.OnConflict{DoNothing: true}
+}
+
+// ErrTenantIDRequired 指示缺少租户上下文。
+var ErrTenantIDRequired = errors.New("tenant id is required for tenant-scoped operations")
+
+// BeginTenantTx 启动租户级事务并设置 app.tenant_id。
+func (r *BaseRepository[T]) BeginTenantTx(ctx context.Context, tenantID any) (*gorm.DB, error) {
+	if r.DB == nil {
+		return nil, errors.New("repository database is not initialized")
+	}
+	id, err := normalizeTenantID(tenantID)
+	if err != nil {
+		return nil, err
+	}
+	tx := r.DB.WithContext(ctx).Begin()
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	if err := tx.Exec("SET LOCAL app.tenant_id = ?", id).Error; err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+	return tx, nil
+}
+
+// WithTenantTx 在租户事务中执行回调。
+func (r *BaseRepository[T]) WithTenantTx(ctx context.Context, tenantID any, fn func(*gorm.DB) error) error {
+	if fn == nil {
+		return errors.New("transaction callback is required")
+	}
+	tx, err := r.BeginTenantTx(ctx, tenantID)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback()
+			panic(p)
+		}
+	}()
+	if err := fn(tx); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
 }
 
 // CreateBatch 批量创建记录
@@ -396,4 +442,43 @@ func (r *BaseRepository[T]) Exists(ctx context.Context, query interface{}, args 
 	}
 
 	return count > 0, nil
+}
+
+func normalizeTenantID(tenantID any) (string, error) {
+	switch v := tenantID.(type) {
+	case string:
+		id := strings.TrimSpace(v)
+		if id == "" {
+			return "", ErrTenantIDRequired
+		}
+		return id, nil
+	case fmt.Stringer:
+		id := strings.TrimSpace(v.String())
+		if id == "" {
+			return "", ErrTenantIDRequired
+		}
+		return id, nil
+	case uint64:
+		if v == 0 {
+			return "", ErrTenantIDRequired
+		}
+		return fmt.Sprintf("%d", v), nil
+	case uint32:
+		if v == 0 {
+			return "", ErrTenantIDRequired
+		}
+		return fmt.Sprintf("%d", v), nil
+	case int64:
+		if v <= 0 {
+			return "", ErrTenantIDRequired
+		}
+		return fmt.Sprintf("%d", v), nil
+	case int:
+		if v <= 0 {
+			return "", ErrTenantIDRequired
+		}
+		return fmt.Sprintf("%d", v), nil
+	default:
+		return "", ErrTenantIDRequired
+	}
 }

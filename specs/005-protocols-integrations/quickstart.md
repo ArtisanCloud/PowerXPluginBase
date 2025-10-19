@@ -43,6 +43,26 @@ cd web-admin && npm run dev  # 启动管理界面
 ## 5. 关键场景验证
 1. **Envelope 调用**  
    - 使用示例请求（见 contracts/openapi）调用 `/dispatch` 接口，确认响应携带 `trace_id` 与幂等信息。
+   - 样例（默认代理路径）：
+     ```bash
+     curl -X POST \
+       http://localhost:8086/_p/com.powerx.plugins.base/api/v1/integration/dispatch \
+       -H 'Content-Type: application/json' \
+       -H 'Authorization: Bearer <token>' \
+       -d '{
+         "message_id": "3f4f4f44-9d0a-4a79-9a8b-2c8b95f6b2de",
+         "trace_id": "a2f47d69-4e3e-4b9a-8b78-41df6a5c76c1",
+         "correlation_id": "51f26de9-4c5c-4a1f-8fd4-d8cbbdb1dca3",
+         "tenant_id": "demo-tenant",
+         "tool_scope": "integration.dispatch",
+         "issued_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+         "idempotency_key": "sample-key-001",
+         "payload_ref": "{\"resource\":\"/powerx/example\",\"input\":{\"foo\":\"bar\"}}",
+         "metadata": {"channel": "HTTP"},
+         "signature": "BASE64_SIGNATURE"
+       }'
+     ```
+   - 重复发送相同 `idempotency_key` 可观察响应中的 `"replay": true`，同时在日志中确认幂等重放记录。
 2. **GrantMatrix**  
    - 在管理界面或 API 上传 YAML 基础配置，添加数据库覆盖项，验证审批记录与缓存刷新。
 3. **Webhook 重试**  
