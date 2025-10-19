@@ -17,11 +17,11 @@
 
 ## Phase 2 — Foundational (Blocking Prerequisites)
 
-- [ ] T010 更新 `plugin.yaml` 以及 `backend/internal/router/router.go`、`backend/internal/transport/http/registry.go`，预留 `marketplace` 路由分组与占位 RBAC。  
-- [ ] T011 [P] 扩展配置：修改 `backend/etc/config.example.yaml` 与 `backend/internal/config/config.go`，新增 `integration.billing.tax_provider`、Stripe Tax/Avalara 凭据等字段并加载到 `config.Config`.  
-- [ ] T012 [P] 在 `backend/internal/observability/marketplace/metrics.go` 创建指标埋点骨架（license 验证、usage ingest、tax provider error）。  
-- [ ] T013 [P] 初始化税务 SaaS 客户端封装：在 `backend/internal/services/marketplace/tax_provider_client.go` 与 `backend/internal/shared/app/deps.go` 注册依赖，暴露重试/回放接口。
-- [ ] T014 [P] 加固零信任栈：在 `backend/internal/transport/http/middleware`、`backend/internal/router/router.go` 与 `backend/internal/transport/http/registry.go` 校验 ToolGrant JWT/HTTPS 配置、同步 `marketplace.*` RBAC，并补充安全回归测试。
+- [x] T010 更新 `plugin.yaml` 以及 `backend/internal/router/router.go`、`backend/internal/transport/http/registry.go`，预留 `marketplace` 路由分组与占位 RBAC。  
+- [x] T011 [P] 扩展配置：修改 `backend/etc/config.example.yaml` 与 `backend/internal/config/config.go`，新增 `integration.billing.tax_provider`、Stripe Tax/Avalara 凭据等字段并加载到 `config.Config`.  
+- [x] T012 [P] 在 `backend/internal/observability/marketplace/metrics.go` 创建指标埋点骨架（license 验证、usage ingest、tax provider error）。  
+- [x] T013 [P] 初始化税务 SaaS 客户端封装：在 `backend/internal/services/marketplace/tax_provider_client.go` 与 `backend/internal/shared/app/deps.go` 注册依赖，暴露重试/回放接口。
+- [x] T014 [P] 加固零信任栈：在 `backend/internal/transport/http/middleware`、`backend/internal/router/router.go` 与 `backend/internal/transport/http/registry.go` 校验 ToolGrant JWT/HTTPS 配置、同步 `marketplace.*` RBAC，并补充安全回归测试。
 
 **Checkpoint**：基础能力准备完毕，可进入各用户故事实现。
 

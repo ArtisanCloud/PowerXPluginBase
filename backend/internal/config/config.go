@@ -349,6 +349,28 @@ func getDefaultConfig() *Config {
 			Secrets: IntegrationSecretsConfig{
 				RotationDaysDefault: 30,
 			},
+			Billing: IntegrationBillingConfig{
+				TaxProvider: "stripe_tax",
+				StripeTax: IntegrationStripeTaxConfig{
+					Location:       "US",
+					APIBaseURL:     "https://api.stripe.com",
+					TimeoutSeconds: 15,
+				},
+				Avalara: IntegrationAvalaraConfig{
+					Environment:    "sandbox",
+					BaseURL:        "https://sandbox-rest.avatax.com",
+					TimeoutSeconds: 15,
+				},
+				Reconciliation: IntegrationRevenueSplitConfig{
+					VendorShare:   0.80,
+					PlatformShare: 0.15,
+					FeeShare:      0.05,
+					Currency:      "USD",
+				},
+				AsyncQueue:          "marketplace.billing.async",
+				HTTPTimeoutSeconds:  15,
+				RetryBackoffSeconds: []int{5, 30, 120},
+			},
 		},
 		Database: &DatabaseConfig{
 			Schema: "px_plugin_base",

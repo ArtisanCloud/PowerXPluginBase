@@ -18,6 +18,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/router"
 	agent "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent"
+	marketplacesvc "github.com/ArtisanCloud/PowerXPlugin/internal/services/marketplace"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/utils"
 	"golang.org/x/sync/errgroup"
@@ -80,11 +81,18 @@ func main() {
 	// 初始化 PowerX gRPC Client 客户端
 	pxc := bootstrap.BootstrapGRPCClient(rootCtx, cfg.GRPCUpstream)
 
+	taxLogger := logger.WithField("component", "tax_provider_client")
+	taxClient, err := marketplacesvc.NewTaxProviderClient(cfg, nil, taxLogger)
+	if err != nil {
+		taxLogger.WithError(err).Warn("Tax provider client initialization failed")
+	}
+
 	deps := &app.Deps{
-		DB:           queryDB,
-		Ctx:          rootCtx,
-		PowerXClient: pxc,
-		Config:       cfg,
+		DB:                queryDB,
+		Ctx:               rootCtx,
+		PowerXClient:      pxc,
+		Config:            cfg,
+		TaxProviderClient: taxClient,
 	}
 
 	// 设置 gin engine 路由

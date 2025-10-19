@@ -8,16 +8,18 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/grpc/client"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
 	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+	marketplacesvc "github.com/ArtisanCloud/PowerXPlugin/internal/services/marketplace"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 // Deps bundles shared infrastructure dependencies for handlers and services.
 type Deps struct {
-	DB           *gorm.DB
-	Ctx          context.Context
-	PowerXClient *client.PowerXServiceClient
-	Config       *config.Config
+	DB                *gorm.DB
+	Ctx               context.Context
+	PowerXClient      *client.PowerXServiceClient
+	Config            *config.Config
+	TaxProviderClient *marketplacesvc.TaxProviderClient
 }
 
 // RuntimeDefaults returns the configured runtime ops defaults (if any).

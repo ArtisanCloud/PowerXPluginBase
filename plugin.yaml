@@ -130,12 +130,12 @@ frontend:
                 title: 模版 CRUD
                 title_i18n:
                   namespace: menus
-              key: menu.base.templates.crud
-              default: Templates CRUD
-            icon: i-heroicons-wrench
-            path: /templates/crud
-            route: templates/crud
-            order: 2
+                  key: menu.base.templates.crud
+                  default: Templates CRUD
+                icon: i-heroicons-wrench
+                path: /templates/crud
+                route: templates/crud
+                order: 2
 
           - id: plugins.base.integration
             title: 集成中心
@@ -184,6 +184,9 @@ routes:
   basePath: /api/v1
   adminManifest: /api/v1/admin/manifest
   rbac: /api/v1/admin/rbac
+  marketplace:
+    admin: /api/v1/admin/marketplace
+    public: /api/v1/marketplace
 
 rbac:
   resources:
@@ -191,12 +194,32 @@ rbac:
       actions: [read, create, update, delete]
     - resource: runtime.ops
       actions: [read, observe, manage]
+    - resource: marketplace.listings
+      actions: [read, write, review]
+    - resource: marketplace.recommendation
+      actions: [read, manage]
+    - resource: marketplace.license
+      actions: [read, purchase, manage]
+    - resource: marketplace.usage
+      actions: [view, observe]
+    - resource: marketplace.revenue
+      actions: [read, export]
 
 permissions:
   - resource: base:template
     actions: [read, create, update, delete]
   - resource: runtime.ops
     actions: [read, observe, manage]
+  - resource: marketplace.listings
+    actions: [read, write, review]
+  - resource: marketplace.recommendation
+    actions: [read, manage]
+  - resource: marketplace.license
+    actions: [read, purchase, manage]
+  - resource: marketplace.usage
+    actions: [view, observe]
+  - resource: marketplace.revenue
+    actions: [read, export]
 
 agents:
   - id: base.assistant
