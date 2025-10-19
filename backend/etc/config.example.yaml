@@ -72,6 +72,21 @@ logging:
   format: "text" # 开发环境使用文本格式更易读
   output: "stdout"
 
+
+# 集成协议相关配置
+integration:
+  idempotency:
+    provider: redis
+    redis_url: redis://localhost:6379
+    ttl_hours: 24
+  envelope:
+    payload_threshold_bytes: 1048576
+  webhook:
+    retry_policy: [60, 300, 900]
+    dlq_topic: plugin.webhook.dlq
+  secrets:
+    rotation_days_default: 30
+
 # gRPC 上游配置（连接 PowerX 核心服务）
 grpc_upstream:
   address: "localhost:9001" # PowerX gRPC 服务地址

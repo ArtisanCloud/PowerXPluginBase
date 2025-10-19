@@ -2,7 +2,7 @@
 # 请勿在此写入环境相关的地址、口令等敏感配置；推荐放到 backend/etc/config.yaml 或部署环境变量中。
 id: com.powerx.plugins.base
 name: Base template Plugin
-version: 0.2.0
+version: 0.4.0
 description: "PowerX 基础任务管理插件，提供任务、权限与 Agent 能力"
 corex_version: ">=0.6.0"
 security_baseline_version: "2025.10"
@@ -17,6 +17,14 @@ data_usage:
     requires_consent: true
   - purpose: "security_advisory_distribution"
     type: "security_notification"
+    retention: "365d"
+    requires_consent: false
+  - purpose: "integration_webhook_delivery"
+    type: "operational_log"
+    retention: "30d"
+    requires_consent: true
+  - purpose: "integration_secret_metadata"
+    type: "configuration"
     retention: "365d"
     requires_consent: false
 
@@ -122,12 +130,55 @@ frontend:
                 title: 模版 CRUD
                 title_i18n:
                   namespace: menus
-                  key: menu.base.templates.crud
-                  default: Templates CRUD
-                icon: i-heroicons-wrench
-                path: /templates/crud
-                route: templates/crud
-                order: 2
+              key: menu.base.templates.crud
+              default: Templates CRUD
+            icon: i-heroicons-wrench
+            path: /templates/crud
+            route: templates/crud
+            order: 2
+
+          - id: plugins.base.integration
+            title: 集成中心
+            title_i18n:
+              namespace: menus
+              key: menu.base.integration.title
+              default: Integration Hub
+            icon: i-heroicons-cube-transparent
+            path: /integration/webhooks
+            route: integration/webhooks
+            order: 3
+            required_policies: [integration.webhooks:read]
+            children:
+              - id: plugins.base.integration.webhooks
+                title: Webhooks
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.integration.webhooks
+                  default: Webhooks
+                icon: i-heroicons-bolt
+                path: /integration/webhooks
+                route: integration/webhooks
+                required_policies: [integration.webhooks:read]
+              - id: plugins.base.integration.secrets
+                title: Secrets
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.integration.secrets
+                  default: Secrets
+                icon: i-heroicons-key
+                path: /integration/secrets
+                route: integration/secrets
+                required_policies: [integration.secrets:read]
+              - id: plugins.base.integration.insights
+                title: Insights
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.integration.insights
+                  default: Insights
+                icon: i-heroicons-chart-bar-square
+                path: /integration/insights
+                route: integration/insights
+                required_policies: [integration.webhooks:read]
 
 routes:
   basePath: /api/v1

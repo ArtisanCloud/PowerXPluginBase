@@ -46,6 +46,9 @@ type Config struct {
 	GRPCUpstream *GRPCUpstream `yaml:"grpc_upstream" json:"grpc_upstream"`
 	GRPCServer   *GRPCServer   `yaml:"grpc_server" json:"grpc_server"`
 
+	// Integration 集成协议相关配置。
+	Integration *IntegrationConfig `yaml:"integration" json:"integration"`
+
 	// 向后兼容的字段（从环境变量或旧配置中填充）
 	BindAddr   string `yaml:"-" json:"bind_addr,omitempty"`
 	LogLevel   string `yaml:"-" json:"log_level,omitempty"`
@@ -329,6 +332,23 @@ func getDefaultConfig() *Config {
 			BindAddr: ":8086",
 			LogLevel: "info",
 			DevMode:  false,
+		},
+		Integration: &IntegrationConfig{
+			Idempotency: IntegrationIdempotencyConfig{
+				Provider: "redis",
+				RedisURL: "redis://localhost:6379",
+				TTLHours: 24,
+			},
+			Envelope: IntegrationEnvelopeConfig{
+				PayloadThresholdBytes: 1 << 20,
+			},
+			Webhook: IntegrationWebhookConfig{
+				RetryPolicy: []int{60, 300, 900},
+				DLQTopic:    "plugin.webhook.dlq",
+			},
+			Secrets: IntegrationSecretsConfig{
+				RotationDaysDefault: 30,
+			},
 		},
 		Database: &DatabaseConfig{
 			Schema: "px_plugin_base",

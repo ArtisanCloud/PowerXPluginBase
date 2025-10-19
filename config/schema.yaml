@@ -198,6 +198,58 @@ properties:
         enum: [debug, info, warn, error]
         description: "日志级别。"
         default: info
+  integration:
+    type: object
+    description: "A2A 协议、Webhook 与 Secrets 生命周期相关配置。"
+    additionalProperties: false
+    properties:
+      idempotency:
+        type: object
+        additionalProperties: false
+        properties:
+          provider:
+            type: string
+            description: "幂等记录存储提供方（redis/postgres）。"
+            default: redis
+          redis_url:
+            type: string
+            description: "Redis 连接串，provider=redis 时必填。"
+            default: redis://localhost:6379
+          ttl_hours:
+            type: integer
+            description: "幂等记录保留时长（小时）。"
+            default: 24
+      envelope:
+        type: object
+        additionalProperties: false
+        properties:
+          payload_threshold_bytes:
+            type: integer
+            description: "Envelope payload 超过该阈值时改为引用预签名 URL。"
+            default: 1048576
+      webhook:
+        type: object
+        additionalProperties: false
+        properties:
+          retry_policy:
+            type: array
+            description: "Webhook 退避重试间隔（秒）。"
+            items:
+              type: integer
+            default: [60, 300, 900]
+          dlq_topic:
+            type: string
+            description: "DLQ 主题或队列名称。"
+            default: plugin.webhook.dlq
+      secrets:
+        type: object
+        additionalProperties: false
+        properties:
+          rotation_days_default:
+            type: integer
+            description: "Secrets 默认轮换天数。"
+            default: 30
+
       format:
         type: string
         enum: [json, text]

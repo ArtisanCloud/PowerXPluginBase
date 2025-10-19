@@ -17,3 +17,9 @@ Adopt Conventional Commits: `feat(domain): add workspace sync` or `fix(router): 
 
 ## Configuration Tips
 Copy `backend/etc/config.example.yaml` to `config.yaml` for local overrides and avoid committing secrets. Environment-sensitive values (DB DSNs, PowerX bindings) are read from env vars in `make run`; document any new keys in `backend/etc/README.md`. Keep generated binaries out of version control—use the `clean` targets before publishing branches.
+
+### Integration Module
+- 后端集成相关代码位于 `backend/internal/services/integration/`、`backend/internal/domain/repository/integration/`、`backend/internal/transport/{http,grpc}/integration/`，观测指标在 `backend/internal/observability/integration/`。新特性均需在 Service 层实现，保持 handler 薄。
+- `backend/etc/config.example.yaml`、`config/values.example.yaml` 增加了 `integration` 节点，可配置幂等后端、Payload 阈值、Webhook 重试策略及 Secrets 轮换天数。
+- 本地调试可使用 `config/docker-compose.integration.yml` 启动 Redis 与 webhook mock：`docker compose -f config/docker-compose.integration.yml up`。
+- 管理前端页面位于 `web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/`，类型定义集中在 `web-admin/app/types/integration.ts`。

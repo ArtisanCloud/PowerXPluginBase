@@ -60,3 +60,16 @@ logging:
   max_size: 50
   max_backups: 3
   max_age: 14
+
+integration:
+  idempotency:
+    provider: redis
+    redis_url: redis://localhost:6379
+    ttl_hours: 24
+  envelope:
+    payload_threshold_bytes: 1048576
+  webhook:
+    retry_policy: [60, 300, 900]
+    dlq_topic: plugin.webhook.dlq
+  secrets:
+    rotation_days_default: 30

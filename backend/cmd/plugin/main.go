@@ -92,7 +92,7 @@ func main() {
 	engine := r.Setup()
 
 	// 创建 gRPC 服务器（可选）
-	gs, err := server.NewGRPCServer(rootCtx, cfg.GRPCServer)
+	gs, err := server.NewGRPCServer(rootCtx, deps, cfg.GRPCServer)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create gRPC server")
 	}

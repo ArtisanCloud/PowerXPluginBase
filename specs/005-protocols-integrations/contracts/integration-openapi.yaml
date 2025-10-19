@@ -1,0 +1,298 @@
+openapi: 3.1.0
+info:
+  title: PowerX Plugin Integration API
+  version: 1.0.0
+servers:
+  - url: /_p/com.powerx.plugins.base/api/v1/integration
+paths:
+  /dispatch:
+    post:
+      summary: Submit an A2A request envelope
+      operationId: dispatchEnvelope
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationEnvelope'
+      responses:
+        '200':
+          description: Successful invocation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvelopeResponse'
+        '400':
+          description: Validation error (missing fields, invalid scope)
+        '403':
+          description: Scope not permitted by GrantMatrix
+        '500':
+          description: Internal server error
+  /grant-matrix:
+    get:
+      summary: List effective GrantMatrix entries
+      operationId: listGrantMatrix
+      parameters:
+        - in: query
+          name: scope
+          schema:
+            type: string
+        - in: query
+          name: channel
+          schema:
+            type: string
+      responses:
+        '200':
+          description: GrantMatrix entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GrantMatrixEntry'
+    post:
+      summary: Submit override entries (requires integration.manage)
+      operationId: overrideGrantMatrix
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GrantMatrixEntry'
+      responses:
+        '202':
+          description: Submitted for approval
+  /webhooks/subscriptions:
+    post:
+      summary: Create webhook subscription
+      operationId: createWebhookSubscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookSubscriptionInput'
+      responses:
+        '201':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookSubscription'
+    get:
+      summary: List subscriptions
+      operationId: listWebhookSubscriptions
+      responses:
+        '200':
+          description: Subscriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebhookSubscription'
+  /webhooks/dlq/{attemptId}/replay:
+    post:
+      summary: Replay a DLQ delivery
+      operationId: replayDlqAttempt
+      parameters:
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Replay scheduled
+  /secrets:
+    post:
+      summary: Create external secret metadata
+      operationId: createSecret
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecretInput'
+      responses:
+        '201':
+          description: Secret registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretCredential'
+  /secrets/{secretId}/rotate:
+    post:
+      summary: Trigger secret rotation workflow
+      operationId: rotateSecret
+      parameters:
+        - name: secretId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Rotation started
+
+components:
+  schemas:
+    IntegrationEnvelope:
+      type: object
+      required:
+        - message_id
+        - trace_id
+        - correlation_id
+        - tenant_id
+        - tool_scope
+        - issued_at
+        - payload_ref
+        - signature
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        trace_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+        tool_scope:
+          type: string
+        issued_at:
+          type: string
+          format: date-time
+        idempotency_key:
+          type: string
+        payload_ref:
+          type: string
+          description: 内联 JSON 或预签名 URL
+        metadata:
+          type: object
+          additionalProperties: true
+        signature:
+          type: string
+          description: Base64 URL-safe HMAC
+    EnvelopeResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        trace_id:
+          type: string
+        correlation_id:
+          type: string
+        latency_ms:
+          type: integer
+        replay:
+          type: boolean
+    GrantMatrixEntry:
+      type: object
+      required:
+        - scope
+        - channel
+        - resource
+        - action
+      properties:
+        scope:
+          type: string
+        channel:
+          type: string
+          enum: [HTTP, GRPC, MCP, WEBHOOK]
+        resource:
+          type: string
+        action:
+          type: string
+        constraints:
+          type: object
+          additionalProperties: true
+        source:
+          type: string
+          enum: [STATIC, OVERRIDE]
+        version:
+          type: integer
+        approved_by:
+          type: string
+        approved_at:
+          type: string
+          format: date-time
+    WebhookSubscriptionInput:
+      type: object
+      required:
+        - tenant_id
+        - event_type
+        - target_url
+      properties:
+        tenant_id:
+          type: string
+        event_type:
+          type: string
+        target_url:
+          type: string
+          format: uri
+        retry_policy:
+          type: array
+          items:
+            type: integer
+        notes:
+          type: string
+    WebhookSubscription:
+      allOf:
+        - $ref: '#/components/schemas/WebhookSubscriptionInput'
+        - type: object
+          properties:
+            id:
+              type: string
+            status:
+              type: string
+              enum: [ACTIVE, PAUSED, DISABLED]
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+    SecretInput:
+      type: object
+      required:
+        - tenant_id
+        - integration_type
+        - rotation_interval_days
+      properties:
+        tenant_id:
+          type: string
+        integration_type:
+          type: string
+          enum: [WEBHOOK, API, OTHER]
+        rotation_interval_days:
+          type: integer
+        metadata:
+          type: object
+          additionalProperties: true
+    SecretCredential:
+      allOf:
+        - $ref: '#/components/schemas/SecretInput'
+        - type: object
+          properties:
+            id:
+              type: string
+            current_secret_ref:
+              type: string
+            pending_secret_ref:
+              type: string
+              nullable: true
+            status:
+              type: string
+              enum: [ACTIVE, ROTATING, REVOKED]
+            last_rotated_at:
+              type: string
+              format: date-time
+              nullable: true
+            next_rotation_due_at:
+              type: string
+              format: date-time
