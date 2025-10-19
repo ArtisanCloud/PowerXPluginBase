@@ -7,14 +7,14 @@
 
 ## Summary
 
-构建插件 Marketplace 的商业闭环：提供 Vendor 上架、定价/License 发放、Usage 分析及分润报表。后端基于现有 Gin + GORM 服务扩展 Marketplace 模块、对接税务 SaaS（Stripe Tax/Avalara）与 License Server，前端 Nuxt 4 Admin 增补 Marketplace Console 与 Vendor Dashboard。核心决策见 `research.md`（税务 SaaS、72h 离线许可兜底、GraphQL Checklist）。
+构建插件 Marketplace 的商业闭环：提供 Vendor 上架、推荐曝光、定价/License 发放、Usage 分析及分润报表。后端基于现有 Gin + GORM 服务扩展 Marketplace 模块、对接推荐同步服务与税务 SaaS（Stripe Tax/Avalara）及 License Server，前端 Nuxt 4 Admin 增补 Marketplace Console、A/B 配置与 Vendor Dashboard。核心决策见 `research.md`（税务 SaaS、72h 离线许可兜底、GraphQL Checklist）。
 
 ---
 
 ## Technical Context
 
 **Language/Version**: Go 1.24 (backend), Node 20 + Nuxt 4 (admin UI)  
-**Primary Dependencies**: Gin, GORM, Redis (幂等/缓存), Stripe Tax SDK (HTTP 客户端封装), PowerX EventBus & ToolGrant  
+**Primary Dependencies**: Gin, GORM, Redis (幂等/缓存), Stripe Tax SDK (HTTP 客户端封装), PowerX EventBus & ToolGrant, Discovery 推荐同步任务  
 **Storage**: PostgreSQL schema `powerx_plugin_base`（新表详见 `data-model.md`），Redis 用于 License 缓存与幂等记录  
 **Testing**: `go test ./...`（含 service/repository 单元测试 + integration tenant tx）、`make test`、前端 `pnpm test` + `@nuxt/test-utils`、合同测试（OpenAPI + GraphQL）  
 **Target Platform**: Linux 宿主（PowerX 插件运行时），前端打包至宿主反向代理  
@@ -25,7 +25,7 @@
 
 ### Platform / Hosting Integration
 
-- **Reverse Proxy & Routes**: `/api/v1/marketplace/**` （宿主代理 `/_p/com.powerx.plugin.base/api/v1`），GraphQL Checklist 走 `/api/v1/admin/marketplace/graphql`。  
+- **Reverse Proxy & Routes**: `/api/v1/marketplace/**` （宿主代理 `/_p/com.powerx.plugins.base/api/v1`），GraphQL Checklist 走 `/api/v1/admin/marketplace/graphql`。  
 - **Context Signing**: 统一使用 ToolGrant JWT，Handler 注入 `tenant_id/user_id/permissions`，SDK 侧 HMAC 校验 Usage。  
 - **Tenant/RBAC**: `middleware.RBAC` 映射新资源（`marketplace.listings.*`, `marketplace.usage.view`, `marketplace.revenue.export`）；Postgres `SET LOCAL app.tenant_id`.  
 - **Outbound Access**: Stripe Tax/Avalara 调用通过 STS 获取短期凭证或配置化 HTTPS。  
@@ -73,17 +73,17 @@ backend/
 ├── internal/
 │   ├── domain/models/marketplace/
 │   ├── domain/repository/marketplace/
-│   ├── services/{marketplace,billing,analytics}/
-│   ├── transport/http/admin/marketplace/
-│   ├── transport/http/tenant/marketplace/
+│   ├── services/{marketplace,billing,analytics,recommendation}/
+│   ├── transport/http/{admin,tenant}/marketplace/
 │   ├── transport/grpc/marketplace/            # License server hooks
+│   ├── jobs/marketplace/                      # Discovery 推荐同步与告警任务
 │   └── observability/marketplace/
 ├── internal/router/                           # 注册新路由组
 ├── cmd/database/migrate/                      # 注册迁移
 └── pkg/ (若需税务客户端封装)
 
 web-admin/
-├── app/pages/_p/com.powerx.plugin.base/admin/marketplace/
+├── app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/
 ├── app/components/marketplace/
 ├── app/types/marketplace.ts
 ├── app/stores/marketplace/
