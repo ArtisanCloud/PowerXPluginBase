@@ -1,0 +1,105 @@
+# Marketplace Listing Ready Checklist GraphQL Schema (Admin)
+
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  listingChecklistRuns(listingId: ID!, limit: Int = 10, after: String): ChecklistRunConnection!
+  checklistTemplate(locale: String!): ChecklistTemplate!
+}
+
+type Mutation {
+  triggerChecklistRun(input: TriggerChecklistRunInput!): ChecklistRun!
+  updateChecklistItem(input: UpdateChecklistItemInput!): ChecklistItem!
+}
+
+type ChecklistRunConnection {
+  edges: [ChecklistRunEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ChecklistRunEdge {
+  cursor: String!
+  node: ChecklistRun!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  endCursor: String
+}
+
+type ChecklistRun {
+  id: ID!
+  listingId: ID!
+  runNumber: Int!
+  triggerSource: ChecklistTrigger!
+  status: ChecklistRunStatus!
+  startedAt: DateTime!
+  completedAt: DateTime
+  summary: String
+  items: [ChecklistItem!]!
+}
+
+type ChecklistItem {
+  id: ID!
+  code: String!
+  description: String!
+  result: ChecklistResult!
+  notes: String
+  evidenceUri: String
+  autoFixLink: String
+}
+
+type ChecklistTemplate {
+  locale: String!
+  version: String!
+  items: [ChecklistTemplateItem!]!
+}
+
+type ChecklistTemplateItem {
+  code: String!
+  description: String!
+  mandatory: Boolean!
+  automation: ChecklistAutomation!
+}
+
+input TriggerChecklistRunInput {
+  listingId: ID!
+  triggerSource: ChecklistTrigger!
+  ciPipelineId: String
+}
+
+input UpdateChecklistItemInput {
+  checklistItemId: ID!
+  result: ChecklistResult!
+  notes: String
+  evidenceUri: String
+}
+
+enum ChecklistTrigger {
+  VENDOR
+  CI
+  AUTO
+}
+
+enum ChecklistRunStatus {
+  PENDING
+  PASSED
+  FAILED
+}
+
+enum ChecklistResult {
+  PASSED
+  FAILED
+  WARNING
+}
+
+enum ChecklistAutomation {
+  MANUAL
+  SEMI_AUTOMATED
+  AUTOMATED
+}
+
+scalar DateTime

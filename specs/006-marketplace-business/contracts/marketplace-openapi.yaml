@@ -1,0 +1,617 @@
+openapi: 3.1.0
+info:
+  title: PowerX Plugin Marketplace API
+  version: 0.1.0
+  description: >
+    Backend REST surface for Marketplace listing lifecycle, licensing and usage analytics.
+    All endpoints are hosted under `/_p/com.powerx.plugin.base/api/v1`.
+servers:
+  - url: /_p/com.powerx.plugin.base/api/v1
+paths:
+  /marketplace/listings:
+    post:
+      summary: Submit a new Marketplace listing draft
+      operationId: createListingDraft
+      security:
+        - bearerAuth: []
+      tags: [Marketplace Listings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateListingRequest'
+      responses:
+        '201':
+          description: Listing draft created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+        '422':
+          description: Validation failed (checklist pre-flight)
+    get:
+      summary: List marketplace listings with filters
+      operationId: listListings
+      security:
+        - bearerAuth: []
+      tags: [Marketplace Listings]
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [draft, in_review, published, suspended]
+        - in: query
+          name: tenant_id
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: locale
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListingSummary'
+  /marketplace/listings/{listingId}:
+    parameters:
+      - $ref: '#/components/parameters/listingId'
+    get:
+      summary: Retrieve a listing detail including pricing and assets
+      operationId: getListing
+      security:
+        - bearerAuth: []
+      tags: [Marketplace Listings]
+      responses:
+        '200':
+          description: Listing details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+    patch:
+      summary: Update listing draft metadata/assets
+      operationId: updateListing
+      security:
+        - bearerAuth: []
+      tags: [Marketplace Listings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateListingRequest'
+      responses:
+        '200':
+          description: Listing draft updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+    post:
+      summary: Trigger listing review submission
+      operationId: submitListingForReview
+      security:
+        - bearerAuth: []
+      tags: [Marketplace Listings]
+      responses:
+        '202':
+          description: Review queued
+  /marketplace/listings/{listingId}/status:
+    parameters:
+      - $ref: '#/components/parameters/listingId'
+    post:
+      summary: Reviewer updates listing status
+      operationId: updateListingStatus
+      security:
+        - bearerAuth: []
+      tags: [Marketplace Listings, Review]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [in_review, published, suspended]
+                reviewer_notes:
+                  type: string
+                effective_at:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Status updated
+  /marketplace/licenses:
+    post:
+      summary: Purchase or activate a license
+      operationId: createLicense
+      security:
+        - bearerAuth: []
+      tags: [Licensing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLicenseRequest'
+      responses:
+        '201':
+          description: License issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/License'
+        '402':
+          description: Payment required/failed
+  /marketplace/licenses/{licenseId}:
+    parameters:
+      - $ref: '#/components/parameters/licenseId'
+    get:
+      summary: Fetch license details
+      operationId: getLicense
+      security:
+        - bearerAuth: []
+      tags: [Licensing]
+      responses:
+        '200':
+          description: License detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/License'
+    post:
+      summary: Renew or reissue a license
+      operationId: renewLicense
+      security:
+        - bearerAuth: []
+      tags: [Licensing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                renewal_token:
+                  type: string
+                plan_id:
+                  type: string
+                  description: Optional plan upgrade
+      responses:
+        '200':
+          description: License renewed
+  /marketplace/licenses/{licenseId}/offline-extend:
+    parameters:
+      - $ref: '#/components/parameters/licenseId'
+    post:
+      summary: Issue one-time offline extension token
+      operationId: extendOfflineLicense
+      security:
+        - bearerAuth: []
+      tags: [Licensing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requested_hours:
+                  type: integer
+                  minimum: 1
+                  maximum: 72
+      responses:
+        '200':
+          description: Offline token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  renewal_token:
+                    type: string
+  /marketplace/usage:
+    post:
+      summary: Batch ingest usage envelopes
+      operationId: ingestUsage
+      security:
+        - bearerAuth: []
+      tags: [Usage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsageEnvelopeBatch'
+      responses:
+        '202':
+          description: Accepted for processing
+  /marketplace/usage/tenants/{tenantId}/licenses/{licenseId}/metrics:
+    parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/licenseId'
+    get:
+      summary: Retrieve aggregated usage metrics for dashboards
+      operationId: getUsageMetrics
+      security:
+        - bearerAuth: []
+      tags: [Usage]
+      parameters:
+        - in: query
+          name: window
+          schema:
+            type: string
+            enum: [hour, day, month]
+        - in: query
+          name: metric
+          schema:
+            type: string
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Aggregated metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageMetricsResponse'
+  /marketplace/revenue-share/reports:
+    get:
+      summary: List vendor revenue share reports
+      operationId: listRevenueReports
+      security:
+        - bearerAuth: []
+      tags: [Revenue]
+      parameters:
+        - in: query
+          name: vendor_id
+          schema:
+            type: string
+        - in: query
+          name: period_start
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: period_end
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Reports list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RevenueReportSummary'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    listingId:
+      name: listingId
+      in: path
+      required: true
+      schema:
+        type: string
+    licenseId:
+      name: licenseId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    Listing:
+      type: object
+      required: [id, status, title, locale, pricing_plans]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        locale:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        pricing_plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/PricingPlan'
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListingAsset'
+        ready_checklist_score:
+          type: number
+        recommended_weight:
+          type: number
+    ListingSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        vendor_id:
+          type: string
+        rating:
+          type: number
+        install_count:
+          type: integer
+    ListingAsset:
+      type: object
+      properties:
+        asset_type:
+          type: string
+        storage_uri:
+          type: string
+        metadata:
+          type: object
+    PricingPlan:
+      type: object
+      required: [id, plan_type, currency, amount]
+      properties:
+        id:
+          type: string
+        plan_type:
+          type: string
+          enum: [free, one_time, subscription, usage]
+        currency:
+          type: string
+        amount:
+          type: number
+        billing_period:
+          type: string
+        trial_period_days:
+          type: integer
+        quota_limit:
+          type: integer
+        overage_policy:
+          type: string
+        tiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanTier'
+    PlanTier:
+      type: object
+      properties:
+        metric:
+          type: string
+        from:
+          type: number
+        to:
+          type: number
+        unit_amount:
+          type: number
+        unit_name:
+          type: string
+    License:
+      type: object
+      required: [id, status, expires_at, token]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        quota_remaining:
+          type: integer
+        token:
+          type: string
+        offline_until:
+          type: string
+          format: date-time
+    CreateListingRequest:
+      type: object
+      required: [plugin_id, title, locale, pricing_plans]
+      properties:
+        plugin_id:
+          type: string
+        title:
+          type: string
+        locale:
+          type: string
+        summary:
+          type: string
+        description:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateAssetPayload'
+        pricing_plans:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/CreatePricingPlanPayload'
+    UpdateListingRequest:
+      type: object
+      properties:
+        summary:
+          type: string
+        description:
+          type: string
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateAssetPayload'
+        pricing_plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatePricingPlanPayload'
+    CreateAssetPayload:
+      type: object
+      required: [asset_type, storage_uri]
+      properties:
+        asset_type:
+          type: string
+        storage_uri:
+          type: string
+        metadata:
+          type: object
+    CreatePricingPlanPayload:
+      type: object
+      required: [plan_code, plan_type, currency]
+      properties:
+        plan_code:
+          type: string
+        plan_type:
+          type: string
+          enum: [free, one_time, subscription, usage]
+        currency:
+          type: string
+        amount:
+          type: number
+        billing_period:
+          type: string
+        trial_period_days:
+          type: integer
+        quota_limit:
+          type: integer
+        tiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanTier'
+    CreateLicenseRequest:
+      type: object
+      required: [tenant_id, listing_id, plan_id, payment_intent_id]
+      properties:
+        tenant_id:
+          type: string
+        listing_id:
+          type: string
+        plan_id:
+          type: string
+        payment_intent_id:
+          type: string
+        trial_override_days:
+          type: integer
+    UsageEnvelopeBatch:
+      type: object
+      required: [envelopes]
+      properties:
+        envelopes:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/UsageEnvelope'
+    UsageEnvelope:
+      type: object
+      required: [license_id, plugin_id, metrics, timestamp_start, timestamp_end, signature]
+      properties:
+        license_id:
+          type: string
+        plugin_id:
+          type: string
+        metrics:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              unit:
+                type: string
+              value:
+                type: number
+        timestamp_start:
+          type: string
+          format: date-time
+        timestamp_end:
+          type: string
+          format: date-time
+        signature:
+          type: string
+    UsageMetricsResponse:
+      type: object
+      properties:
+        series:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              metric:
+                type: string
+              value:
+                type: number
+              quota_remaining:
+                type: number
+        alerts:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              severity:
+                type: string
+              message:
+                type: string
+    RevenueReportSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        vendor_id:
+          type: string
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        gross_amount:
+          type: number
+        vendor_share:
+          type: number
+        platform_share:
+          type: number
+        fees:
+          type: number
