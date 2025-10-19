@@ -19,5 +19,11 @@ func RegisterRoutes(rg *gin.RouterGroup, deps *app.Deps) {
 		group.POST("/approvals/:id/reject", handler.Reject)
 
 		group.GET("/grant-matrix", handler.ListGrantMatrix)
+		group.GET("/webhooks", handler.ListWebhooks)
+		group.POST("/webhooks", handler.CreateWebhook)
+		group.PUT("/webhooks/:id", handler.UpdateWebhook)
+		group.DELETE("/webhooks/:id", handler.DeleteWebhook)
+		group.GET("/webhooks/:id/attempts", handler.ListWebhookAttempts)
+		group.POST("/webhooks/attempts/:attemptId/replay", handler.ReplayAttempt)
 	}
 }

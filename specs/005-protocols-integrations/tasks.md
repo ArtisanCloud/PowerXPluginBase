@@ -98,25 +98,25 @@
 
 ### Implementation for US2
 
-- [ ] T200 [US2] 建模 WebhookSubscription、DeliveryAttempt 实体与映射  
+- [X] T200 [US2] 建模 WebhookSubscription、DeliveryAttempt 实体与映射  
       `backend/internal/domain/models/integration/webhook_subscription.go`, `backend/internal/domain/models/integration/delivery_attempt.go`
-- [ ] T201 [P] [US2] 实现订阅仓储 CRUD（含签名密钥加密）  
+- [X] T201 [P] [US2] 实现订阅仓储 CRUD（含签名密钥加密）  
       `backend/internal/domain/repository/integration/webhook_subscription_repository.go`
-- [ ] T202 [P] [US2] 实现投递尝试仓储（重试状态、DLQ 标记）  
+- [X] T202 [P] [US2] 实现投递尝试仓储（重试状态、DLQ 标记）  
       `backend/internal/domain/repository/integration/delivery_attempt_repository.go`
-- [ ] T203 [US2] 实现 WebhookService：创建/更新订阅、生成签名、记录投递结果  
+- [X] T203 [US2] 实现 WebhookService：创建/更新订阅、生成签名、记录投递结果  
       `backend/internal/services/integration/webhook_service.go`
-- [ ] T204 [US2] 实现重试/调度器（引用 Phase 2 scheduler），支持 1m→5m→15m 退避、DLQ 入列  
+- [X] T204 [US2] 实现重试/调度器（引用 Phase 2 scheduler），支持 1m→5m→15m 退避、DLQ 入列  
       `backend/internal/jobs/integration/webhook_retry_worker.go`
-- [ ] T205 [US2] 管理端 HTTP API：订阅 CRUD、DLQ replay、统计视图  
+- [X] T205 [US2] 管理端 HTTP API：订阅 CRUD、DLQ replay、统计视图  
       `backend/internal/transport/http/admin/integration/webhook_handler.go`
-- [ ] T206 [P] [US2] 观测指标与告警：成功率、重试次数、DLQ 积压  
+- [X] T206 [P] [US2] 观测指标与告警：成功率、重试次数、DLQ 积压  
       `backend/internal/observability/integration/metrics.go`, `backend/internal/observability/integration/alerts.md`
-- [ ] T207 [P] [US2] 前端管理页面（列表、详情、DLQ 操作）  
+- [X] T207 [P] [US2] 前端管理页面（列表、详情、DLQ 操作）  
       `web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/webhooks.vue`, `web-admin/app/types/integration.ts`
-- [ ] T208 [US2] 更新 EventBus 集成（投递失败/成功事件）、Quickstart 演练文档  
+- [X] T208 [US2] 更新 EventBus 集成（投递失败/成功事件）、Quickstart 演练文档  
       `backend/internal/observability/integration/events.go`, `specs/005-protocols-integrations/quickstart.md`
-- [ ] T209 [US2] 将订阅创建/变更纳入审批流程（提交/审批/审计 UI）  
+- [X] T209 [US2] 将订阅创建/变更纳入审批流程（提交/审批/审计 UI）  
       `backend/internal/services/integration/webhook_service.go`, `backend/internal/transport/http/admin/integration/webhook_handler.go`, `web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/webhooks.vue`
 
 **Checkpoint**: Webhook 生命周期可独立运行；运营可恢复失败通知。

@@ -14,5 +14,14 @@ func RBACEntries(prefix string) map[string]authx.Permission {
 		"POST:" + base + "/approvals/:id/approve": {Resource: "integration.approvals", Action: "manage"},
 		"POST:" + base + "/approvals/:id/reject":  {Resource: "integration.approvals", Action: "manage"},
 		"GET:" + base + "/grant-matrix":           {Resource: "integration.grant_matrix", Action: "read"},
+		"GET:" + base + "/webhooks":               {Resource: "integration.webhooks", Action: "read"},
+		"POST:" + base + "/webhooks":              {Resource: "integration.webhooks", Action: "manage"},
+		"PUT:" + base + "/webhooks/:id":           {Resource: "integration.webhooks", Action: "manage"},
+		"DELETE:" + base + "/webhooks/:id":        {Resource: "integration.webhooks", Action: "manage"},
+		"GET:" + base + "/webhooks/:id/attempts":  {Resource: "integration.webhooks", Action: "read"},
+		"POST:" + base + "/webhooks/attempts/:attemptId/replay": {
+			Resource: "integration.webhooks",
+			Action:   "manage",
+		},
 	}
 }
