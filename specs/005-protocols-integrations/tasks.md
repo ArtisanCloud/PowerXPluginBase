@@ -155,19 +155,19 @@
 
 ## Phase 6 — Polish & Cross-Cutting
 
-- [ ] T900 [P] Polish 更新文档：README、docs/security、plan/research 补充最终决策  
+- [X] T900 [P] Polish 更新文档：README、docs/security、plan/research 补充最终决策  
       `README.md`, `docs/security/integration.md`
-- [ ] T901 Polish 性能调优与索引（幂等键、DeliveryAttempt、Secrets 查询）  
+- [X] T901 Polish 性能调优与索引（幂等键、DeliveryAttempt、Secrets 查询）  
       `backend/migrations/2025Q4_integration_indexes.sql`
-- [ ] T902 Polish 发布产物 & release notes（OpenAPI、Nuxt 构建、manifest 更新）  
+- [X] T902 Polish 发布产物 & release notes（OpenAPI、Nuxt 构建、manifest 更新）  
       `docs/releases/2025-10-integrations.md`, `plugin.yaml`
-- [ ] T903 Polish 全量测试与演练（go test、webhook replay、Nuxt build）  
+- [X] T903 Polish 全量测试与演练（go test、webhook replay、Nuxt build）  
       `Makefile`, `scripts/ci/integration.sh`
-- [ ] T904 Polish 安全与合规复核（GrantMatrix 覆盖、RBAC、审计日志抽样）  
+- [X] T904 Polish 安全与合规复核（GrantMatrix 覆盖、RBAC、审计日志抽样）  
       `docs/security/audit-logs.md`, `backend/internal/shared/app/rbac.go`
-- [ ] T905 [P] Polish 构建仪表盘/报表（Envelope 采用率、Webhook 成功率、Secrets 轮换进度等）  
+- [X] T905 [P] Polish 构建仪表盘/报表（Envelope 采用率、Webhook 成功率、Secrets 轮换进度等）  
       `docs/observability/integration-dashboard.json`, `web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/insights.vue`, `specs/005-protocols-integrations/quickstart.md`
-- [ ] T906 Polish 编写成功指标验证脚本与发布前检查（SC-001~SC-005）  
+- [X] T906 Polish 编写成功指标验证脚本与发布前检查（SC-001~SC-005）  
       `scripts/ci/verify_integration_metrics.sh`, `docs/observability/integration-checklist.md`
 
 ---

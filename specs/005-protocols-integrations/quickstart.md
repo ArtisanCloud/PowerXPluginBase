@@ -113,7 +113,7 @@ cd web-admin && npm run dev  # 启动管理界面
 ## 6. 测试
 ```bash
 make test                # 后端单元、服务、仓储测试
-make integration-test    # 含适配器/幂等/GrantMatrix 流程（需新增脚本）
+make integration-smoke   # Webhook replay + Nuxt 构建演练
 npm run test --prefix web-admin  # 前端测试
 ```
 - 建议使用 `./scripts/mock-webhook-target.sh` 模拟订阅方。

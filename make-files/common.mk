@@ -2,7 +2,7 @@
 
 # 基础变量
 APP_NAME := powerx-plugin-base
-VERSION := 0.1.0
+VERSION := 0.4.0
 PLUGIN_ID := com.powerx.plugins.base
 
 GO_MODULE := github.com/powerx-plugins/base

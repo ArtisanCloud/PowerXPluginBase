@@ -54,3 +54,10 @@ scripts/security/audit_export.sh /tmp/security-exports /var/log/powerx/audit.log
 - `ToolGrantTTL()`、`ConsentRetentionDays()`：与其它安全参数组合展示。 
 
 将上述信息暴露在运维面板或 `/admin/security` 页面，有助于审计通过。
+
+## Integration 审计事件
+
+- Webhook 与 Secrets 的创建/轮换/吊销会向 `integration_change_approvals` 写入记录，并在 `integration_secrets.audit_log` 中追加 JSON 事件，可通过 `GET /admin/integration/secrets/{id}/audit` 导出。
+- 建议在季度抽审中，抽取至少 3 条 Webhook replay / Secrets rotation 事件，比对审批链（`submitted_by`、`reviewed_by`）与实际操作人。
+- 轮换提醒脚本由 Secret Rotation Worker 自动执行；若 `powerx_integration_secrets_rotations_due{window="due_now"}` 持续大于 0，需开票给运维负责人。
+- 对照 `backend/internal/shared/app/rbac.go` 中的 `integration.approvals:*`、`integration.webhooks:*`、`integration.secrets:*` 常量核对权限配置，确保审计事件与 RBAC 日志一致。

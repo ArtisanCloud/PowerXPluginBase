@@ -37,3 +37,10 @@
 - **Alternatives considered**:
   - 仅数据库：性能不足以支撑高并发。
   - 不做回退：Redis 故障时会导致请求失败。
+
+## Decision 6 – 指标与发布前校验
+- **Decision**: 以 Prometheus 指标 `powerx_integration_envelopes_total`、`powerx_integration_webhook_attempts_total`、`powerx_integration_webhook_delivery_seconds`、`powerx_integration_secrets_rotations_due`、`powerx_integration_idempotency_events_total` 覆盖 SC-001~SC-005，并提供脚本 `scripts/ci/verify_integration_metrics.sh` 与仪表盘 `docs/observability/integration-dashboard.json` 作为发布前校验。
+- **Rationale**: 成功指标直接映射指标命名空间，可在 CI 与运维面板共用；脚本确保指标名称回归测试时不被误删。
+- **Alternatives considered**:
+  - 手工检查指标：易遗漏，且无法在 CI 中阻断发布。
+  - 单一 Grafana 仪表盘：缺少自动化验证，无法满足发布前强约束。

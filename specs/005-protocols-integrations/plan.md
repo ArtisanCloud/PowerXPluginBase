@@ -111,3 +111,13 @@ frontend/
 |-----------|------------|--------------------------------------|
 | [e.g., extra transport] | [current need] | [why single transport insufficient] |
 | [e.g., custom repo pattern] | [specific problem] | [why direct DB access insufficient] |
+
+---
+
+## Implementation Outcomes (2025-10-20)
+
+- ✅ A2A Dispatch pipeline在 HTTP/GRPC/MCP 三通道统一实现，`powerx_integration_envelopes_total` 等指标进入 Grafana。
+- ✅ Webhook 订阅/退避/ DLQ 管理与管理端 UI 打通，`integration.webhooks:*` RBAC 资源生效。
+- ✅ Secrets 生命周期完成双密钥轮换、审计与提醒任务，Secret Metrics (`powerx_integration_secrets_rotations_due`) 接入。
+- ✅ Quickstart、Release notes、Ops Runbook、CI 脚本同步更新，为发布做准备。
+- ✅ Phase 6 Polish：索引优化、RBAC 常量、成功指标校验脚本、仪表盘和 manifest 版本号已落地，发布前检查形成闭环。
