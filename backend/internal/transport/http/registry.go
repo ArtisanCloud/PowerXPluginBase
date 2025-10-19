@@ -7,10 +7,12 @@ import (
 	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
+	adminintegration "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/integration"
 	adminruntime "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/runtime_ops"
 	adminsecurity "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/security"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/templates"
 	agentapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/agent"
+	integrationapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/integration"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,9 +37,12 @@ func (r *Registry) RegisterAPIRoutes(gApi *gin.RouterGroup) {
 	admin.RegisterAPIRoutes(gApi, r.deps)
 	agentapi.RegisterAPIRoutes(gApi, r.deps)
 	templates.RegisterAPIRoutes(gApi, r.deps)
+	integrationapi.RegisterAPIRoutes(gApi, r.deps)
 
 	r.mergeRBAC(adminruntime.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminsecurity.RBACEntries(r.apiPrefix()))
+	r.mergeRBAC(adminintegration.RBACEntries(r.apiPrefix()))
+	r.mergeRBAC(integrationRBACEntries(r.apiPrefix()))
 }
 
 func (r *Registry) PrintRegisteredRoutes() {

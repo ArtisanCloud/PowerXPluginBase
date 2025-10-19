@@ -46,6 +46,7 @@ cd web-admin && npm run dev  # 启动管理界面
 2. **GrantMatrix**  
    - 在管理界面或 API 上传 YAML 基础配置，添加数据库覆盖项，验证审批记录与缓存刷新。
 3. **Webhook 重试**  
+   - 运行 `./scripts/mock-webhook-target.sh 8089` 启动本地 webhook mock（默认端口 8089，可自定义）；脚本会打印请求头和 Body，便于排查。
    - 创建订阅后模拟目标 500；检查重试日志与 DLQ 记录，执行联合处理流程。
 4. **Secrets 轮换**  
    - 创建外部凭证，触发轮换，确认双密钥过渡和审计日志。

@@ -36,23 +36,23 @@
 
 **Purpose**: 所有用户故事共享的核心基础能力，必须完成后才可进入故事开发。
 
-- [ ] T010 [Foundational] 创建数据库迁移（GrantMatrix override、Webhook attempts/DLQ、Secrets）  
+- [X] T010 [Foundational] 创建数据库迁移（GrantMatrix override、Webhook attempts/DLQ、Secrets）  
       `backend/migrations/2025Q4_integration.sql`
-- [ ] T011 [Foundational] 加载 integration 配置结构体，暴露 `payload_threshold_bytes`、`retry_policy`、`rotation_days`  
+- [X] T011 [Foundational] 加载 integration 配置结构体，暴露 `payload_threshold_bytes`、`retry_policy`、`rotation_days`  
       `backend/internal/config/integration.go`
-- [ ] T012 [Foundational] 抽象幂等存储接口与 Redis/Postgres 实现  
+- [X] T012 [Foundational] 抽象幂等存储接口与 Redis/Postgres 实现  
       `backend/internal/domain/repository/integration/idempotency_provider.go`
-- [ ] T013 [Foundational] 实现 GrantMatrix 静态 YAML + DB override 加载器及缓存失效机制  
+- [X] T013 [Foundational] 实现 GrantMatrix 静态 YAML + DB override 加载器及缓存失效机制  
       `backend/internal/services/integration/grant_matrix_loader.go`
-- [ ] T014 [P] [Foundational] 初始化 integration 观测指标骨架（counter/gauge/events）  
+- [X] T014 [P] [Foundational] 初始化 integration 观测指标骨架（counter/gauge/events）  
       `backend/internal/observability/integration/metrics.go`
-- [ ] T015 [P] [Foundational] 注册 integration HTTP/GRPC 路由、RBAC 权限占位  
+- [X] T015 [P] [Foundational] 注册 integration HTTP/GRPC 路由、RBAC 权限占位  
       `backend/internal/transport/http/routes.go`, `backend/internal/transport/grpc/server.go`, `backend/internal/transport/http/rbac.go`
-- [ ] T016 [Foundational] 构建后台调度框架（用于 Webhook 重试、Secrets 轮换提醒）  
+- [X] T016 [Foundational] 构建后台调度框架（用于 Webhook 重试、Secrets 轮换提醒）  
       `backend/internal/jobs/integration/scheduler.go`
-- [ ] T017 [Foundational] 更新 Quickstart 配置样例与脚本占位（Redis、webhook mock）  
+- [X] T017 [Foundational] 更新 Quickstart 配置样例与脚本占位（Redis、webhook mock）  
       `scripts/mock-webhook-target.sh`, `specs/005-protocols-integrations/quickstart.md`
-- [ ] T018 [Foundational] 实现配置审批/双人复核工作流（仓储、服务、审批记录迁移）  
+- [X] T018 [Foundational] 实现配置审批/双人复核工作流（仓储、服务、审批记录迁移）  
       `backend/migrations/2025Q4_integration_approvals.sql`, `backend/internal/domain/repository/integration/approval_repository.go`, `backend/internal/services/integration/approval_service.go`
 
 **Checkpoint**: 基础设施就绪，用户故事可独立启动。
