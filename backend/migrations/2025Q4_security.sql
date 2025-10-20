@@ -1,7 +1,7 @@
 -- Security baseline schema objects
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS public.security_baseline_checklists (
+CREATE TABLE IF NOT EXISTS security_baseline_checklists (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     version      TEXT NOT NULL,
     controls     JSONB NOT NULL,
@@ -10,11 +10,11 @@ CREATE TABLE IF NOT EXISTS public.security_baseline_checklists (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_security_baseline_version
-    ON public.security_baseline_checklists (version);
+    ON security_baseline_checklists (version);
 
-CREATE TABLE IF NOT EXISTS public.security_audit_reports (
+CREATE TABLE IF NOT EXISTS security_audit_reports (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    baseline_id        UUID NOT NULL REFERENCES public.security_baseline_checklists(id) ON DELETE RESTRICT,
+    baseline_id        UUID NOT NULL REFERENCES security_baseline_checklists(id) ON DELETE RESTRICT,
     initiated_by       TEXT NOT NULL,
     status             TEXT NOT NULL,
     findings           JSONB,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS public.security_audit_reports (
     created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_security_audit_status ON public.security_audit_reports (status, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_security_audit_baseline ON public.security_audit_reports (baseline_id);
+CREATE INDEX IF NOT EXISTS idx_security_audit_status ON security_audit_reports (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_security_audit_baseline ON security_audit_reports (baseline_id);
 
 COMMIT;

@@ -1,7 +1,7 @@
 -- Integration foundational schema objects
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS public.integration_grant_matrix_overrides (
+CREATE TABLE IF NOT EXISTS integration_grant_matrix_overrides (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     scope         TEXT NOT NULL,
     channel       TEXT NOT NULL,
@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS public.integration_grant_matrix_overrides (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_integration_grant_matrix_override
-    ON public.integration_grant_matrix_overrides (scope, channel, resource, action);
+    ON integration_grant_matrix_overrides (scope, channel, resource, action);
 
-CREATE TABLE IF NOT EXISTS public.integration_webhook_subscriptions (
+CREATE TABLE IF NOT EXISTS integration_webhook_subscriptions (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id     TEXT NOT NULL,
     event_type    TEXT NOT NULL,
@@ -33,11 +33,11 @@ CREATE TABLE IF NOT EXISTS public.integration_webhook_subscriptions (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_integration_webhook_subscription
-    ON public.integration_webhook_subscriptions (tenant_id, event_type, target_url);
+    ON integration_webhook_subscriptions (tenant_id, event_type, target_url);
 
-CREATE TABLE IF NOT EXISTS public.integration_webhook_attempts (
+CREATE TABLE IF NOT EXISTS integration_webhook_attempts (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    subscription_id   UUID NOT NULL REFERENCES public.integration_webhook_subscriptions(id) ON DELETE CASCADE,
+    subscription_id   UUID NOT NULL REFERENCES integration_webhook_subscriptions(id) ON DELETE CASCADE,
     envelope_id       UUID,
     status            TEXT NOT NULL,
     retry_count       INTEGER NOT NULL DEFAULT 0,
@@ -49,23 +49,23 @@ CREATE TABLE IF NOT EXISTS public.integration_webhook_attempts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_integration_webhook_attempt_subscription
-    ON public.integration_webhook_attempts (subscription_id);
+    ON integration_webhook_attempts (subscription_id);
 
 CREATE INDEX IF NOT EXISTS idx_integration_webhook_attempt_status
-    ON public.integration_webhook_attempts (status, next_delivery_at);
+    ON integration_webhook_attempts (status, next_delivery_at);
 
-CREATE TABLE IF NOT EXISTS public.integration_webhook_dlq (
+CREATE TABLE IF NOT EXISTS integration_webhook_dlq (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    attempt_id     UUID NOT NULL REFERENCES public.integration_webhook_attempts(id) ON DELETE CASCADE,
+    attempt_id     UUID NOT NULL REFERENCES integration_webhook_attempts(id) ON DELETE CASCADE,
     failure_reason TEXT,
     payload        JSONB,
     created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_integration_webhook_dlq_attempt
-    ON public.integration_webhook_dlq (attempt_id);
+    ON integration_webhook_dlq (attempt_id);
 
-CREATE TABLE IF NOT EXISTS public.integration_secrets (
+CREATE TABLE IF NOT EXISTS integration_secrets (
     id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id              TEXT NOT NULL,
     integration_type       TEXT NOT NULL,
@@ -82,9 +82,9 @@ CREATE TABLE IF NOT EXISTS public.integration_secrets (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_integration_secrets_tenant_type
-    ON public.integration_secrets (tenant_id, integration_type);
+    ON integration_secrets (tenant_id, integration_type);
 
-CREATE TABLE IF NOT EXISTS public.integration_idempotency_records (
+CREATE TABLE IF NOT EXISTS integration_idempotency_records (
     key            TEXT PRIMARY KEY,
     tenant_id      TEXT NOT NULL,
     scope          TEXT,
@@ -97,6 +97,6 @@ CREATE TABLE IF NOT EXISTS public.integration_idempotency_records (
 );
 
 CREATE INDEX IF NOT EXISTS idx_integration_idempotency_expires
-    ON public.integration_idempotency_records (expires_at);
+    ON integration_idempotency_records (expires_at);
 
 COMMIT;

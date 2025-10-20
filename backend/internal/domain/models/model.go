@@ -47,4 +47,7 @@ const (
 	TableMarketplacePlanTiers            = "marketplace_plan_tiers"
 	TableMarketplaceChecklistRuns        = "marketplace_checklist_runs"
 	TableMarketplaceChecklistItems       = "marketplace_checklist_items"
+	TableMarketplaceLicenses             = "marketplace_licenses"
+	TableMarketplaceLicenseEvents        = "marketplace_license_events"
+	TableMarketplaceTaxTransactions      = "marketplace_tax_transactions"
 )

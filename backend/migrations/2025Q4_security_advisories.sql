@@ -1,7 +1,7 @@
 -- Vulnerability advisory and distribution tables
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS public.security_vulnerability_advisories (
+CREATE TABLE IF NOT EXISTS security_vulnerability_advisories (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     reference          TEXT NOT NULL,
     severity           TEXT NOT NULL,
@@ -19,17 +19,17 @@ CREATE TABLE IF NOT EXISTS public.security_vulnerability_advisories (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_security_advisory_reference
-    ON public.security_vulnerability_advisories (reference);
+    ON security_vulnerability_advisories (reference);
 
 CREATE INDEX IF NOT EXISTS idx_security_advisory_severity_status
-    ON public.security_vulnerability_advisories (severity, status);
+    ON security_vulnerability_advisories (severity, status);
 
 CREATE INDEX IF NOT EXISTS gin_security_advisory_versions
-    ON public.security_vulnerability_advisories USING gin (affected_versions jsonb_path_ops);
+    ON security_vulnerability_advisories USING gin (affected_versions jsonb_path_ops);
 
-CREATE TABLE IF NOT EXISTS public.security_advisory_distributions (
+CREATE TABLE IF NOT EXISTS security_advisory_distributions (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    advisory_id  UUID NOT NULL REFERENCES public.security_vulnerability_advisories(id) ON DELETE CASCADE,
+    advisory_id  UUID NOT NULL REFERENCES security_vulnerability_advisories(id) ON DELETE CASCADE,
     tenant_id    TEXT NOT NULL,
     channel      TEXT NOT NULL,
     delivered_at TIMESTAMPTZ,
@@ -40,9 +40,9 @@ CREATE TABLE IF NOT EXISTS public.security_advisory_distributions (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_security_advisory_delivery
-    ON public.security_advisory_distributions (advisory_id, tenant_id, channel);
+    ON security_advisory_distributions (advisory_id, tenant_id, channel);
 
 CREATE INDEX IF NOT EXISTS idx_security_advisory_delivery_status
-    ON public.security_advisory_distributions (status, delivered_at);
+    ON security_advisory_distributions (status, delivered_at);
 
 COMMIT;

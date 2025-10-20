@@ -91,6 +91,7 @@ type PricingPlan struct {
 	OveragePolicy   string            `gorm:"column:overage_policy;type:text" json:"overage_policy,omitempty"`
 	FeatureMatrix   datatypes.JSONMap `gorm:"column:feature_matrix;type:jsonb" json:"feature_matrix"`
 	IsDefault       bool              `gorm:"column:is_default;type:boolean;not null;default:false" json:"is_default"`
+	Status          string            `gorm:"column:status;type:text;not null;default:'active'" json:"status"`
 	CreatedAt       time.Time         `gorm:"column:created_at;type:timestamptz;autoCreateTime" json:"created_at"`
 	UpdatedAt       time.Time         `gorm:"column:updated_at;type:timestamptz;autoUpdateTime" json:"updated_at"`
 	Tiers           []PlanTier        `gorm:"foreignKey:PlanID" json:"tiers,omitempty"`

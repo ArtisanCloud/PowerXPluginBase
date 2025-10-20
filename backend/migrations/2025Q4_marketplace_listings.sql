@@ -1,9 +1,7 @@
 -- Marketplace listings & checklist schema (US1)
 BEGIN;
 
-CREATE SCHEMA IF NOT EXISTS powerx_plugin_base;
-
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_listings (
+CREATE TABLE IF NOT EXISTS marketplace_listings (
     id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id              TEXT NOT NULL,
     plugin_id              TEXT NOT NULL,
@@ -32,15 +30,15 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_listings (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_marketplace_listing_slug
-    ON powerx_plugin_base.marketplace_listings (tenant_id, slug, locale)
+    ON marketplace_listings (tenant_id, slug, locale)
     WHERE deleted_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_marketplace_listing_status
-    ON powerx_plugin_base.marketplace_listings (tenant_id, plugin_id, status);
+    ON marketplace_listings (tenant_id, plugin_id, status);
 
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_listing_assets (
+CREATE TABLE IF NOT EXISTS marketplace_listing_assets (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    listing_id     UUID NOT NULL REFERENCES powerx_plugin_base.marketplace_listings(id) ON DELETE CASCADE,
+    listing_id     UUID NOT NULL REFERENCES marketplace_listings(id) ON DELETE CASCADE,
     tenant_id      TEXT NOT NULL,
     asset_type     TEXT NOT NULL,
     storage_uri    TEXT NOT NULL,
@@ -54,11 +52,11 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_listing_assets (
 );
 
 CREATE INDEX IF NOT EXISTS idx_marketplace_listing_asset_type
-    ON powerx_plugin_base.marketplace_listing_assets (listing_id, asset_type);
+    ON marketplace_listing_assets (listing_id, asset_type);
 
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_listing_versions (
+CREATE TABLE IF NOT EXISTS marketplace_listing_versions (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    listing_id     UUID NOT NULL REFERENCES powerx_plugin_base.marketplace_listings(id) ON DELETE CASCADE,
+    listing_id     UUID NOT NULL REFERENCES marketplace_listings(id) ON DELETE CASCADE,
     tenant_id      TEXT NOT NULL,
     version        TEXT NOT NULL,
     changelog      TEXT,
@@ -71,11 +69,11 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_listing_versions (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_marketplace_listing_version
-    ON powerx_plugin_base.marketplace_listing_versions (listing_id, version);
+    ON marketplace_listing_versions (listing_id, version);
 
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_pricing_plans (
+CREATE TABLE IF NOT EXISTS marketplace_pricing_plans (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    listing_id        UUID NOT NULL REFERENCES powerx_plugin_base.marketplace_listings(id) ON DELETE CASCADE,
+    listing_id        UUID NOT NULL REFERENCES marketplace_listings(id) ON DELETE CASCADE,
     tenant_id         TEXT NOT NULL,
     plan_code         TEXT NOT NULL,
     plan_type         TEXT NOT NULL,
@@ -87,16 +85,17 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_pricing_plans (
     overage_policy    TEXT,
     feature_matrix    JSONB NOT NULL DEFAULT '{}'::jsonb,
     is_default        BOOLEAN NOT NULL DEFAULT FALSE,
+    status            TEXT NOT NULL DEFAULT 'active',
     created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_marketplace_pricing_plan_code
-    ON powerx_plugin_base.marketplace_pricing_plans (listing_id, plan_code);
+    ON marketplace_pricing_plans (listing_id, plan_code);
 
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_plan_tiers (
+CREATE TABLE IF NOT EXISTS marketplace_plan_tiers (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    plan_id        UUID NOT NULL REFERENCES powerx_plugin_base.marketplace_pricing_plans(id) ON DELETE CASCADE,
+    plan_id        UUID NOT NULL REFERENCES marketplace_pricing_plans(id) ON DELETE CASCADE,
     tenant_id      TEXT NOT NULL,
     metric         TEXT NOT NULL,
     range_from     NUMERIC(18,4) NOT NULL,
@@ -108,11 +107,11 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_plan_tiers (
 );
 
 CREATE INDEX IF NOT EXISTS idx_marketplace_plan_tiers_plan
-    ON powerx_plugin_base.marketplace_plan_tiers (plan_id, range_from);
+    ON marketplace_plan_tiers (plan_id, range_from);
 
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_checklist_runs (
+CREATE TABLE IF NOT EXISTS marketplace_checklist_runs (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    listing_id     UUID NOT NULL REFERENCES powerx_plugin_base.marketplace_listings(id) ON DELETE CASCADE,
+    listing_id     UUID NOT NULL REFERENCES marketplace_listings(id) ON DELETE CASCADE,
     tenant_id      TEXT NOT NULL,
     trigger_source TEXT NOT NULL,
     run_number     INTEGER NOT NULL DEFAULT 1,
@@ -125,11 +124,11 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_checklist_runs (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_marketplace_checklist_run_num
-    ON powerx_plugin_base.marketplace_checklist_runs (listing_id, run_number);
+    ON marketplace_checklist_runs (listing_id, run_number);
 
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_checklist_items (
+CREATE TABLE IF NOT EXISTS marketplace_checklist_items (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    checklist_run_id  UUID NOT NULL REFERENCES powerx_plugin_base.marketplace_checklist_runs(id) ON DELETE CASCADE,
+    checklist_run_id  UUID NOT NULL REFERENCES marketplace_checklist_runs(id) ON DELETE CASCADE,
     tenant_id         TEXT NOT NULL,
     code              TEXT NOT NULL,
     description       TEXT NOT NULL,
@@ -142,44 +141,44 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_checklist_items (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_marketplace_checklist_item_code
-    ON powerx_plugin_base.marketplace_checklist_items (checklist_run_id, code);
+    ON marketplace_checklist_items (checklist_run_id, code);
 
 COMMIT;
 
 BEGIN;
 
-CREATE OR REPLACE FUNCTION powerx_plugin_base.current_tenant() RETURNS TEXT AS $$
+CREATE OR REPLACE FUNCTION current_tenant() RETURNS TEXT AS $$
 BEGIN
     RETURN current_setting('app.tenant_id', true);
 END;
 $$ LANGUAGE plpgsql STABLE;
 
-ALTER TABLE powerx_plugin_base.marketplace_listings FORCE ROW LEVEL SECURITY;
-CREATE POLICY marketplace_listings_tenant_isolation ON powerx_plugin_base.marketplace_listings
-    USING (tenant_id = powerx_plugin_base.current_tenant());
+ALTER TABLE marketplace_listings FORCE ROW LEVEL SECURITY;
+CREATE POLICY marketplace_listings_tenant_isolation ON marketplace_listings
+    USING (tenant_id = current_tenant());
 
-ALTER TABLE powerx_plugin_base.marketplace_listing_assets FORCE ROW LEVEL SECURITY;
-CREATE POLICY marketplace_listing_assets_tenant_isolation ON powerx_plugin_base.marketplace_listing_assets
-    USING (tenant_id = powerx_plugin_base.current_tenant());
+ALTER TABLE marketplace_listing_assets FORCE ROW LEVEL SECURITY;
+CREATE POLICY marketplace_listing_assets_tenant_isolation ON marketplace_listing_assets
+    USING (tenant_id = current_tenant());
 
-ALTER TABLE powerx_plugin_base.marketplace_listing_versions FORCE ROW LEVEL SECURITY;
-CREATE POLICY marketplace_listing_versions_tenant_isolation ON powerx_plugin_base.marketplace_listing_versions
-    USING (tenant_id = powerx_plugin_base.current_tenant());
+ALTER TABLE marketplace_listing_versions FORCE ROW LEVEL SECURITY;
+CREATE POLICY marketplace_listing_versions_tenant_isolation ON marketplace_listing_versions
+    USING (tenant_id = current_tenant());
 
-ALTER TABLE powerx_plugin_base.marketplace_pricing_plans FORCE ROW LEVEL SECURITY;
-CREATE POLICY marketplace_pricing_plans_tenant_isolation ON powerx_plugin_base.marketplace_pricing_plans
-    USING (tenant_id = powerx_plugin_base.current_tenant());
+ALTER TABLE marketplace_pricing_plans FORCE ROW LEVEL SECURITY;
+CREATE POLICY marketplace_pricing_plans_tenant_isolation ON marketplace_pricing_plans
+    USING (tenant_id = current_tenant());
 
-ALTER TABLE powerx_plugin_base.marketplace_plan_tiers FORCE ROW LEVEL SECURITY;
-CREATE POLICY marketplace_plan_tiers_tenant_isolation ON powerx_plugin_base.marketplace_plan_tiers
-    USING (tenant_id = powerx_plugin_base.current_tenant());
+ALTER TABLE marketplace_plan_tiers FORCE ROW LEVEL SECURITY;
+CREATE POLICY marketplace_plan_tiers_tenant_isolation ON marketplace_plan_tiers
+    USING (tenant_id = current_tenant());
 
-ALTER TABLE powerx_plugin_base.marketplace_checklist_runs FORCE ROW LEVEL SECURITY;
-CREATE POLICY marketplace_checklist_runs_tenant_isolation ON powerx_plugin_base.marketplace_checklist_runs
-    USING (tenant_id = powerx_plugin_base.current_tenant());
+ALTER TABLE marketplace_checklist_runs FORCE ROW LEVEL SECURITY;
+CREATE POLICY marketplace_checklist_runs_tenant_isolation ON marketplace_checklist_runs
+    USING (tenant_id = current_tenant());
 
-ALTER TABLE powerx_plugin_base.marketplace_checklist_items FORCE ROW LEVEL SECURITY;
-CREATE POLICY marketplace_checklist_items_tenant_isolation ON powerx_plugin_base.marketplace_checklist_items
-    USING (tenant_id = powerx_plugin_base.current_tenant());
+ALTER TABLE marketplace_checklist_items FORCE ROW LEVEL SECURITY;
+CREATE POLICY marketplace_checklist_items_tenant_isolation ON marketplace_checklist_items
+    USING (tenant_id = current_tenant());
 
 COMMIT;

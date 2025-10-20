@@ -1,20 +1,19 @@
 package marketplace
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"math"
-	"strconv"
-	"strings"
-	"time"
+    "context"
+    "errors"
+    "fmt"
+    "math"
+    "strconv"
+    "strings"
+    "time"
 
-	dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
-	mrepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/marketplace"
-	obs "github.com/ArtisanCloud/PowerXPlugin/internal/observability/marketplace"
-	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
-	"gorm.io/datatypes"
+    dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
+    mrepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/marketplace"
+    obs "github.com/ArtisanCloud/PowerXPlugin/internal/observability/marketplace"
+    "github.com/google/uuid"
+    "github.com/sirupsen/logrus"
 )
 
 // ListingService coordinates marketplace listing workflows.
@@ -564,17 +563,6 @@ func convertPricingPlans(inputs []PricingPlanInput, tenantID string) []dbm.Prici
 		out[i] = plan
 	}
 	return out
-}
-
-func toJSONMap(src map[string]any) datatypes.JSONMap {
-	if len(src) == 0 {
-		return datatypes.JSONMap{}
-	}
-	dest := make(datatypes.JSONMap, len(src))
-	for k, v := range src {
-		dest[k] = v
-	}
-	return dest
 }
 
 func validateDraftInput(input ListingDraftInput) error {
