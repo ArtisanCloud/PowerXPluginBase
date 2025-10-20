@@ -37,7 +37,11 @@ func Schema() string {
 // S 返回带 schema 前缀的完整表名："schema".table
 // 注意：对 schema 加引号保留大小写、避免关键字冲突；表名建议全小写下划线，不加引号。
 func S(table string) string {
-	return fmt.Sprintf(`"%s".%s`, Schema(), table)
+	schema := Schema()
+	if strings.TrimSpace(schema) == "" {
+		return table
+	}
+	return fmt.Sprintf(`"%s".%s`, schema, table)
 }
 
 // EnsureSchema 若不存在则创建 schema（PostgreSQL）
@@ -50,3 +54,9 @@ func EnsureSchema(db *gorm.DB) error {
 var schemaRe = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
 func isValidSchema(s string) bool { return schemaRe.MatchString(s) }
+
+// ForceSchemaForTests overrides schema configuration for tests and resets InitSchemaFrom guard.
+func ForceSchemaForTests(schema string) {
+	schemaName = schema
+	once = sync.Once{}
+}

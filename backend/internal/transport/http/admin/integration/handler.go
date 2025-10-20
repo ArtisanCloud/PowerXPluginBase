@@ -2,7 +2,6 @@ package integration
 
 import (
 	"errors"
-	"strconv"
 	"strings"
 	"time"
 
@@ -96,9 +95,9 @@ func (h *Handler) ListWebhooks(c *gin.Context) {
 			statuses = append(statuses, strings.ToUpper(strings.TrimSpace(status)))
 		}
 	}
-	tenantID, err := tenantIDFromContext(c)
-	if err != nil {
-		contracts.ResponseUnauthorized(c, err.Error())
+	tenantID, ok := httpmw.TenantIDString(c)
+	if !ok {
+		contracts.ResponseUnauthorized(c, "tenant context missing")
 		return
 	}
 	subs, err := h.webhookService.ListSubscriptions(c.Request.Context(), tenantID, statuses)
@@ -120,9 +119,9 @@ func (h *Handler) CreateWebhook(c *gin.Context) {
 		contracts.ResponseBadRequest(c, "invalid request body: "+err.Error())
 		return
 	}
-	tenantID, err := tenantIDFromContext(c)
-	if err != nil {
-		contracts.ResponseUnauthorized(c, err.Error())
+	tenantID, ok := httpmw.TenantIDString(c)
+	if !ok {
+		contracts.ResponseUnauthorized(c, "tenant context missing")
 		return
 	}
 	sub, err := h.webhookService.CreateSubscription(c.Request.Context(), service.CreateSubscriptionParams{
@@ -152,9 +151,9 @@ func (h *Handler) UpdateWebhook(c *gin.Context) {
 		contracts.ResponseBadRequest(c, "invalid request body: "+err.Error())
 		return
 	}
-	tenantID, err := tenantIDFromContext(c)
-	if err != nil {
-		contracts.ResponseUnauthorized(c, err.Error())
+	tenantID, ok := httpmw.TenantIDString(c)
+	if !ok {
+		contracts.ResponseUnauthorized(c, "tenant context missing")
 		return
 	}
 	sub, err := h.webhookService.UpdateSubscription(c.Request.Context(), service.UpdateSubscriptionParams{
@@ -183,9 +182,9 @@ func (h *Handler) DeleteWebhook(c *gin.Context) {
 		contracts.ResponseServiceUnavailable(c, "webhook service not available", nil)
 		return
 	}
-	tenantID, err := tenantIDFromContext(c)
-	if err != nil {
-		contracts.ResponseUnauthorized(c, err.Error())
+	tenantID, ok := httpmw.TenantIDString(c)
+	if !ok {
+		contracts.ResponseUnauthorized(c, "tenant context missing")
 		return
 	}
 	if err := h.webhookService.DeleteSubscription(c.Request.Context(), tenantID, c.Param("id")); err != nil {
@@ -255,11 +254,4 @@ func (h *Handler) ReplayAttempt(c *gin.Context) {
 		return
 	}
 	contracts.ResponseSuccess(c, gin.H{"ok": true})
-}
-
-func tenantIDFromContext(c *gin.Context) (string, error) {
-	if tenantID, ok := httpmw.TenantIDFromContext(c); ok && tenantID > 0 {
-		return strconv.FormatUint(tenantID, 10), nil
-	}
-	return "", errors.New("tenant context missing")
 }

@@ -40,4 +40,11 @@ const (
 	TableIntegrationWebhookSubscriptions = "integration_webhook_subscriptions"
 	TableIntegrationWebhookAttempts      = "integration_webhook_attempts"
 	TableIntegrationSecrets              = "integration_secrets"
+	TableMarketplaceListings             = "marketplace_listings"
+	TableMarketplaceListingAssets        = "marketplace_listing_assets"
+	TableMarketplaceListingVersions      = "marketplace_listing_versions"
+	TableMarketplacePricingPlans         = "marketplace_pricing_plans"
+	TableMarketplacePlanTiers            = "marketplace_plan_tiers"
+	TableMarketplaceChecklistRuns        = "marketplace_checklist_runs"
+	TableMarketplaceChecklistItems       = "marketplace_checklist_items"
 )

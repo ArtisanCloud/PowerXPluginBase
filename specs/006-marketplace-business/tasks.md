@@ -40,13 +40,13 @@
 
 ### Implementation for US1
 
-- [ ] T104 [US1] 新增迁移文件 `backend/migrations/2025Q4_marketplace_listings.sql` 定义 `marketplace_listings`、`listing_assets`、`listing_versions`、`checklist_runs`、`checklist_items` 表及 RLS。  
-- [ ] T105 [P] [US1] 在 `backend/internal/domain/models/marketplace/` 创建 `listing.go`、`asset.go`、`checklist.go`，映射上述表并声明枚举。  
-- [ ] T106 [P] [US1] 实现仓储：`backend/internal/domain/repository/marketplace/listing_repository.go`、`checklist_repository.go`，提供草稿创建、资产管理、Checklist 读写接口。  
-- [ ] T107 [US1] 完成服务层 `backend/internal/services/marketplace/listing_service.go`，封装提交流程、审核状态转换、资产存储调用与事件发布。  
-- [ ] T108 [US1] 构建 GraphQL Resolver：在 `backend/internal/transport/http/admin/marketplace/checklist_resolver.go` 实现 Query/Mutation，复用服务层并校验 RBAC。  
-- [ ] T109 [US1] 开发 Admin HTTP Handler：`backend/internal/transport/http/admin/marketplace/listings_handler.go` 暴露列表、详情、草稿更新、审核提交 API。  
-- [ ] T110 [US1] 更新路由与权限：在 `backend/internal/transport/http/admin/routes.go` 注册 handler，在 `backend/internal/transport/http/registry.go` 合并 RBAC，补充 `marketplace.listings.{read,write,review}`。  
+- [x] T104 [US1] 新增迁移文件 `backend/migrations/2025Q4_marketplace_listings.sql` 定义 `marketplace_listings`、`listing_assets`、`listing_versions`、`checklist_runs`、`checklist_items` 表及 RLS。  
+- [x] T105 [P] [US1] 在 `backend/internal/domain/models/marketplace/` 创建 `listing.go`、`asset.go`、`checklist.go`，映射上述表并声明枚举。  
+- [x] T106 [P] [US1] 实现仓储：`backend/internal/domain/repository/marketplace/listing_repository.go`、`checklist_repository.go`，提供草稿创建、资产管理、Checklist 读写接口。  
+- [x] T107 [US1] 完成服务层 `backend/internal/services/marketplace/listing_service.go`，封装提交流程、审核状态转换、资产存储调用与事件发布。  
+- [x] T108 [US1] 构建 GraphQL Resolver：在 `backend/internal/transport/http/admin/marketplace/checklist_resolver.go` 实现 Query/Mutation，复用服务层并校验 RBAC。  
+- [x] T109 [US1] 开发 Admin HTTP Handler：`backend/internal/transport/http/admin/marketplace/listings_handler.go` 暴露列表、详情、草稿更新、审核提交 API。  
+- [x] T110 [US1] 更新路由与权限：在 `backend/internal/transport/http/admin/routes.go` 注册 handler，在 `backend/internal/transport/http/registry.go` 合并 RBAC，补充 `marketplace.listings.{read,write,review}`。  
 - [ ] T111 [US1] 更新 `plugin.yaml` 与 `backend/etc/config.example.yaml`，同步 Checklist GraphQL 端点、RBAC 权限描述与说明文档链接。  
 - [ ] T112 [P] [US1] 前端页面：在 `web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/listings.vue` 实现 Listing 控制台，含上传表单与审核状态视图。  
 - [ ] T113 [P] [US1] 创建 Checklist 组件与 composable：`web-admin/app/components/marketplace/ChecklistRunner.vue`、`web-admin/app/composables/useMarketplaceChecklist.ts`，对接 GraphQL。  
