@@ -3,6 +3,7 @@ package marketplace
 import (
 	"context"
 	"errors"
+	"sort"
 	"strings"
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
@@ -202,10 +203,66 @@ func (r *ListingRepository) CreateVersion(ctx context.Context, version *dbm.List
 	})
 }
 
+// UpdateRecommendedWeight updates the recommendation weight for a listing.
+func (r *ListingRepository) UpdateRecommendedWeight(ctx context.Context, tenantID, listingID string, weight float64) error {
+	tenantID = strings.TrimSpace(tenantID)
+	listingID = strings.TrimSpace(listingID)
+	if tenantID == "" {
+		return errors.New("tenant_id is required")
+	}
+	if listingID == "" {
+		return errors.New("listing_id is required")
+	}
+	return r.WithTenantTx(ctx, tenantID, func(tx *gorm.DB) error {
+		res := tx.Model(&dbm.Listing{}).
+			Where("id = ? AND tenant_id = ?", listingID, tenantID).
+			Update("recommended_weight", weight)
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		return nil
+	})
+}
+
+// ListTenantIDs returns distinct tenant identifiers that have listings.
+func (r *ListingRepository) ListTenantIDs(ctx context.Context) ([]string, error) {
+	var ids []string
+	if err := r.DB.WithContext(ctx).Model(&dbm.Listing{}).Distinct().Pluck("tenant_id", &ids).Error; err != nil {
+		return nil, err
+	}
+	out := make([]string, 0, len(ids))
+	for _, id := range ids {
+		id = strings.TrimSpace(id)
+		if id != "" {
+			out = append(out, id)
+		}
+	}
+	sort.Strings(out)
+	return out, nil
+}
+
 func (r *ListingRepository) baseQuery(ctx context.Context, tenantID string) *gorm.DB {
 	db := r.DB.WithContext(ctx).Model(&dbm.Listing{})
 	if tenantID != "" {
 		db = db.Where("tenant_id = ?", tenantID)
 	}
 	return db
+}
+
+// TopRecommended returns published listings ordered by recommendation weight.
+func (r *ListingRepository) TopRecommended(ctx context.Context, tenantID string, limit int) ([]*dbm.Listing, error) {
+	db := r.baseQuery(ctx, tenantID).
+		Where("status = ?", dbm.ListingStatusPublished).
+		Order("recommended_weight DESC")
+	if limit > 0 {
+		db = db.Limit(limit)
+	}
+	var listings []*dbm.Listing
+	if err := db.Preload("Assets").Preload("PricingPlans").Find(&listings).Error; err != nil {
+		return nil, err
+	}
+	return listings, nil
 }

@@ -1,6 +1,8 @@
 package marketplace
 
 import (
+	mrepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/marketplace"
+	recommendationservice "github.com/ArtisanCloud/PowerXPlugin/internal/services/recommendation"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	httpmw "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/middleware"
 	"github.com/gin-gonic/gin"
@@ -13,6 +15,11 @@ func RegisterRoutes(admin *gin.RouterGroup, deps *app.Deps) {
 	}
 	handler := NewListingHandler(deps)
 	checklist := NewChecklistGraphQLHandler(handler.Service())
+
+	listingRepo := mrepo.NewListingRepository(deps.DB)
+	metricsProvider := recommendationservice.NewListingMetricsProvider(listingRepo)
+	recommendationLogger := deps.RuntimeLogger(deps.Ctx, "admin_marketplace_recommendation", nil)
+	recommendationHandler := NewRecommendationHandler(deps.Config, listingRepo, metricsProvider, recommendationLogger)
 
 	group := admin.Group("/marketplace", httpmw.EnsureTenant())
 	{
@@ -28,5 +35,12 @@ func RegisterRoutes(admin *gin.RouterGroup, deps *app.Deps) {
 		}
 
 		group.POST("/checklist/graphql", checklist.Resolve)
+
+		recommendationGroup := group.Group("/recommendation")
+		{
+			recommendationGroup.GET("/config", recommendationHandler.GetConfig)
+			recommendationGroup.POST("/sync", recommendationHandler.TriggerSync)
+			recommendationGroup.PATCH("/experiment", recommendationHandler.UpdateExperiment)
+		}
 	}
 }

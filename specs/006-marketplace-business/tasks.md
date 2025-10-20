@@ -34,9 +34,9 @@
 
 ### Tests for US1
 
-- [ ] T101 [P] [US1] 在 `backend/tests/contract/marketplace/listings_test.go` 编写 OpenAPI 合同测试，覆盖 `POST/GET/PATCH /marketplace/listings` 与 `/status`.  
-- [ ] T102 [P] [US1] 在 `backend/tests/contract/marketplace/checklist_graphql_test.go` 添加 GraphQL 合同测试，验证 checklist 查询/触发 mutation。  
-- [ ] T103 [P] [US1] 在 `backend/internal/services/marketplace/listing_service_test.go` 编写服务层单测，覆盖草稿创建、审核通过、资产更新。
+- [x] T101 [P] [US1] 在 `backend/tests/contract/marketplace/listings_test.go` 编写 OpenAPI 合同测试，覆盖 `POST/GET/PATCH /marketplace/listings` 与 `/status`.  
+- [x] T102 [P] [US1] 在 `backend/tests/contract/marketplace/checklist_graphql_test.go` 添加 GraphQL 合同测试，验证 checklist 查询/触发 mutation。  
+- [x] T103 [P] [US1] 在 `backend/internal/services/marketplace/listing_service_test.go` 编写服务层单测，覆盖草稿创建、审核通过、资产更新。
 
 ### Implementation for US1
 
@@ -47,17 +47,17 @@
 - [x] T108 [US1] 构建 GraphQL Resolver：在 `backend/internal/transport/http/admin/marketplace/checklist_resolver.go` 实现 Query/Mutation，复用服务层并校验 RBAC。  
 - [x] T109 [US1] 开发 Admin HTTP Handler：`backend/internal/transport/http/admin/marketplace/listings_handler.go` 暴露列表、详情、草稿更新、审核提交 API。  
 - [x] T110 [US1] 更新路由与权限：在 `backend/internal/transport/http/admin/routes.go` 注册 handler，在 `backend/internal/transport/http/registry.go` 合并 RBAC，补充 `marketplace.listings.{read,write,review}`。  
-- [ ] T111 [US1] 更新 `plugin.yaml` 与 `backend/etc/config.example.yaml`，同步 Checklist GraphQL 端点、RBAC 权限描述与说明文档链接。  
-- [ ] T112 [P] [US1] 前端页面：在 `web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/listings.vue` 实现 Listing 控制台，含上传表单与审核状态视图。  
-- [ ] T113 [P] [US1] 创建 Checklist 组件与 composable：`web-admin/app/components/marketplace/ChecklistRunner.vue`、`web-admin/app/composables/useMarketplaceChecklist.ts`，对接 GraphQL。  
-- [ ] T114 [P] [US1] 编写前端测试：`web-admin/tests/marketplace/listings.spec.ts` 验证表单校验、GraphQL 交互与列表渲染。
-- [ ] T115 [P] [US1] 在 `backend/tests/integration/marketplace/listing_edge_cases_test.go` 覆盖 `.pxp` 缺资产、KYC 撤销时的自动阻断与复审流程。  
-- [ ] T116 [US1] 构建推荐服务：`backend/internal/services/recommendation/engine.go` 计算排序权重、A/B 实验指标，并落地 `recommended_weight`.  
-- [ ] T117 [P] [US1] 实现 Discovery 同步任务：`backend/internal/jobs/marketplace/recommendation_sync.go` 与调度配置，按小时推送候选数据。  
-- [ ] T118 [US1] 扩展 Admin Handler/前端，提供推荐配置与实验面板：`backend/internal/transport/http/admin/marketplace/recommendation_handler.go`、`web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/recommendation.vue`。  
-- [ ] T119 [P] [US1] 在 `backend/internal/services/marketplace/listing_service.go` 增加品牌素材尺寸/视频时长校验（NFR-005），并为前端提供即时反馈。  
-- [ ] T120 [US1] 添加提交流程 SLA 监控：`backend/internal/observability/marketplace/metrics.go` & `backend/tests/perf/marketplace/listing_submission_test.go`，确保 3 分钟内返回校验结果。  
-- [ ] T121 [P] [US1] 在 `web-admin/tests/marketplace/recommendation.spec.ts` 验证推荐配置、A/B 切换与曝光指标呈现。
+- [x] T111 [US1] 更新 `plugin.yaml` 与 `backend/etc/config.example.yaml`，同步 Checklist GraphQL 端点、RBAC 权限描述与说明文档链接。  
+- [x] T112 [P] [US1] 前端页面：在 `web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/listings.vue` 实现 Listing 控制台，含上传表单与审核状态视图。  
+- [x] T113 [P] [US1] 创建 Checklist 组件与 composable：`web-admin/app/components/marketplace/ChecklistRunner.vue`、`web-admin/app/composables/useMarketplaceChecklist.ts`，对接 GraphQL。  
+- [x] T114 [P] [US1] 编写前端测试：`web-admin/tests/marketplace/listings.spec.ts` 验证表单校验、GraphQL 交互与列表渲染。
+- [x] T115 [P] [US1] 在 `backend/tests/integration/marketplace/listing_edge_cases_test.go` 覆盖 `.pxp` 缺资产、KYC 撤销时的自动阻断与复审流程。  
+- [x] T116 [US1] 构建推荐服务：`backend/internal/services/recommendation/engine.go` 计算排序权重、A/B 实验指标，并落地 `recommended_weight`.  
+- [x] T117 [P] [US1] 实现 Discovery 同步任务：`backend/internal/jobs/marketplace/recommendation_sync.go` 与调度配置，按小时推送候选数据。  
+- [x] T118 [US1] 扩展 Admin Handler/前端，提供推荐配置与实验面板：`backend/internal/transport/http/admin/marketplace/recommendation_handler.go`、`web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/recommendation.vue`。  
+- [x] T119 [P] [US1] 在 `backend/internal/services/marketplace/listing_service.go` 增加品牌素材尺寸/视频时长校验（NFR-005），并为前端提供即时反馈。  
+- [x] T120 [US1] 添加提交流程 SLA 监控：`backend/internal/observability/marketplace/metrics.go` & `backend/tests/perf/marketplace/listing_submission_test.go`，确保 3 分钟内返回校验结果。  
+- [x] T121 [P] [US1] 在 `web-admin/tests/marketplace/recommendation.spec.ts` 验证推荐配置、A/B 切换与曝光指标呈现。
 
 **Checkpoint**：US1 独立可演示（提交→审核→展示）。
 

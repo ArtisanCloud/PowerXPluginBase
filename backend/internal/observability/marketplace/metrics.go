@@ -10,9 +10,11 @@ import (
 )
 
 const (
-	metricLicenseVerifyLatency = "powerx_marketplace_license_verify_seconds"
-	metricUsageIngestTotal     = "powerx_marketplace_usage_ingest_total"
-	metricTaxProviderErrors    = "powerx_marketplace_tax_provider_errors_total"
+	metricLicenseVerifyLatency     = "powerx_marketplace_license_verify_seconds"
+	metricUsageIngestTotal         = "powerx_marketplace_usage_ingest_total"
+	metricTaxProviderErrors        = "powerx_marketplace_tax_provider_errors_total"
+	metricListingSubmissionLatency = "powerx_marketplace_listing_submission_seconds"
+	metricListingSubmissionTotal   = "powerx_marketplace_listing_submission_total"
 )
 
 var (
@@ -20,18 +22,22 @@ var (
 
 	histBuckets = []float64{0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10}
 	histograms  = map[string]map[string][]float64{
-		metricLicenseVerifyLatency: {},
+		metricLicenseVerifyLatency:     {},
+		metricListingSubmissionLatency: {},
 	}
 
 	counters = map[string]map[string]float64{
-		metricUsageIngestTotal:  {},
-		metricTaxProviderErrors: {},
+		metricUsageIngestTotal:       {},
+		metricTaxProviderErrors:      {},
+		metricListingSubmissionTotal: {},
 	}
 
 	metricHelp = map[string]string{
-		metricLicenseVerifyLatency: "License verification latency histogram grouped by result, provider, tenant",
-		metricUsageIngestTotal:     "Usage ingest batch outcomes grouped by result and tenant",
-		metricTaxProviderErrors:    "Tax provider error totals grouped by provider and code",
+		metricLicenseVerifyLatency:     "License verification latency histogram grouped by result, provider, tenant",
+		metricUsageIngestTotal:         "Usage ingest batch outcomes grouped by result and tenant",
+		metricTaxProviderErrors:        "Tax provider error totals grouped by provider and code",
+		metricListingSubmissionLatency: "Listing submission latency histogram grouped by result and tenant",
+		metricListingSubmissionTotal:   "Listing submission totals grouped by status and tenant",
 	}
 )
 
@@ -67,6 +73,28 @@ func IncrementTaxProviderError(provider, code string) {
 		"code":     normalize(code),
 	})
 	increment(metricTaxProviderErrors, labels, 1)
+}
+
+// ObserveListingSubmission records listing submission durations and increments SLA counters.
+func ObserveListingSubmission(result, tenant string, duration time.Duration) {
+	if duration < 0 {
+		duration = 0
+	}
+	labels := labelKey(map[string]string{
+		"result": normalize(result),
+		"tenant": normalize(tenant),
+	})
+	recordHistogram(metricListingSubmissionLatency, labels, duration.Seconds())
+
+	status := normalize(result)
+	if duration > 3*time.Minute {
+		status = "timeout"
+	}
+	counterLabels := labelKey(map[string]string{
+		"status": status,
+		"tenant": normalize(tenant),
+	})
+	increment(metricListingSubmissionTotal, counterLabels, 1)
 }
 
 // RenderMetrics outputs metrics using Prometheus exposition format.
@@ -196,4 +224,16 @@ func sortedHistKeys(m map[string][]float64) []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+// ResetMetrics clears recorded metrics; intended for tests.
+func ResetMetrics() {
+	mtx.Lock()
+	defer mtx.Unlock()
+	for k := range histograms {
+		histograms[k] = map[string][]float64{}
+	}
+	for k := range counters {
+		counters[k] = map[string]float64{}
+	}
 }

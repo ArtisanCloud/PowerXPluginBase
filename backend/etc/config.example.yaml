@@ -113,6 +113,21 @@ integration:
     http_timeout_seconds: 15
     retry_backoff_seconds: [5, 30, 120]
 
+# Marketplace 模块配置
+marketplace:
+  checklist:
+    graphql_path: "/api/v1/admin/marketplace/checklist/graphql"
+    docs_url: "specs/006-marketplace-business/contracts/ready-checklist.graphql"
+  documentation:
+    overview: "specs/006-marketplace-business/quickstart.md"
+    ready_checklist: "specs/006-marketplace-business/contracts/ready-checklist.graphql"
+    listing_playbook: "specs/006-marketplace-business/spec.md"
+  recommendation:
+    enabled: true
+    default_weight: 0.0
+    experiment_topic: "marketplace.recommendation.experiments"
+    frequency_minutes: 60
+
 # gRPC 上游配置（连接 PowerX 核心服务）
 grpc_upstream:
   address: "localhost:9001" # PowerX gRPC 服务地址

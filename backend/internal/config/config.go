@@ -49,6 +49,9 @@ type Config struct {
 	// Integration 集成协议相关配置。
 	Integration *IntegrationConfig `yaml:"integration" json:"integration"`
 
+	// Marketplace 配置。
+	Marketplace *MarketplaceConfig `yaml:"marketplace" json:"marketplace"`
+
 	// 向后兼容的字段（从环境变量或旧配置中填充）
 	BindAddr   string `yaml:"-" json:"bind_addr,omitempty"`
 	LogLevel   string `yaml:"-" json:"log_level,omitempty"`

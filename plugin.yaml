@@ -169,6 +169,26 @@ frontend:
                 path: /integration/secrets
                 route: integration/secrets
                 required_policies: [integration.secrets:read]
+              - id: plugins.base.integration.marketplace
+                title: Marketplace Listings
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.integration.marketplace
+                  default: Marketplace Listings
+                icon: i-heroicons-building-storefront
+                path: /integration/marketplace/listings
+                route: integration/marketplace/listings
+                required_policies: [marketplace.listings:read]
+              - id: plugins.base.integration.recommendation
+                title: Recommendation Experiments
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.integration.recommendation
+                  default: Recommendation Experiments
+                icon: i-heroicons-beaker
+                path: /integration/marketplace/recommendation
+                route: integration/marketplace/recommendation
+                required_policies: [marketplace.recommendation:read]
               - id: plugins.base.integration.insights
                 title: Insights
                 title_i18n:
@@ -187,6 +207,7 @@ routes:
   marketplace:
     admin: /api/v1/admin/marketplace
     public: /api/v1/marketplace
+    checklist_graphql: /api/v1/admin/marketplace/checklist/graphql
 
 rbac:
   resources:
@@ -198,12 +219,14 @@ rbac:
       actions: [read, write, review]
     - resource: marketplace.recommendation
       actions: [read, manage]
+    - resource: marketplace.checklist
+      actions: [read, trigger]
     - resource: marketplace.license
       actions: [read, purchase, manage]
-    - resource: marketplace.usage
-      actions: [view, observe]
     - resource: marketplace.revenue
       actions: [read, export]
+    - resource: marketplace.usage
+      actions: [view, observe]
 
 permissions:
   - resource: base:template
@@ -214,6 +237,8 @@ permissions:
     actions: [read, write, review]
   - resource: marketplace.recommendation
     actions: [read, manage]
+  - resource: marketplace.checklist
+    actions: [read, trigger]
   - resource: marketplace.license
     actions: [read, purchase, manage]
   - resource: marketplace.usage

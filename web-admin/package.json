@@ -13,7 +13,7 @@
     "postinstall": "nuxt prepare",
     "start": "node .output/server/index.mjs",
     "lint": "npx @nuxt/eslint lint",
-    "test": "echo 'No frontend tests defined yet'"
+    "test": "vitest run"
   },
   "dependencies": {
     "@nuxt/content": "^3.6.3",
@@ -38,6 +38,8 @@
   },
   "devDependencies": {
     "@nuxtjs/i18n": "^10.1.0",
-    "@types/node": "^24.6.2"
+    "@types/node": "^24.6.2",
+    "jsdom": "^24.1.1",
+    "vitest": "^1.6.0"
   }
 }

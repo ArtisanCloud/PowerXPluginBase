@@ -4,11 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
+	"strconv"
 	"strings"
 	"time"
 
 	dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
 	mrepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/marketplace"
+	obs "github.com/ArtisanCloud/PowerXPlugin/internal/observability/marketplace"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
@@ -16,9 +19,10 @@ import (
 
 // ListingService coordinates marketplace listing workflows.
 type ListingService struct {
-	listings   *mrepo.ListingRepository
-	checklists *mrepo.ChecklistRepository
-	logger     *logrus.Entry
+	listings    *mrepo.ListingRepository
+	checklists  *mrepo.ChecklistRepository
+	vendorGuard VendorGuard
+	logger      *logrus.Entry
 }
 
 func NewListingService(listingRepo *mrepo.ListingRepository, checklistRepo *mrepo.ChecklistRepository, logger *logrus.Entry) *ListingService {
@@ -27,6 +31,16 @@ func NewListingService(listingRepo *mrepo.ListingRepository, checklistRepo *mrep
 		checklists: checklistRepo,
 		logger:     logger,
 	}
+}
+
+// VendorGuard checks vendor KYC status for gating submissions.
+type VendorGuard interface {
+	VendorRevoked(ctx context.Context, vendorID string) (bool, error)
+}
+
+// SetVendorGuard injects vendor KYC guard implementation.
+func (s *ListingService) SetVendorGuard(guard VendorGuard) {
+	s.vendorGuard = guard
 }
 
 // ListingDraftInput captures initial listing information.
@@ -198,6 +212,9 @@ func (s *ListingService) CreateDraft(ctx context.Context, tenantID string, input
 	if err := validateDraftInput(input); err != nil {
 		return nil, err
 	}
+	if err := validateBrandAssets(input.Assets); err != nil {
+		return nil, err
+	}
 
 	listing := &dbm.Listing{
 		ID:          coalesceID(input.ID),
@@ -282,6 +299,9 @@ func (s *ListingService) UpdateDraft(ctx context.Context, tenantID, listingID st
 		return nil, err
 	}
 	if input.Assets != nil {
+		if err := validateBrandAssets(input.Assets); err != nil {
+			return nil, err
+		}
 		if err := s.listings.ReplaceAssets(ctx, tenantID, listing.ID, convertAssets(input.Assets)); err != nil {
 			return nil, err
 		}
@@ -295,26 +315,47 @@ func (s *ListingService) UpdateDraft(ctx context.Context, tenantID, listingID st
 }
 
 // SubmitForReview transitions a listing into review and records a version snapshot.
-func (s *ListingService) SubmitForReview(ctx context.Context, tenantID, listingID, submittedBy string, metadata map[string]any) (*dbm.Listing, error) {
+func (s *ListingService) SubmitForReview(ctx context.Context, tenantID, listingID, submittedBy string, metadata map[string]any) (listing *dbm.Listing, err error) {
 	tenantID = strings.TrimSpace(tenantID)
-	if tenantID == "" {
-		return nil, errors.New("tenant_id is required")
-	}
 	listingID = strings.TrimSpace(listingID)
-	if listingID == "" {
-		return nil, errors.New("listing_id is required")
+	start := time.Now()
+	defer func() {
+		status := "success"
+		if err != nil {
+			status = "failed"
+		}
+		obs.ObserveListingSubmission(status, tenantID, time.Since(start))
+	}()
+
+	if tenantID == "" {
+		err = errors.New("tenant_id is required")
+		return
 	}
-	listing, err := s.listings.FindByID(ctx, tenantID, listingID)
+	if listingID == "" {
+		err = errors.New("listing_id is required")
+		return
+	}
+
+	listing, err = s.listings.FindByID(ctx, tenantID, listingID)
 	if err != nil {
-		return nil, err
+		return
+	}
+	if len(listing.Assets) == 0 {
+		err = fmt.Errorf("listing %s has no assets and cannot be submitted", listingID)
+		return
+	}
+	if vendorErr := s.ensureVendorActive(ctx, listing.VendorID); vendorErr != nil {
+		err = vendorErr
+		return
 	}
 	if listing.Status != dbm.ListingStatusDraft && listing.Status != dbm.ListingStatusSuspended {
-		return nil, fmt.Errorf("listing %s cannot enter review from %s", listingID, listing.Status)
+		err = fmt.Errorf("listing %s cannot enter review from %s", listingID, listing.Status)
+		return
 	}
 
 	listing.Status = dbm.ListingStatusInReview
-	if err := s.listings.Update(ctx, listing); err != nil {
-		return nil, err
+	if err = s.listings.Update(ctx, listing); err != nil {
+		return
 	}
 
 	version := &dbm.ListingVersion{
@@ -327,10 +368,10 @@ func (s *ListingService) SubmitForReview(ctx context.Context, tenantID, listingI
 		SubmittedBy: submittedBy,
 		ReviewState: dbm.ListingStatusInReview,
 	}
-	if err := s.listings.CreateVersion(ctx, version); err != nil {
-		return nil, err
+	if err = s.listings.CreateVersion(ctx, version); err != nil {
+		return
 	}
-	return listing, nil
+	return
 }
 
 // UpdateListingStatus updates reviewer decision.
@@ -349,6 +390,14 @@ func (s *ListingService) UpdateListingStatus(ctx context.Context, tenantID, list
 	listing, err := s.listings.FindByID(ctx, tenantID, listingID)
 	if err != nil {
 		return nil, err
+	}
+	if status == dbm.ListingStatusPublished {
+		if len(listing.Assets) == 0 {
+			return nil, fmt.Errorf("listing %s cannot be published without assets", listingID)
+		}
+		if err := s.ensureVendorActive(ctx, listing.VendorID); err != nil {
+			return nil, err
+		}
 	}
 	listing.Status = status
 	listing.ReviewerID = &reviewerID
@@ -438,6 +487,24 @@ func (s *ListingService) updateReadyScoreFromRun(ctx context.Context, tenantID, 
 	score := int(float64(passed) / float64(total) * 100)
 	listing.ReadyChecklistScore = score
 	return s.listings.Update(ctx, listing)
+}
+
+func (s *ListingService) ensureVendorActive(ctx context.Context, vendorID string) error {
+	if s.vendorGuard == nil {
+		return nil
+	}
+	vendorID = strings.TrimSpace(vendorID)
+	if vendorID == "" {
+		return errors.New("vendor_id is required")
+	}
+	revoked, err := s.vendorGuard.VendorRevoked(ctx, vendorID)
+	if err != nil {
+		return err
+	}
+	if revoked {
+		return fmt.Errorf("vendor %s is not permitted to submit listings", vendorID)
+	}
+	return nil
 }
 
 func convertAssets(inputs []ListingAssetInput) []dbm.ListingAsset {
@@ -625,4 +692,80 @@ func isValidStatusTransition(status string) bool {
 	default:
 		return false
 	}
+}
+
+func validateBrandAssets(assets []ListingAssetInput) error {
+	for _, asset := range assets {
+		atype := strings.ToLower(strings.TrimSpace(asset.AssetType))
+		uri := strings.TrimSpace(asset.StorageURI)
+		if uri == "" {
+			return errors.New("listing asset storage_uri is required")
+		}
+
+		switch atype {
+		case "logo":
+			if !strings.HasSuffix(uri, ".svg") && !strings.HasSuffix(uri, ".png") {
+				return fmt.Errorf("logo asset must be SVG or PNG: %s", uri)
+			}
+		case "cover":
+			width, okW := metadataFloat(asset.Metadata, "width")
+			height, okH := metadataFloat(asset.Metadata, "height")
+			if okW && okH && width > 0 && height > 0 {
+				ratio := width / height
+				if math.Abs(ratio-(16.0/9.0)) > 0.1 {
+					return fmt.Errorf("cover asset must approximate 16:9 aspect ratio, got %.2f", ratio)
+				}
+			} else {
+				return errors.New("cover asset requires width and height metadata")
+			}
+		case "video":
+			if !strings.HasSuffix(uri, ".mp4") && !strings.HasSuffix(uri, ".webm") {
+				return fmt.Errorf("video asset must be MP4 or WebM: %s", uri)
+			}
+			duration, okDuration := metadataFloat(asset.Metadata, "duration_seconds")
+			sizeMB, okSize := metadataFloat(asset.Metadata, "size_mb")
+			if !okDuration || duration <= 0 {
+				return errors.New("video asset requires duration_seconds metadata")
+			}
+			if duration > 15 {
+				return fmt.Errorf("video duration must be <= 15s, got %.0fs", duration)
+			}
+			if !okSize || sizeMB <= 0 {
+				return errors.New("video asset requires size_mb metadata")
+			}
+			if sizeMB > 50 {
+				return fmt.Errorf("video size must be <= 50MB, got %.1fMB", sizeMB)
+			}
+		}
+	}
+	return nil
+}
+
+func metadataFloat(meta map[string]any, key string) (float64, bool) {
+	if meta == nil {
+		return 0, false
+	}
+	value, ok := meta[key]
+	if !ok {
+		return 0, false
+	}
+	switch v := value.(type) {
+	case float64:
+		return v, true
+	case float32:
+		return float64(v), true
+	case int:
+		return float64(v), true
+	case int64:
+		return float64(v), true
+	case uint:
+		return float64(v), true
+	case uint64:
+		return float64(v), true
+	case string:
+		if val, err := strconv.ParseFloat(v, 64); err == nil {
+			return val, true
+		}
+	}
+	return 0, false
 }

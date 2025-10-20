@@ -13,12 +13,15 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/bootstrap"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	dbpkg "github.com/ArtisanCloud/PowerXPlugin/internal/db"
+	marketplacerepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/marketplace"
 	repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/plugin"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/grpc/server"
+	marketplacejobs "github.com/ArtisanCloud/PowerXPlugin/internal/jobs/marketplace"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/router"
 	agent "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent"
 	marketplacesvc "github.com/ArtisanCloud/PowerXPlugin/internal/services/marketplace"
+	recommendation "github.com/ArtisanCloud/PowerXPlugin/internal/services/recommendation"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/utils"
 	"golang.org/x/sync/errgroup"
@@ -95,6 +98,10 @@ func main() {
 		TaxProviderClient: taxClient,
 	}
 
+	listingRepo := marketplacerepo.NewListingRepository(queryDB)
+	metricsProvider := recommendation.NewListingMetricsProvider(listingRepo)
+	syncJob := marketplacejobs.NewSyncJob(cfg, listingRepo, metricsProvider, logger.WithField("component", "marketplace_recommendation_sync"), listingRepo.ListTenantIDs)
+
 	// 设置 gin engine 路由
 	r := router.NewRouter(cfg, deps)
 	engine := r.Setup()
@@ -122,6 +129,13 @@ func main() {
 
 	// 使用 errgroup 并发启动服务器
 	g, ctx := errgroup.WithContext(rootCtx)
+
+	if cfg.Marketplace == nil || cfg.Marketplace.Recommendation.Enabled {
+		g.Go(func() error {
+			syncJob.Run(ctx)
+			return nil
+		})
+	}
 
 	// 启动 HTTP 服务器
 	g.Go(func() error {
