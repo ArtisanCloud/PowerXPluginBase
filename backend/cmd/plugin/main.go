@@ -7,17 +7,22 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/bootstrap"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	dbpkg "github.com/ArtisanCloud/PowerXPlugin/internal/db"
+	marketplacerepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/marketplace"
 	repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/plugin"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/grpc/server"
+	marketplacejobs "github.com/ArtisanCloud/PowerXPlugin/internal/jobs/marketplace"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/router"
 	agent "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent"
+	marketplacesvc "github.com/ArtisanCloud/PowerXPlugin/internal/services/marketplace"
+	recommendation "github.com/ArtisanCloud/PowerXPlugin/internal/services/recommendation"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/utils"
 	"golang.org/x/sync/errgroup"
@@ -80,12 +85,39 @@ func main() {
 	// 初始化 PowerX gRPC Client 客户端
 	pxc := bootstrap.BootstrapGRPCClient(rootCtx, cfg.GRPCUpstream)
 
-	deps := &app.Deps{
-		DB:           queryDB,
-		Ctx:          rootCtx,
-		PowerXClient: pxc,
-		Config:       cfg,
+	taxLogger := logger.WithField("component", "tax_provider_client")
+	taxClient, err := marketplacesvc.NewTaxProviderClient(cfg, nil, taxLogger)
+	if err != nil {
+		taxLogger.WithError(err).Warn("Tax provider client initialization failed")
 	}
+
+	var licenseCache marketplacesvc.LicenseCache
+	cacheCfg := cfg.LicenseCacheConfig()
+	cacheLogger := logger.WithField("component", "marketplace_license_cache")
+	if strings.EqualFold(strings.TrimSpace(cacheCfg.Provider), "redis") {
+		if lc, err := marketplacesvc.NewRedisLicenseCache(cacheCfg.RedisURL, cacheCfg.KeyPrefix, cacheLogger); err != nil {
+			cacheLogger.WithError(err).Warn("license cache initialization failed")
+		} else {
+			licenseCache = lc
+		}
+	}
+
+	deps := &app.Deps{
+		DB:                 queryDB,
+		Ctx:                rootCtx,
+		PowerXClient:       pxc,
+		Config:             cfg,
+		TaxProviderClient:  taxClient,
+		MarketplaceBilling: nil,
+		LicenseAuthority:   nil,
+		LicenseCache:       licenseCache,
+	}
+
+	listingRepo := marketplacerepo.NewListingRepository(queryDB)
+	licenseRepoGlobal := marketplacerepo.NewLicenseRepository(queryDB)
+	metricsProvider := recommendation.NewListingMetricsProvider(listingRepo)
+	syncJob := marketplacejobs.NewSyncJob(cfg, listingRepo, metricsProvider, logger.WithField("component", "marketplace_recommendation_sync"), listingRepo.ListTenantIDs)
+	renewalJob := marketplacejobs.NewLicenseRenewalNotifier(cfg, licenseRepoGlobal, logger.WithField("component", "marketplace_license_renewal_notifier"), listingRepo.ListTenantIDs, nil)
 
 	// 设置 gin engine 路由
 	r := router.NewRouter(cfg, deps)
@@ -114,6 +146,19 @@ func main() {
 
 	// 使用 errgroup 并发启动服务器
 	g, ctx := errgroup.WithContext(rootCtx)
+
+	if cfg.Marketplace == nil || cfg.Marketplace.Recommendation.Enabled {
+		g.Go(func() error {
+			syncJob.Run(ctx)
+			return nil
+		})
+	}
+	if renewalJob != nil {
+		g.Go(func() error {
+			renewalJob.Run(ctx)
+			return nil
+		})
+	}
 
 	// 启动 HTTP 服务器
 	g.Go(func() error {

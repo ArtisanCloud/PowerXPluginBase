@@ -6,8 +6,8 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
 	cfgpkg "github.com/ArtisanCloud/PowerXPlugin/internal/config"
@@ -128,7 +128,7 @@ func (p *PowerXServiceClient) ensureConn(ctx context.Context) error {
 	if p.cfg.UseTLS {
 		var creds credentials.TransportCredentials
 		if p.cfg.CACert != "" {
-			pem, err := ioutil.ReadFile(p.cfg.CACert)
+			pem, err := os.ReadFile(p.cfg.CACert)
 			if err != nil {
 				return fmt.Errorf("read ca cert: %w", err)
 			}
@@ -148,6 +148,7 @@ func (p *PowerXServiceClient) ensureConn(ctx context.Context) error {
 	ctxDial, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 	logger.WithField("address", p.cfg.Address).Info("Dialing PowerX gRPC (on-demand)")
+	//nolint:staticcheck // grpc.DialContext remains necessary until upstream migrates to the new API.
 	conn, err := grpc.DialContext(ctxDial, p.cfg.Address, dialOpts...)
 	if err != nil {
 		return fmt.Errorf("failed to dial PowerX gRPC: %w", err)
@@ -274,6 +275,7 @@ func (p *PowerXServiceClient) InvokeGRPC(ctx context.Context, service, method st
 	if err != nil {
 		return fmt.Errorf("open reflection stream: %w", err)
 	}
+	//nolint:staticcheck // reflection APIs rely on v1alpha descriptors until upstream replaces them.
 	if err := stream.Send(&v1alpha.ServerReflectionRequest{
 		MessageRequest: &v1alpha.ServerReflectionRequest_FileContainingSymbol{
 			FileContainingSymbol: service,
@@ -285,11 +287,13 @@ func (p *PowerXServiceClient) InvokeGRPC(ctx context.Context, service, method st
 	if err != nil {
 		return fmt.Errorf("recv reflection response: %w", err)
 	}
+	//nolint:staticcheck // reflection response helpers remain deprecated but required.
 	fdResp := respMsg.GetFileDescriptorResponse()
 	if fdResp == nil {
 		return fmt.Errorf("no file descriptor in reflection response")
 	}
 	var files []*descriptorpb.FileDescriptorProto
+	//nolint:staticcheck // access to FileDescriptorProto is required for dynamic invocation.
 	for _, b := range fdResp.FileDescriptorProto {
 		fdp := &descriptorpb.FileDescriptorProto{}
 		if err := proto.Unmarshal(b, fdp); err != nil {

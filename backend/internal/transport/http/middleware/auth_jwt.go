@@ -1,19 +1,14 @@
 package middleware
 
 import (
-	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-)
-
-// internal/transport/http/middleware/auth_jwt.go
-
-// JWTAuth: 从 HTTP 头解析 Bearer 或 Signed-Context，注入 TenantContext 与原始 Bearer
-import (
-	"github.com/golang-jwt/jwt/v5"
 	"os"
 	"strings"
+
+	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func JWTAuth(cfg authx.JWTAuthConfig) gin.HandlerFunc {

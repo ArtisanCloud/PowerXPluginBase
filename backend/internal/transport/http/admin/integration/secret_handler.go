@@ -9,6 +9,7 @@ import (
 	authmw "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
 	service "github.com/ArtisanCloud/PowerXPlugin/internal/services/integration"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
+	httpmw "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/middleware"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -47,9 +48,9 @@ func (h *SecretHandler) ListSecrets(c *gin.Context) {
 		contracts.ResponseServiceUnavailable(c, "secret service not available", nil)
 		return
 	}
-	tenantID, err := tenantIDFromContext(c)
-	if err != nil {
-		contracts.ResponseUnauthorized(c, err.Error())
+	tenantID, ok := httpmw.TenantIDString(c)
+	if !ok {
+		contracts.ResponseUnauthorized(c, "tenant context missing")
 		return
 	}
 	secrets, err := h.service.ListSecrets(c.Request.Context(), tenantID)
@@ -71,9 +72,9 @@ func (h *SecretHandler) CreateSecret(c *gin.Context) {
 		contracts.ResponseBadRequest(c, "invalid body: "+err.Error())
 		return
 	}
-	tenantID, err := tenantIDFromContext(c)
-	if err != nil {
-		contracts.ResponseUnauthorized(c, err.Error())
+	tenantID, ok := httpmw.TenantIDString(c)
+	if !ok {
+		contracts.ResponseUnauthorized(c, "tenant context missing")
 		return
 	}
 	result, err := h.service.CreateSecret(c.Request.Context(), service.CreateSecretParams{
@@ -109,9 +110,9 @@ func (h *SecretHandler) RotateSecret(c *gin.Context) {
 			generate = *req.Generate
 		}
 	}
-	tenantID, err := tenantIDFromContext(c)
-	if err != nil {
-		contracts.ResponseUnauthorized(c, err.Error())
+	tenantID, ok := httpmw.TenantIDString(c)
+	if !ok {
+		contracts.ResponseUnauthorized(c, "tenant context missing")
 		return
 	}
 	result, err := h.service.RotateSecret(c.Request.Context(), service.RotateSecretParams{
@@ -137,9 +138,9 @@ func (h *SecretHandler) CompleteRotation(c *gin.Context) {
 		contracts.ResponseServiceUnavailable(c, "secret service not available", nil)
 		return
 	}
-	tenantID, err := tenantIDFromContext(c)
-	if err != nil {
-		contracts.ResponseUnauthorized(c, err.Error())
+	tenantID, ok := httpmw.TenantIDString(c)
+	if !ok {
+		contracts.ResponseUnauthorized(c, "tenant context missing")
 		return
 	}
 	secret, err := h.service.CompleteRotation(c.Request.Context(), tenantID, c.Param("id"), actorFromContext(c))
@@ -161,9 +162,9 @@ func (h *SecretHandler) RevokeSecret(c *gin.Context) {
 		contracts.ResponseServiceUnavailable(c, "secret service not available", nil)
 		return
 	}
-	tenantID, err := tenantIDFromContext(c)
-	if err != nil {
-		contracts.ResponseUnauthorized(c, err.Error())
+	tenantID, ok := httpmw.TenantIDString(c)
+	if !ok {
+		contracts.ResponseUnauthorized(c, "tenant context missing")
 		return
 	}
 	secret, err := h.service.RevokeSecret(c.Request.Context(), tenantID, c.Param("id"), actorFromContext(c))
@@ -184,9 +185,9 @@ func (h *SecretHandler) GetAuditLog(c *gin.Context) {
 		contracts.ResponseServiceUnavailable(c, "secret service not available", nil)
 		return
 	}
-	tenantID, err := tenantIDFromContext(c)
-	if err != nil {
-		contracts.ResponseUnauthorized(c, err.Error())
+	tenantID, ok := httpmw.TenantIDString(c)
+	if !ok {
+		contracts.ResponseUnauthorized(c, "tenant context missing")
 		return
 	}
 	entries, err := h.service.GetAuditLog(c.Request.Context(), tenantID, c.Param("id"))

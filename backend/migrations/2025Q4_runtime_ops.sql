@@ -2,7 +2,7 @@
 BEGIN;
 
 -- Runtime assignments track each plugin instance and resource envelope
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.runtime_assignments (
+CREATE TABLE IF NOT EXISTS runtime_assignments (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     plugin_id         TEXT NOT NULL,
     tenant_scope      TEXT,
@@ -19,18 +19,18 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.runtime_assignments (
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE powerx_plugin_base.runtime_assignments
+ALTER TABLE runtime_assignments
     ADD COLUMN IF NOT EXISTS tenant_id TEXT;
 
-CREATE INDEX IF NOT EXISTS idx_runtime_assignments_plugin ON powerx_plugin_base.runtime_assignments (plugin_id);
-CREATE INDEX IF NOT EXISTS idx_runtime_assignments_tenant ON powerx_plugin_base.runtime_assignments (tenant_id);
-CREATE INDEX IF NOT EXISTS idx_runtime_assignments_status_host ON powerx_plugin_base.runtime_assignments (status, host_id);
-CREATE INDEX IF NOT EXISTS idx_runtime_assignments_ready_at ON powerx_plugin_base.runtime_assignments (ready_at DESC);
+CREATE INDEX IF NOT EXISTS idx_runtime_assignments_plugin ON runtime_assignments (plugin_id);
+CREATE INDEX IF NOT EXISTS idx_runtime_assignments_tenant ON runtime_assignments (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_runtime_assignments_status_host ON runtime_assignments (status, host_id);
+CREATE INDEX IF NOT EXISTS idx_runtime_assignments_ready_at ON runtime_assignments (ready_at DESC);
 
 -- Port reservations enforce unique port usage per instance
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.port_reservations (
+CREATE TABLE IF NOT EXISTS port_reservations (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    runtime_assignment_id UUID NOT NULL REFERENCES powerx_plugin_base.runtime_assignments(id) ON DELETE CASCADE,
+    runtime_assignment_id UUID NOT NULL REFERENCES runtime_assignments(id) ON DELETE CASCADE,
     port              INTEGER NOT NULL,
     host_id           TEXT NOT NULL,
     state             TEXT NOT NULL DEFAULT 'active',
@@ -38,12 +38,12 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.port_reservations (
     released_at       TIMESTAMPTZ
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS uniq_port_reservation_active ON powerx_plugin_base.port_reservations (host_id, port) WHERE state = 'active';
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_port_reservation_active ON port_reservations (host_id, port) WHERE state = 'active';
 
 -- MCP sessions table captures lifecycle state and heartbeat metrics
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.mcp_sessions (
+CREATE TABLE IF NOT EXISTS mcp_sessions (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    runtime_assignment_id UUID NOT NULL REFERENCES powerx_plugin_base.runtime_assignments(id) ON DELETE CASCADE,
+    runtime_assignment_id UUID NOT NULL REFERENCES runtime_assignments(id) ON DELETE CASCADE,
     tenant_id         TEXT NOT NULL,
     state             TEXT NOT NULL,
     jwt_id            TEXT,
@@ -55,12 +55,12 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.mcp_sessions (
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_mcp_sessions_state ON powerx_plugin_base.mcp_sessions (state);
-CREATE INDEX IF NOT EXISTS idx_mcp_sessions_tenant ON powerx_plugin_base.mcp_sessions (tenant_id);
-CREATE INDEX IF NOT EXISTS idx_mcp_sessions_assignment ON powerx_plugin_base.mcp_sessions (runtime_assignment_id);
+CREATE INDEX IF NOT EXISTS idx_mcp_sessions_state ON mcp_sessions (state);
+CREATE INDEX IF NOT EXISTS idx_mcp_sessions_tenant ON mcp_sessions (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_mcp_sessions_assignment ON mcp_sessions (runtime_assignment_id);
 
 -- Runtime audit log for immutable events
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.runtime_audit_events (
+CREATE TABLE IF NOT EXISTS runtime_audit_events (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     plugin_id         TEXT NOT NULL,
     tenant_id         TEXT,
@@ -69,12 +69,12 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.runtime_audit_events (
     occurred_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_runtime_audit_plugin ON powerx_plugin_base.runtime_audit_events (plugin_id);
-CREATE INDEX IF NOT EXISTS idx_runtime_audit_tenant ON powerx_plugin_base.runtime_audit_events (tenant_id);
-CREATE INDEX IF NOT EXISTS idx_runtime_audit_type_time ON powerx_plugin_base.runtime_audit_events (event_type, occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_runtime_audit_plugin ON runtime_audit_events (plugin_id);
+CREATE INDEX IF NOT EXISTS idx_runtime_audit_tenant ON runtime_audit_events (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_runtime_audit_type_time ON runtime_audit_events (event_type, occurred_at DESC);
 
 -- Quota ledger aggregates consumption by scope
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.quota_ledger (
+CREATE TABLE IF NOT EXISTS quota_ledger (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     scope_type        TEXT NOT NULL,
     scope_ref         TEXT NOT NULL,
@@ -89,12 +89,12 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.quota_ledger (
     created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_quota_ledger_scope ON powerx_plugin_base.quota_ledger (scope_type, scope_ref);
-CREATE INDEX IF NOT EXISTS idx_quota_ledger_window ON powerx_plugin_base.quota_ledger (window_start, window_end);
-CREATE INDEX IF NOT EXISTS idx_quota_ledger_reported_at ON powerx_plugin_base.quota_ledger (reported_at);
+CREATE INDEX IF NOT EXISTS idx_quota_ledger_scope ON quota_ledger (scope_type, scope_ref);
+CREATE INDEX IF NOT EXISTS idx_quota_ledger_window ON quota_ledger (window_start, window_end);
+CREATE INDEX IF NOT EXISTS idx_quota_ledger_reported_at ON quota_ledger (reported_at);
 
 -- Marketplace hourly overage summaries
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_overages (
+CREATE TABLE IF NOT EXISTS marketplace_overages (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     plugin_id         TEXT NOT NULL,
     tenant_id         TEXT,
@@ -107,16 +107,16 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.marketplace_overages (
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_marketplace_overages_window ON powerx_plugin_base.marketplace_overages (hour_window);
-CREATE INDEX IF NOT EXISTS idx_marketplace_overages_plugin_tenant ON powerx_plugin_base.marketplace_overages (plugin_id, tenant_id);
-CREATE INDEX IF NOT EXISTS idx_marketplace_overages_unreported ON powerx_plugin_base.marketplace_overages (plugin_id, tenant_id) WHERE reported = false;
+CREATE INDEX IF NOT EXISTS idx_marketplace_overages_window ON marketplace_overages (hour_window);
+CREATE INDEX IF NOT EXISTS idx_marketplace_overages_plugin_tenant ON marketplace_overages (plugin_id, tenant_id);
+CREATE INDEX IF NOT EXISTS idx_marketplace_overages_unreported ON marketplace_overages (plugin_id, tenant_id) WHERE reported = false;
 
 COMMIT;
 
 -- Apply row-level security and tenant guardrails
-ALTER TABLE powerx_plugin_base.runtime_assignments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE powerx_plugin_base.port_reservations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE powerx_plugin_base.mcp_sessions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE powerx_plugin_base.runtime_audit_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE powerx_plugin_base.quota_ledger ENABLE ROW LEVEL SECURITY;
-ALTER TABLE powerx_plugin_base.marketplace_overages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE runtime_assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE port_reservations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mcp_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE runtime_audit_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quota_ledger ENABLE ROW LEVEL SECURITY;
+ALTER TABLE marketplace_overages ENABLE ROW LEVEL SECURITY;

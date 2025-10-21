@@ -1,7 +1,7 @@
 -- Privacy domain schema objects for powerx_plugin_base
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.privacy_data_classifications (
+CREATE TABLE IF NOT EXISTS privacy_data_classifications (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id         TEXT NOT NULL,
     asset_key         TEXT NOT NULL,
@@ -14,11 +14,11 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.privacy_data_classifications (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_privacy_classification_tenant_asset
-    ON powerx_plugin_base.privacy_data_classifications (tenant_id, asset_key);
+    ON privacy_data_classifications (tenant_id, asset_key);
 CREATE INDEX IF NOT EXISTS idx_privacy_classification_category
-    ON powerx_plugin_base.privacy_data_classifications (tenant_id, category);
+    ON privacy_data_classifications (tenant_id, category);
 
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.privacy_consent_tokens (
+CREATE TABLE IF NOT EXISTS privacy_consent_tokens (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id         TEXT NOT NULL,
     consent_token     TEXT NOT NULL,
@@ -34,13 +34,13 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.privacy_consent_tokens (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_privacy_consent_token
-    ON powerx_plugin_base.privacy_consent_tokens (tenant_id, consent_token);
+    ON privacy_consent_tokens (tenant_id, consent_token);
 CREATE INDEX IF NOT EXISTS idx_privacy_consent_status
-    ON powerx_plugin_base.privacy_consent_tokens (tenant_id, status);
+    ON privacy_consent_tokens (tenant_id, status);
 CREATE INDEX IF NOT EXISTS idx_privacy_consent_expires
-    ON powerx_plugin_base.privacy_consent_tokens (tenant_id, expires_at DESC);
+    ON privacy_consent_tokens (tenant_id, expires_at DESC);
 
-CREATE TABLE IF NOT EXISTS powerx_plugin_base.privacy_lifecycle_events (
+CREATE TABLE IF NOT EXISTS privacy_lifecycle_events (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id         TEXT NOT NULL,
     event_type        TEXT NOT NULL,
@@ -53,10 +53,10 @@ CREATE TABLE IF NOT EXISTS powerx_plugin_base.privacy_lifecycle_events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_privacy_lifecycle_tenant_event
-    ON powerx_plugin_base.privacy_lifecycle_events (tenant_id, event_type, occurred_at DESC);
+    ON privacy_lifecycle_events (tenant_id, event_type, occurred_at DESC);
 
 COMMIT;
 
-ALTER TABLE powerx_plugin_base.privacy_data_classifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE powerx_plugin_base.privacy_consent_tokens ENABLE ROW LEVEL SECURITY;
-ALTER TABLE powerx_plugin_base.privacy_lifecycle_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE privacy_data_classifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE privacy_consent_tokens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE privacy_lifecycle_events ENABLE ROW LEVEL SECURITY;

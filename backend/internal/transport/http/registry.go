@@ -8,11 +8,13 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
 	adminintegration "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/integration"
+	adminmarketplace "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/marketplace"
 	adminruntime "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/runtime_ops"
 	adminsecurity "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/security"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/templates"
 	agentapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/agent"
 	integrationapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/integration"
+	tenantmarketplace "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/tenant/marketplace"
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,11 +40,14 @@ func (r *Registry) RegisterAPIRoutes(gApi *gin.RouterGroup) {
 	agentapi.RegisterAPIRoutes(gApi, r.deps)
 	templates.RegisterAPIRoutes(gApi, r.deps)
 	integrationapi.RegisterAPIRoutes(gApi, r.deps)
+	r.RegisterMarketplaceRoutes(gApi)
 
 	r.mergeRBAC(adminruntime.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminsecurity.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminintegration.RBACEntries(r.apiPrefix()))
+	r.mergeRBAC(adminmarketplace.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(integrationRBACEntries(r.apiPrefix()))
+	r.mergeRBAC(marketplacePublicRBACEntries(r.apiPrefix()))
 }
 
 func (r *Registry) PrintRegisteredRoutes() {
@@ -73,6 +78,16 @@ func (r *Registry) mergeRBAC(entries map[string]authx.Permission) {
 	}
 }
 
+// RegisterMarketplaceRoutes wires the public marketplace group so later phases can attach handlers.
+func (r *Registry) RegisterMarketplaceRoutes(root *gin.RouterGroup) *gin.RouterGroup {
+	if root == nil {
+		return nil
+	}
+	group := root.Group("/marketplace")
+	tenantmarketplace.RegisterRoutes(group, r.deps)
+	return group
+}
+
 func (r *Registry) apiPrefix() string {
 	prefix := "/api/v1"
 	if r.deps != nil && r.deps.Config != nil && r.deps.Config.Server != nil {
@@ -84,4 +99,23 @@ func (r *Registry) apiPrefix() string {
 		}
 	}
 	return prefix
+}
+
+func marketplacePublicRBACEntries(prefix string) map[string]authx.Permission {
+	base := strings.TrimRight(prefix, "/") + "/marketplace"
+	return map[string]authx.Permission{
+		"GET:" + base + "/listings":                           {Resource: "marketplace.listings", Action: "read"},
+		"POST:" + base + "/listings":                          {Resource: "marketplace.listings", Action: "write"},
+		"GET:" + base + "/listings/*":                         {Resource: "marketplace.listings", Action: "read"},
+		"PATCH:" + base + "/listings/*":                       {Resource: "marketplace.listings", Action: "write"},
+		"POST:" + base + "/listings/*":                        {Resource: "marketplace.listings", Action: "review"},
+		"POST:" + base + "/listings/*/status":                 {Resource: "marketplace.listings", Action: "review"},
+		"POST:" + base + "/licenses":                          {Resource: "marketplace.license", Action: "purchase"},
+		"GET:" + base + "/licenses/*":                         {Resource: "marketplace.license", Action: "read"},
+		"POST:" + base + "/licenses/*":                        {Resource: "marketplace.license", Action: "manage"},
+		"POST:" + base + "/licenses/*/offline-extend":         {Resource: "marketplace.license", Action: "manage"},
+		"POST:" + base + "/usage":                             {Resource: "marketplace.usage", Action: "ingest"},
+		"GET:" + base + "/usage/tenants/*/licenses/*/metrics": {Resource: "marketplace.usage", Action: "view"},
+		"GET:" + base + "/revenue-share/reports":              {Resource: "marketplace.revenue", Action: "read"},
+	}
 }

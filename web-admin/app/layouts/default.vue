@@ -56,7 +56,7 @@ const showNavigation = computed(() => {
   }
 
   // 默认：开发环境显示，生产环境隐藏
-  return process.dev;
+  return import.meta.dev;
 });
 
 // 主内容区样式
@@ -72,7 +72,7 @@ const getAdapterRegistry = (win) => {
 };
 
 const mountBridgeIfNeeded = () => {
-  if (!process.client) {
+  if (!import.meta.client) {
     return;
   }
 
@@ -111,7 +111,7 @@ const mountBridgeIfNeeded = () => {
   console.info("[embedded] Host bridge adapter mounted.", { pluginId, instanceId });
 };
 
-if (process.client) {
+if (import.meta.client) {
   watch(
     () => isEmbeddedInPowerX.value,
     (value) => {

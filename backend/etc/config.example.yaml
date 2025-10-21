@@ -86,6 +86,56 @@ integration:
     dlq_topic: plugin.webhook.dlq
   secrets:
     rotation_days_default: 30
+  billing:
+    tax_provider: stripe_tax
+    stripe_tax:
+      api_key: "sk_test_xxx"
+      account_id: ""
+      location: "US"
+      api_base_url: "https://api.stripe.com"
+      webhook_secret: ""
+      timeout_seconds: 15
+    avalara:
+      account_id: ""
+      license_key: ""
+      company_code: ""
+      environment: "sandbox"
+      base_url: "https://sandbox-rest.avatax.com"
+      client_id: ""
+      client_secret: ""
+      timeout_seconds: 15
+    reconciliation:
+      vendor_share: 0.8
+      platform_share: 0.15
+      fee_share: 0.05
+      currency: "USD"
+    async_queue: "marketplace.billing.async"
+    http_timeout_seconds: 15
+    retry_backoff_seconds: [5, 30, 120]
+
+# Marketplace 模块配置
+marketplace:
+  checklist:
+    graphql_path: "/api/v1/admin/marketplace/checklist/graphql"
+    docs_url: "specs/006-marketplace-business/contracts/ready-checklist.graphql"
+  documentation:
+    overview: "specs/006-marketplace-business/quickstart.md"
+    ready_checklist: "specs/006-marketplace-business/contracts/ready-checklist.graphql"
+    listing_playbook: "specs/006-marketplace-business/spec.md"
+  recommendation:
+    enabled: true
+    default_weight: 0.0
+    experiment_topic: "marketplace.recommendation.experiments"
+    frequency_minutes: 60
+  license:
+    offline_allowance_hours: 72
+    cache:
+      provider: redis
+      redis_url: redis://localhost:6379
+      key_prefix: powerx:marketplace:licenses
+    reminder:
+      lead_hours: 72
+      channels: ["email", "in_app"]
 
 # gRPC 上游配置（连接 PowerX 核心服务）
 grpc_upstream:

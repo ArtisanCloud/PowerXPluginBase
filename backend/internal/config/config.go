@@ -49,6 +49,9 @@ type Config struct {
 	// Integration 集成协议相关配置。
 	Integration *IntegrationConfig `yaml:"integration" json:"integration"`
 
+	// Marketplace 配置。
+	Marketplace *MarketplaceConfig `yaml:"marketplace" json:"marketplace"`
+
 	// 向后兼容的字段（从环境变量或旧配置中填充）
 	BindAddr   string `yaml:"-" json:"bind_addr,omitempty"`
 	LogLevel   string `yaml:"-" json:"log_level,omitempty"`
@@ -348,6 +351,28 @@ func getDefaultConfig() *Config {
 			},
 			Secrets: IntegrationSecretsConfig{
 				RotationDaysDefault: 30,
+			},
+			Billing: IntegrationBillingConfig{
+				TaxProvider: "stripe_tax",
+				StripeTax: IntegrationStripeTaxConfig{
+					Location:       "US",
+					APIBaseURL:     "https://api.stripe.com",
+					TimeoutSeconds: 15,
+				},
+				Avalara: IntegrationAvalaraConfig{
+					Environment:    "sandbox",
+					BaseURL:        "https://sandbox-rest.avatax.com",
+					TimeoutSeconds: 15,
+				},
+				Reconciliation: IntegrationRevenueSplitConfig{
+					VendorShare:   0.80,
+					PlatformShare: 0.15,
+					FeeShare:      0.05,
+					Currency:      "USD",
+				},
+				AsyncQueue:          "marketplace.billing.async",
+				HTTPTimeoutSeconds:  15,
+				RetryBackoffSeconds: []int{5, 30, 120},
 			},
 		},
 		Database: &DatabaseConfig{

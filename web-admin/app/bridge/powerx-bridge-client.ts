@@ -259,7 +259,6 @@ export class PowerXBridgeClient {
 
   private _log(...args: any[]) {
     if (this.debug) {
-      // eslint-disable-next-line no-console
       console.info('[DBG][Plugin]', ...args)
     }
   }
@@ -286,9 +285,9 @@ export function initPowerXBridge(opts: BridgeOptions = {}) {
   client.start()
   g[k] = client
 
-  if (opts.debug) {
-    // 暴露一些调试入口
-    g.__PX_DEBUG__ = {
+    if (opts.debug) {
+      // 暴露一些调试入口
+      g.__PX_DEBUG__ = {
       info: () => ({
         location: window.location.origin,
         referrer: document.referrer,
@@ -301,7 +300,6 @@ export function initPowerXBridge(opts: BridgeOptions = {}) {
       sync: () => client.requestSync(),
       ping: () => client.ping()
     }
-    // eslint-disable-next-line no-console
     console.info('[DBG][Plugin] debug helpers available: __PX_DEBUG__')
   }
 

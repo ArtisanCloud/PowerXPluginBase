@@ -7,6 +7,14 @@
         "title": "模版",
         "develop": "开发介绍",
         "crud": "模版 CRUD"
+      },
+      "integration": {
+        "title": "集成中心",
+        "webhooks": "Webhooks",
+        "secrets": "Secrets",
+        "marketplace": "Marketplace 列表",
+        "recommendation": "推荐实验",
+        "insights": "洞察"
       }
     }
   }

@@ -117,3 +117,11 @@ func TenantIDFromContext(c *gin.Context) (uint64, bool) {
 	}
 	return 0, false
 }
+
+// TenantIDString returns tenant id as string if present.
+func TenantIDString(c *gin.Context) (string, bool) {
+	if id, ok := TenantIDFromContext(c); ok && id > 0 {
+		return strconv.FormatUint(id, 10), true
+	}
+	return "", false
+}

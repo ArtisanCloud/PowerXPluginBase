@@ -162,7 +162,7 @@ const prettyPayload = (payload: any) => {
   if (!payload) return "{}";
   try {
     return JSON.stringify(payload, null, 2);
-  } catch (err) {
+  } catch {
     return JSON.stringify({ error: "unserializable" }, null, 2);
   }
 };

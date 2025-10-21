@@ -158,7 +158,7 @@ export function useWebSocket<T = any>(
           const parsedData = JSON.parse(event.data);
           data.value = parsedData;
           options?.onMessage?.(parsedData);
-        } catch (e) {
+        } catch {
           // 如果不是 JSON，直接使用原始数据
           data.value = event.data as T;
           options?.onMessage?.(event.data as T);

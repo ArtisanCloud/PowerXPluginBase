@@ -80,7 +80,7 @@
           <UFormGroup label="轮换间隔（天）" required>
             <UInput v-model.number="createForm.rotationIntervalDays" type="number" min="1" />
           </UFormGroup>
-          <UFormGroup label="附加元数据 (JSON)" help="例如 {\"owner\":\"security\"}">
+          <UFormGroup label="附加元数据 (JSON)" help='例如 {"owner":"security"}'>
             <UTextarea v-model="createForm.metadataInput" :rows="3" placeholder="可选" />
           </UFormGroup>
           <UCheckbox v-model="createForm.generate" label="立即生成新密钥" />

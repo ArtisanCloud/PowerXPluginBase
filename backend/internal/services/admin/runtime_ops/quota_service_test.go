@@ -18,9 +18,7 @@ func TestRecordBreachPersistsAuditEvent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to open sqlite: %v", err)
 	}
-	if err := db.AutoMigrate(&model.RuntimeAuditEvent{}, &model.QuotaLedger{}, &model.MarketplaceOverage{}); err != nil {
-		t.Fatalf("auto migrate: %v", err)
-	}
+	createRuntimeOpsTables(t, db)
 
 	svc := NewQuotaService(db, nil)
 
@@ -45,9 +43,7 @@ func TestRecordUsageAssignsID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to open sqlite: %v", err)
 	}
-	if err := db.AutoMigrate(&model.QuotaLedger{}); err != nil {
-		t.Fatalf("auto migrate: %v", err)
-	}
+	createRuntimeOpsTables(t, db)
 
 	svc := NewQuotaService(db, nil)
 	entry := &model.QuotaLedger{
@@ -64,5 +60,51 @@ func TestRecordUsageAssignsID(t *testing.T) {
 	}
 	if result.ID == "" {
 		t.Fatalf("expected RecordUsage to populate ID")
+	}
+}
+
+func createRuntimeOpsTables(t *testing.T, db *gorm.DB) {
+	t.Helper()
+	stmts := []string{
+		`CREATE TABLE IF NOT EXISTS runtime_audit_events (
+      id TEXT PRIMARY KEY,
+      plugin_id TEXT NOT NULL,
+      tenant_id TEXT,
+      event_type TEXT NOT NULL,
+      payload TEXT,
+      occurred_at DATETIME,
+      created_at DATETIME
+    )`,
+		`CREATE TABLE IF NOT EXISTS quota_ledgers (
+      id TEXT PRIMARY KEY,
+      scope_type TEXT NOT NULL,
+      scope_ref TEXT NOT NULL,
+      window_start DATETIME NOT NULL,
+      window_end DATETIME NOT NULL,
+      tokens_consumed REAL DEFAULT 0,
+      cpu_seconds REAL DEFAULT 0,
+      bandwidth_mb REAL DEFAULT 0,
+      invocations REAL DEFAULT 0,
+      over_limit_action TEXT,
+      reported_at DATETIME,
+      created_at DATETIME
+    )`,
+		`CREATE TABLE IF NOT EXISTS marketplace_overages (
+      id TEXT PRIMARY KEY,
+      plugin_id TEXT NOT NULL,
+      tenant_id TEXT,
+      hour_window DATETIME NOT NULL,
+      quota_metric TEXT NOT NULL,
+      breach_count INTEGER DEFAULT 0,
+      last_breach_at DATETIME,
+      reported INTEGER DEFAULT 0,
+      created_at DATETIME,
+      updated_at DATETIME
+    )`,
+	}
+	for _, stmt := range stmts {
+		if err := db.Exec(stmt).Error; err != nil {
+			t.Fatalf("failed to prepare table: %v", err)
+		}
 	}
 }

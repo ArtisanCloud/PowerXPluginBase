@@ -2,7 +2,7 @@
 # 请勿在此写入环境相关的地址、口令等敏感配置；推荐放到 backend/etc/config.yaml 或部署环境变量中。
 id: com.powerx.plugins.base
 name: Base template Plugin
-version: 0.4.0
+version: 0.5.0
 description: "PowerX 基础任务管理插件，提供任务、权限与 Agent 能力"
 corex_version: ">=0.6.0"
 security_baseline_version: "2025.10"
@@ -130,12 +130,12 @@ frontend:
                 title: 模版 CRUD
                 title_i18n:
                   namespace: menus
-              key: menu.base.templates.crud
-              default: Templates CRUD
-            icon: i-heroicons-wrench
-            path: /templates/crud
-            route: templates/crud
-            order: 2
+                  key: menu.base.templates.crud
+                  default: Templates CRUD
+                icon: i-heroicons-wrench
+                path: /templates/crud
+                route: templates/crud
+                order: 2
 
           - id: plugins.base.integration
             title: 集成中心
@@ -169,6 +169,46 @@ frontend:
                 path: /integration/secrets
                 route: integration/secrets
                 required_policies: [integration.secrets:read]
+              - id: plugins.base.integration.marketplace
+                title: Marketplace Listings
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.integration.marketplace
+                  default: Marketplace Listings
+                icon: i-heroicons-building-storefront
+                path: /integration/marketplace/listings
+                route: integration/marketplace/listings
+                required_policies: [marketplace.listings:read]
+              - id: plugins.base.integration.marketplace.plans
+                title: Pricing Plans
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.integration.marketplace.plans
+                  default: Pricing Plans
+                icon: i-heroicons-currency-dollar
+                path: /integration/marketplace/plans
+                route: integration/marketplace/plans
+                required_policies: [marketplace.license:manage]
+              - id: plugins.base.integration.marketplace.purchase
+                title: Tenant Purchase
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.integration.marketplace.purchase
+                  default: Tenant Purchase
+                icon: i-heroicons-shopping-cart
+                path: /integration/marketplace/purchase
+                route: integration/marketplace/purchase
+                required_policies: [marketplace.license:purchase]
+              - id: plugins.base.integration.recommendation
+                title: Recommendation Experiments
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.integration.recommendation
+                  default: Recommendation Experiments
+                icon: i-heroicons-beaker
+                path: /integration/marketplace/recommendation
+                route: integration/marketplace/recommendation
+                required_policies: [marketplace.recommendation:read]
               - id: plugins.base.integration.insights
                 title: Insights
                 title_i18n:
@@ -184,6 +224,10 @@ routes:
   basePath: /api/v1
   adminManifest: /api/v1/admin/manifest
   rbac: /api/v1/admin/rbac
+  marketplace:
+    admin: /api/v1/admin/marketplace
+    public: /api/v1/marketplace
+    checklist_graphql: /api/v1/admin/marketplace/checklist/graphql
 
 rbac:
   resources:
@@ -191,12 +235,43 @@ rbac:
       actions: [read, create, update, delete]
     - resource: runtime.ops
       actions: [read, observe, manage]
+    - resource: marketplace.listings
+      actions: [read, write, review]
+    - resource: marketplace.recommendation
+      actions: [read, manage]
+    - resource: marketplace.checklist
+      actions: [read, trigger]
+    - resource: marketplace.license
+      actions: [read, purchase, manage]
+    - resource: marketplace.revenue
+      actions: [read, export]
+    - resource: marketplace.usage
+      actions: [view, observe]
+
+events:
+  produces:
+    - topic: marketplace.license.renewal.scheduled
+      description: "License 续费提醒已排程，供通知系统拉取"
+    - topic: marketplace.license.renewal.due
+      description: "续费任务触发执行事件，便于审计与监控"
 
 permissions:
   - resource: base:template
     actions: [read, create, update, delete]
   - resource: runtime.ops
     actions: [read, observe, manage]
+  - resource: marketplace.listings
+    actions: [read, write, review]
+  - resource: marketplace.recommendation
+    actions: [read, manage]
+  - resource: marketplace.checklist
+    actions: [read, trigger]
+  - resource: marketplace.license
+    actions: [read, purchase, manage]
+  - resource: marketplace.usage
+    actions: [view, observe]
+  - resource: marketplace.revenue
+    actions: [read, export]
 
 agents:
   - id: base.assistant

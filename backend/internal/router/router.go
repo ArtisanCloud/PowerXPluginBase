@@ -112,7 +112,6 @@ func (r *Router) setupRoutes() {
 
 	// 使用 API 注册器注册所有路由（保持你现有的注册逻辑）
 	apiRegistry := http.NewRegistry(r.engine, r.deps)
-	r.injectRBACFromRegistry(rbacCfg, apiRegistry)
 
 	// API 分组 + 鉴权 + RBAC
 	gApi := r.engine.Group(prefix)
@@ -120,6 +119,7 @@ func (r *Router) setupRoutes() {
 	gApi.Use(middleware2.JWTAuth(jwtCfg))
 	gApi.Use(middleware2.RBAC(rbacCfg, nil, nil))
 	apiRegistry.RegisterAPIRoutes(gApi)
+	r.injectRBACFromRegistry(rbacCfg, apiRegistry)
 
 	// 如需调试：打印已注册路由
 	// apiRegistry.PrintRegisteredRoutes()

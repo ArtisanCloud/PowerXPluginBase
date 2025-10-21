@@ -5,6 +5,7 @@ import (
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
+	marketplaceModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
 	runtimeOpsModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/runtime_ops"
 	securityModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/security"
 	templateModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/template"
@@ -18,6 +19,16 @@ func MigratePluginModels(ctx context.Context, db *gorm.DB) error {
 		&models.PluginCredential{},
 		&models.PluginTenantExt{},
 		&templateModel.Template{},
+		&marketplaceModel.Listing{},
+		&marketplaceModel.ListingAsset{},
+		&marketplaceModel.ListingVersion{},
+		&marketplaceModel.ChecklistRun{},
+		&marketplaceModel.ChecklistItem{},
+		&marketplaceModel.PricingPlan{},
+		&marketplaceModel.PlanTier{},
+		&marketplaceModel.License{},
+		&marketplaceModel.LicenseEvent{},
+		&marketplaceModel.TaxTransaction{},
 		&runtimeOpsModel.MCPSession{},
 		&runtimeOpsModel.RuntimeAuditEvent{},
 		&runtimeOpsModel.QuotaLedger{},

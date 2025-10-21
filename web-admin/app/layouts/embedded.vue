@@ -17,7 +17,7 @@ const getAdapterRegistry = (win) => {
 }
 
 onMounted(() => {
-  if (!process.client) return
+  if (!import.meta.client) return
 
   const pluginId = (route.query.pluginId as string) || PLUGIN_ID
   const instanceId = (route.query.instanceId as string) || route.fullPath
