@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
 	secmodel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/security"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlite"
@@ -20,14 +21,47 @@ func newTestLogger() *logrus.Entry {
 
 func setupTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
+	models.ForceSchemaForTests("")
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
 		t.Fatalf("open sqlite: %v", err)
 	}
-	if err := db.AutoMigrate(&secmodel.Advisory{}, &secmodel.AdvisoryDistribution{}); err != nil {
-		t.Fatalf("auto migrate: %v", err)
+	stmts := []string{
+		`CREATE TABLE IF NOT EXISTS security_vulnerability_advisories (
+			id TEXT PRIMARY KEY,
+			reference TEXT NOT NULL,
+			severity TEXT NOT NULL,
+      status TEXT NOT NULL,
+      affected_versions TEXT,
+      patched_in_version TEXT,
+      summary TEXT NOT NULL,
+      details_markdown TEXT,
+      published_at DATETIME,
+      patched_at DATETIME,
+      closed_at DATETIME,
+      sla_deadline DATETIME,
+      created_at DATETIME,
+			updated_at DATETIME
+		)`,
+		`CREATE TABLE IF NOT EXISTS security_advisory_distributions (
+			id TEXT PRIMARY KEY,
+			advisory_id TEXT NOT NULL,
+			tenant_id TEXT NOT NULL,
+			channel TEXT NOT NULL,
+			delivered_at DATETIME,
+			status TEXT NOT NULL,
+			metadata TEXT,
+			created_at DATETIME,
+			updated_at DATETIME,
+			UNIQUE (advisory_id, tenant_id, channel)
+		)`,
+	}
+	for _, stmt := range stmts {
+		if err := db.Exec(stmt).Error; err != nil {
+			t.Fatalf("prepare table: %v", err)
+		}
 	}
 	return db
 }

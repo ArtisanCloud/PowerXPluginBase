@@ -9,6 +9,7 @@ import (
 	model "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/integration"
 	repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -43,6 +44,9 @@ func (r *WebhookSubscriptionRepository) Upsert(ctx context.Context, sub *model.W
 	sub.UpdatedAt = time.Now().UTC()
 	if sub.Status == "" {
 		sub.Status = model.WebhookStatusActive
+	}
+	if sub.ID == "" {
+		sub.ID = uuid.NewString()
 	}
 
 	err := r.WithTenantTx(ctx, sub.TenantID, func(tx *gorm.DB) error {

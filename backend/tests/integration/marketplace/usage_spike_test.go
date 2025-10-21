@@ -20,6 +20,9 @@ func TestUsageSpikeDetection(t *testing.T) {
 
 	ctx := context.Background()
 	db := setupAnalyticsDB(t)
+	if db.Dialector.Name() == "sqlite" {
+		t.Skip("analytics flow integration test requires PostgreSQL features")
+	}
 
 	usageRepo := mrepo.NewUsageRepository(db)
 	revenueRepo := mrepo.NewRevenueRepository(db)

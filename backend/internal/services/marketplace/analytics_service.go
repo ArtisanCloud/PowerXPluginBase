@@ -391,7 +391,7 @@ func bucketTimestamp(window dbm.AggregationWindow, ts time.Time) time.Time {
 	ts = ts.UTC()
 	switch window {
 	case dbm.AggregationWindowHour:
-		return time.Date(ts.Year(), ts.Month(), ts.Day(), ts.Hour(), 0, 0, 0, 0, time.UTC)
+		return time.Date(ts.Year(), ts.Month(), ts.Day(), ts.Hour(), 0, 0, 0, time.UTC)
 	case dbm.AggregationWindowMonth:
 		return time.Date(ts.Year(), ts.Month(), 1, 0, 0, 0, 0, time.UTC)
 	default:

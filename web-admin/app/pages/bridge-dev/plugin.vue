@@ -1,9 +1,9 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'embedded', title: 'Plugin' })
-
 import { useI18n } from '#imports'
 import { setupHostBridgeAdapter } from '~/composables/useHostBridgeAdapter'
 import { useTheme } from '~/composables/useTheme' // 你自己的封装
+
+definePageMeta({ layout: 'embedded', title: 'Plugin' })
 
 const { t, locale, setLocale } = useI18n()
 const themeApi = useTheme?.() || {} as any

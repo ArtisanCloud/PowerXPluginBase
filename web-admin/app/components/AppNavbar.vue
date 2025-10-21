@@ -80,12 +80,6 @@ const userMenuItems = [
   ],
 ];
 
-// 快速创建任务
-const createQuickNote = () => {
-  // TODO: 实现快速创建任务功能
-  console.log("快速创建任务");
-};
-
 // 切换通知
 const toggleNotifications = () => {
   // TODO: 实现通知面板切换

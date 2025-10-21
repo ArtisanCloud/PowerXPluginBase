@@ -17,7 +17,7 @@ import (
 func setupWebhookService(t *testing.T) (*service.WebhookService, context.Context) {
 	t.Helper()
 
-	models.InitSchemaFrom("main")
+	models.ForceSchemaForTests("")
 
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
@@ -25,9 +25,37 @@ func setupWebhookService(t *testing.T) (*service.WebhookService, context.Context
 	if err != nil {
 		t.Fatalf("open sqlite: %v", err)
 	}
-
-	if err := db.AutoMigrate(&model.WebhookSubscription{}, &model.DeliveryAttempt{}); err != nil {
-		t.Fatalf("auto migrate: %v", err)
+	stmts := []string{
+		`CREATE TABLE IF NOT EXISTS integration_webhook_subscriptions (
+      id TEXT PRIMARY KEY,
+      tenant_id TEXT NOT NULL,
+      event_type TEXT NOT NULL,
+      target_url TEXT NOT NULL,
+      secret TEXT,
+      retry_policy TEXT,
+      status TEXT NOT NULL,
+      metadata TEXT,
+      created_at DATETIME,
+      updated_at DATETIME,
+      UNIQUE (tenant_id, event_type, target_url)
+    )`,
+		`CREATE TABLE IF NOT EXISTS integration_webhook_attempts (
+		id TEXT PRIMARY KEY,
+		subscription_id TEXT NOT NULL,
+      envelope_id TEXT,
+      status TEXT NOT NULL,
+      retry_count INTEGER DEFAULT 0,
+      last_error TEXT,
+      next_delivery_at DATETIME,
+      payload_snapshot TEXT,
+      created_at DATETIME,
+      updated_at DATETIME
+    )`,
+	}
+	for _, stmt := range stmts {
+		if err := db.Exec(stmt).Error; err != nil {
+			t.Fatalf("prepare table: %v", err)
+		}
 	}
 
 	cfg := &config.Config{

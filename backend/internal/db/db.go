@@ -38,8 +38,6 @@ func Connect(cfg *config.DatabaseConfig) (*gorm.DB, error) {
 		level = gormLogger.Error
 	case "silent":
 		level = gormLogger.Silent
-	default:
-		level = gormLogger.Silent
 	}
 
 	gLogger := gormLogger.New(

@@ -77,9 +77,6 @@ func (s *LicenseRecoveryService) RecoverIssuance(ctx context.Context, req Recove
 		"recovery":   true,
 	}
 	for k, v := range req.Metadata {
-		if metadata == nil {
-			metadata = map[string]any{}
-		}
 		metadata[k] = v
 	}
 	if _, ok := metadata["recovery_at"]; !ok {

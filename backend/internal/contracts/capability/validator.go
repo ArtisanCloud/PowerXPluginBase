@@ -150,11 +150,6 @@ func extractCapabilityRefs(data map[string]interface{}, issues *collector, sourc
 	return refs
 }
 
-type rbacResource struct {
-	Resource string
-	Actions  []string
-}
-
 func extractRBACResources(data map[string]interface{}, issues *collector) map[string]map[string]struct{} {
 	result := make(map[string]map[string]struct{})
 	if data == nil {

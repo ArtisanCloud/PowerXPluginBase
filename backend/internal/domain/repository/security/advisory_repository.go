@@ -8,6 +8,7 @@ import (
 
 	secmodel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/security"
 	repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository"
+	"github.com/google/uuid"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -57,6 +58,9 @@ func (r *AdvisoryRepository) Create(ctx context.Context, advisory *secmodel.Advi
 	}
 	if len(advisory.AffectedVersions) == 0 {
 		advisory.SetAffectedVersions([]string{})
+	}
+	if advisory.ID == "" {
+		advisory.ID = uuid.NewString()
 	}
 	now := time.Now().UTC()
 	if advisory.CreatedAt.IsZero() {

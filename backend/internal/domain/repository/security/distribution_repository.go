@@ -7,6 +7,7 @@ import (
 
 	secmodel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/security"
 	repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository"
+	"github.com/google/uuid"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -44,6 +45,9 @@ func (r *DistributionRepository) Upsert(ctx context.Context, record *secmodel.Ad
 	}
 	if record.Status == "" {
 		record.Status = secmodel.DistributionStatusPending
+	}
+	if record.ID == "" {
+		record.ID = uuid.NewString()
 	}
 	now := time.Now().UTC()
 	if record.CreatedAt.IsZero() {

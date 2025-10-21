@@ -113,13 +113,6 @@ import TemplateFormModal from "~/components/templates/TemplateFormModal.vue"
 import { nextTick } from "vue"
 import { useI18n } from "vue-i18n"
 
-type TemplateRow = {
-  id: number
-  name: string
-  description: string
-  content: string
-}
-
 type TemplateFormState = {
   name: string
   description: string
@@ -134,7 +127,6 @@ const columns = [
 ] satisfies any
 
 const {
-  baseURL: templateApiBase,
   listTemplates,
   createTemplate: createTemplateApi,
   updateTemplate: updateTemplateApi,
@@ -171,7 +163,7 @@ const defaultFormValue = (): TemplateFormState => ({
 const form = reactive<TemplateFormState>(defaultFormValue())
 
 const makeLogHandlers = (action: string, context: Record<string, any> = {}) => ({
-  onRequest({ request, options }: any) {
+  onRequest({ request: _request, options: _options }: any) {
     // console.debug(`[templates/crud] ${action} request`, {
     //   baseURL: templateApiBase,
     //   request,
@@ -179,7 +171,7 @@ const makeLogHandlers = (action: string, context: Record<string, any> = {}) => (
     //   context,
     // })
   },
-  onResponse({ response }: any) {
+  onResponse({ response: _response }: any) {
     // console.debug(`[templates/crud] ${action} response`, {
     //   status: response.status,
     //   data: response._data,

@@ -1,10 +1,10 @@
 package marketplace
 
 import (
-    "strconv"
-    "time"
+	"strconv"
+	"time"
 
-    dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
+	dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
 )
 
 type createLicenseRequest struct {
@@ -25,16 +25,16 @@ type offlineExtendRequest struct {
 }
 
 type licenseResponse struct {
-	ID             string  `json:"id"`
-	ListingID      string  `json:"listing_id"`
-	PlanID         string  `json:"plan_id"`
-	Status         string  `json:"status"`
-	ExpiresAt      string  `json:"expires_at"`
-	Token          string  `json:"token"`
-	OfflineUntil   *string `json:"offline_until,omitempty"`
-	RenewalToken   string  `json:"renewal_token,omitempty"`
-	SettlementCurrency string `json:"settlement_currency,omitempty"`
-	ExchangeRate   *float64 `json:"exchange_rate,omitempty"`
+	ID                 string   `json:"id"`
+	ListingID          string   `json:"listing_id"`
+	PlanID             string   `json:"plan_id"`
+	Status             string   `json:"status"`
+	ExpiresAt          string   `json:"expires_at"`
+	Token              string   `json:"token"`
+	OfflineUntil       *string  `json:"offline_until,omitempty"`
+	RenewalToken       string   `json:"renewal_token,omitempty"`
+	SettlementCurrency string   `json:"settlement_currency,omitempty"`
+	ExchangeRate       *float64 `json:"exchange_rate,omitempty"`
 }
 
 func newLicenseResponse(license *dbm.License) *licenseResponse {
@@ -62,12 +62,12 @@ func newLicenseResponse(license *dbm.License) *licenseResponse {
 	if currency, ok := license.Metadata["settlement_currency"].(string); ok && currency != "" {
 		resp.SettlementCurrency = currency
 	}
-    if rate, ok := license.Metadata["exchange_rate"].(float64); ok && rate > 0 {
-        resp.ExchangeRate = &rate
-    } else if str, ok := license.Metadata["exchange_rate"].(string); ok {
-        if f, err := strconv.ParseFloat(str, 64); err == nil {
-            resp.ExchangeRate = &f
-        }
-    }
+	if rate, ok := license.Metadata["exchange_rate"].(float64); ok && rate > 0 {
+		resp.ExchangeRate = &rate
+	} else if str, ok := license.Metadata["exchange_rate"].(string); ok {
+		if f, err := strconv.ParseFloat(str, 64); err == nil {
+			resp.ExchangeRate = &f
+		}
+	}
 	return resp
 }

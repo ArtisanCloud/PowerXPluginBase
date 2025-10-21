@@ -15,11 +15,11 @@ import (
 
 // Deps bundles shared infrastructure dependencies for handlers and services.
 type Deps struct {
-	DB                *gorm.DB
-	Ctx               context.Context
-	PowerXClient      *client.PowerXServiceClient
-	Config            *config.Config
-	TaxProviderClient *marketplacesvc.TaxProviderClient
+	DB                 *gorm.DB
+	Ctx                context.Context
+	PowerXClient       *client.PowerXServiceClient
+	Config             *config.Config
+	TaxProviderClient  *marketplacesvc.TaxProviderClient
 	MarketplaceBilling marketplacesvc.BillingClient
 	LicenseAuthority   marketplacesvc.LicenseAuthority
 	LicenseCache       marketplacesvc.LicenseCache

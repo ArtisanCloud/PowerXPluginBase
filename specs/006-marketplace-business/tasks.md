@@ -131,11 +131,11 @@
 
 ## Phase 6 — Polish & Cross-Cutting
 
-- [ ] T901 [P] 整理 `docs/` 与 `README.md`，新增 Marketplace 商业闭环章节。  
-- [ ] T902 清理临时代码/提高覆盖率：运行 `make fmt && make lint && make test && pnpm lint`.  
-- [ ] T903 [P] 校验打包流程：执行 `make build && make frontend-build && make dist`，确认产物包含新增 API/UI。  
-- [ ] T904 验证配置样例：审查 `backend/etc/config.example.yaml`、`config/docker-compose.integration.yml` 是否包含 Marketplace 说明。  
-- [ ] T905 更新 `plugin.yaml` 版本号与 `docs/references/changelog.md`（若存在）记录新功能。
+- [x] T901 [P] 整理 `docs/` 与 `README.md`，新增 Marketplace 商业闭环章节。  
+- [x] T902 清理临时代码/提高覆盖率：运行 `make fmt && make lint && make test && pnpm lint`.  
+- [x] T903 [P] 校验打包流程：执行 `make build && make frontend-build && make dist`，确认产物包含新增 API/UI。  
+- [x] T904 验证配置样例：审查 `backend/etc/config.example.yaml`、`config/docker-compose.integration.yml` 是否包含 Marketplace 说明。  
+- [x] T905 更新 `plugin.yaml` 版本号与 `docs/references/changelog.md`（若存在）记录新功能。
 
 ---
 

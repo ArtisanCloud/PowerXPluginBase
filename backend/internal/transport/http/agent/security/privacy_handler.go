@@ -83,7 +83,13 @@ func (h *PrivacyHandler) AcknowledgeLifecycleEvent(c *gin.Context) {
 		return
 	}
 	if h.audit != nil {
-		h.audit.EmitLifecycleSuccess(tenantID, payload.EventType, "agent", payload.Metadata)
+		if err := h.audit.EmitLifecycleSuccess(tenantID, payload.EventType, "agent", payload.Metadata); err != nil {
+			if h.deps != nil {
+				if logger := h.deps.RuntimeLogger(c.Request.Context(), "agent_privacy_handler", nil); logger != nil {
+					logger.WithError(err).Warn("failed to emit lifecycle success audit event")
+				}
+			}
+		}
 	}
 	c.Status(http.StatusAccepted)
 }

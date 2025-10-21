@@ -80,7 +80,7 @@ func (h *AnalyticsHandler) Ingest(c *gin.Context) {
 	ctx := c.Request.Context()
 	result, err := h.usageService.IngestBatch(ctx, tenantID, payload.Envelopes)
 	if err != nil && (result == nil || result.Accepted == 0) {
-		contracts.ResponseInternalError(c, "usage ingest failed", err)
+		contracts.ResponseInternalError(c, err)
 		return
 	}
 	c.JSON(http.StatusAccepted, gin.H{
@@ -105,7 +105,7 @@ func (h *AnalyticsHandler) GetMetrics(c *gin.Context) {
 		tenantID = pathTenant
 	}
 	if pathTenant != "" && tenantID != "" && !strings.EqualFold(pathTenant, tenantID) {
-		contracts.ResponseForbidden(c, "tenant mismatch")
+		contracts.ResponseUnauthorized(c, "tenant mismatch")
 		return
 	}
 	if tenantID == "" {
@@ -141,7 +141,7 @@ func (h *AnalyticsHandler) GetMetrics(c *gin.Context) {
 		To:     to,
 	})
 	if err != nil {
-		contracts.ResponseInternalError(c, "failed to load usage metrics", err)
+		contracts.ResponseInternalError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": dashboard})
@@ -185,7 +185,7 @@ func (h *AnalyticsHandler) ListRevenueReports(c *gin.Context) {
 	ctx := c.Request.Context()
 	reports, err := h.analytics.ListReports(ctx, tenantID, strings.TrimSpace(query.VendorID), from, to)
 	if err != nil {
-		contracts.ResponseInternalError(c, "failed to list revenue reports", err)
+		contracts.ResponseInternalError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": reports})
