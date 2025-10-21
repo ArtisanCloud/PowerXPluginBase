@@ -32,3 +32,7 @@
 7. [Changelog](./references/changelog.md)
 
 ---
+
+## ⚙️ 配置要点
+
+- `backend/etc/config.example.yaml` 中新增 `operations` 节点，可配置支持渠道默认值、事故沟通通道及 SLA 采样周期；运行 `make dev-setup` 后可复制到本地 `config.yaml` 并按需调整。

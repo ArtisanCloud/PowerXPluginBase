@@ -16,10 +16,10 @@
 
 ## Phase 2 — Foundational (Blocking Prerequisites)
 
-- [ ] T010 更新 RBAC 与配置：在 `plugin.yaml`、`backend/internal/transport/http/registry.go`、`backend/internal/router/router.go` 中预留 `operations.support.*`、`operations.incident.*`、`operations.sla.*` 策略与路由骨架。  
-- [ ] T011 扩展配置与常量：在 `backend/etc/config.example.yaml`、`backend/internal/config/config.go` 增加 `operations` 节点（渠道、Webhook 签名、SLA 周期），同步 `docs/readme.md` 说明。  
-- [ ] T012 建立观测基线：在 `backend/internal/observability/operations/metrics.go` 定义票务/事故/SLA 指标占位，注册于 `internal/shared/app/deps.go`。  
-- [ ] T013 校准 Checklist 框架：扩展 `backend/internal/services/admin/runtime_ops/quota_service_test.go` 等 readiness 逻辑，支持 `support_ready`、`incident_ready`、`sla_ready` 三套清单骨架。  
+- [x] T010 更新 RBAC 与配置：在 `plugin.yaml`、`backend/internal/transport/http/registry.go`、`backend/internal/router/router.go` 中预留 `operations.support.*`、`operations.incident.*`、`operations.sla.*` 策略与路由骨架。  
+- [x] T011 扩展配置与常量：在 `backend/etc/config.example.yaml`、`backend/internal/config/config.go` 增加 `operations` 节点（渠道、Webhook 签名、SLA 周期），同步 `docs/readme.md` 说明。  
+- [x] T012 建立观测基线：在 `backend/internal/observability/operations/metrics.go` 定义票务/事故/SLA 指标占位，注册于 `internal/shared/app/deps.go`。  
+- [x] T013 校准 Checklist 框架：扩展 `backend/internal/services/admin/runtime_ops/quota_service_test.go` 等 readiness 逻辑，支持 `support_ready`、`incident_ready`、`sla_ready` 三套清单骨架。  
 
 ---
 

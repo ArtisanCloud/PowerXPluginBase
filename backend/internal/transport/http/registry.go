@@ -9,6 +9,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
 	adminintegration "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/integration"
 	adminmarketplace "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/marketplace"
+	adminoperations "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/operations"
 	adminruntime "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/runtime_ops"
 	adminsecurity "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/security"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/templates"
@@ -45,6 +46,7 @@ func (r *Registry) RegisterAPIRoutes(gApi *gin.RouterGroup) {
 	r.mergeRBAC(adminruntime.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminsecurity.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminintegration.RBACEntries(r.apiPrefix()))
+	r.mergeRBAC(adminoperations.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminmarketplace.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(integrationRBACEntries(r.apiPrefix()))
 	r.mergeRBAC(marketplacePublicRBACEntries(r.apiPrefix()))
@@ -117,5 +119,6 @@ func marketplacePublicRBACEntries(prefix string) map[string]authx.Permission {
 		"POST:" + base + "/usage":                             {Resource: "marketplace.usage", Action: "ingest"},
 		"GET:" + base + "/usage/tenants/*/licenses/*/metrics": {Resource: "marketplace.usage", Action: "view"},
 		"GET:" + base + "/revenue-share/reports":              {Resource: "marketplace.revenue", Action: "read"},
+		"GET:" + base + "/sla/*":                              {Resource: "marketplace.sla", Action: "read"},
 	}
 }

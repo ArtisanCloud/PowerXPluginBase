@@ -8,6 +8,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/grpc/client"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
 	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+	opsmetrics "github.com/ArtisanCloud/PowerXPlugin/internal/observability/operations"
 	marketplacesvc "github.com/ArtisanCloud/PowerXPlugin/internal/services/marketplace"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -23,6 +24,7 @@ type Deps struct {
 	MarketplaceBilling marketplacesvc.BillingClient
 	LicenseAuthority   marketplacesvc.LicenseAuthority
 	LicenseCache       marketplacesvc.LicenseCache
+	OperationsMetrics  *opsmetrics.Metrics
 }
 
 // RuntimeDefaults returns the configured runtime ops defaults (if any).

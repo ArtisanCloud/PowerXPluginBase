@@ -52,6 +52,9 @@ type Config struct {
 	// Marketplace 配置。
 	Marketplace *MarketplaceConfig `yaml:"marketplace" json:"marketplace"`
 
+	// Operations 配置。
+	Operations *OperationsConfig `yaml:"operations" json:"operations"`
+
 	// 向后兼容的字段（从环境变量或旧配置中填充）
 	BindAddr   string `yaml:"-" json:"bind_addr,omitempty"`
 	LogLevel   string `yaml:"-" json:"log_level,omitempty"`

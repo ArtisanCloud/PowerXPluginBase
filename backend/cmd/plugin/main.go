@@ -19,6 +19,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/grpc/server"
 	marketplacejobs "github.com/ArtisanCloud/PowerXPlugin/internal/jobs/marketplace"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+	opsmetrics "github.com/ArtisanCloud/PowerXPlugin/internal/observability/operations"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/router"
 	agent "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent"
 	marketplacesvc "github.com/ArtisanCloud/PowerXPlugin/internal/services/marketplace"
@@ -111,6 +112,7 @@ func main() {
 		MarketplaceBilling: nil,
 		LicenseAuthority:   nil,
 		LicenseCache:       licenseCache,
+		OperationsMetrics:  opsmetrics.NewMetrics(),
 	}
 
 	listingRepo := marketplacerepo.NewListingRepository(queryDB)
