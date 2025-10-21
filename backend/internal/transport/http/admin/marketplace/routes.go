@@ -20,6 +20,7 @@ func RegisterRoutes(admin *gin.RouterGroup, deps *app.Deps) {
 	metricsProvider := recommendationservice.NewListingMetricsProvider(listingRepo)
 	recommendationLogger := deps.RuntimeLogger(deps.Ctx, "admin_marketplace_recommendation", nil)
 	recommendationHandler := NewRecommendationHandler(deps.Config, listingRepo, metricsProvider, recommendationLogger)
+	analyticsHandler := NewAnalyticsHandler(deps)
 
 	group := admin.Group("/marketplace", httpmw.EnsureTenant())
 	{
@@ -42,5 +43,9 @@ func RegisterRoutes(admin *gin.RouterGroup, deps *app.Deps) {
 			recommendationGroup.POST("/sync", recommendationHandler.TriggerSync)
 			recommendationGroup.PATCH("/experiment", recommendationHandler.UpdateExperiment)
 		}
+
+		group.POST("/usage", analyticsHandler.Ingest)
+		group.GET("/usage/tenants/:tenantId/licenses/:licenseId/metrics", analyticsHandler.GetMetrics)
+		group.GET("/revenue-share/reports", analyticsHandler.ListRevenueReports)
 	}
 }

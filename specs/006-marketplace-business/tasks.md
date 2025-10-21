@@ -103,27 +103,27 @@
 
 ### Tests for US3
 
-- [ ] T301 [P] [US3] 在 `backend/tests/contract/marketplace/usage_test.go` 添加 REST 合同测试，覆盖 `/marketplace/usage` ingest 与 metrics 查询、报表列表。  
-- [ ] T302 [P] [US3] 在 `backend/tests/integration/marketplace/analytics_flow_test.go` 编写集成测试，模拟 Usage 上报→聚合→告警→报表生成。  
-- [ ] T303 [P] [US3] 在 `backend/internal/services/marketplace/analytics_service_test.go` 编写单测，验证配额判定、spike detection、分润计算。
+- [x] T301 [P] [US3] 在 `backend/tests/contract/marketplace/usage_test.go` 添加 REST 合同测试，覆盖 `/marketplace/usage` ingest 与 metrics 查询、报表列表。  
+- [x] T302 [P] [US3] 在 `backend/tests/integration/marketplace/analytics_flow_test.go` 编写集成测试，模拟 Usage 上报→聚合→告警→报表生成。  
+- [x] T303 [P] [US3] 在 `backend/internal/services/marketplace/analytics_service_test.go` 编写单测，验证配额判定、spike detection、分润计算。
 
 ### Implementation for US3
 
-- [ ] T304 [US3] 创建迁移 `backend/migrations/2025Q4_marketplace_analytics.sql` 定义 `usage_envelopes`、`usage_aggregates`、`revenue_share_reports`、`notifications` 表与 RLS 策略。  
-- [ ] T305 [P] [US3] 定义模型：`backend/internal/domain/models/marketplace/usage.go`、`revenue.go`、`notification.go`。  
-- [ ] T306 [P] [US3] 实现仓储：`backend/internal/domain/repository/marketplace/usage_repository.go`、`revenue_repository.go`、`notification_repository.go`。  
-- [ ] T307 [US3] 编写 `backend/internal/services/marketplace/usage_ingest_service.go`，处理批量上报、重放、幂等校验，落地 `usage_envelopes`。  
-- [ ] T308 [US3] 编写 `backend/internal/services/marketplace/analytics_service.go`，聚合 Usage→生成趋势、quota 检查、分润报表，并触发告警通知。  
-- [ ] T309 [US3] 增强观测：在 `backend/internal/observability/marketplace/metrics.go` 补充 usage lag、revenue generation 指标，新增 `backend/internal/observability/marketplace/events.go` 发布 `usage.spike.detected`。  
-- [ ] T310 [US3] 实现 HTTP Handler：`backend/internal/transport/http/admin/marketplace/analytics_handler.go` 暴露 Usage metrics、报表导出 API；注册至路由与 RBAC。  
-- [ ] T311 [US3] 同步前端仪表盘：`web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/dashboard.vue` 显示趋势图、异常告警、分润报表导出。  
-- [ ] T312 [P] [US3] 构建前端 stores/composables：`web-admin/app/stores/marketplaceAnalytics.ts`、`web-admin/app/composables/useUsageMetrics.ts`。  
-- [ ] T313 [P] [US3] 添加前端测试：`web-admin/tests/marketplace/analytics_dashboard.spec.ts` 验证趋势渲染、告警提示、报表下载。  
-- [ ] T314 [US3] 更新 `quickstart.md` 与文档，加入 Usage 上报、Dashboard 操作指南与告警说明。
-- [ ] T315 [P] [US3] 在 `backend/tests/perf/marketplace/usage_load_test.go` 模拟 10K req/s 吞吐并验证 `usage_ingest_lag` 指标（NFR-003）。  
-- [ ] T316 [US3] 实现 GDPR 删除链路：`backend/internal/services/marketplace/privacy_service.go`、`backend/tests/integration/marketplace/gdpr_delete_test.go`，确保 24h 内删除 Usage 数据（NFR-004）。  
-- [ ] T317 [P] [US3] Dashboard 性能监控：在 `web-admin/tests/perf/marketplace/dashboard_performance.spec.ts` 与 `web-admin/app/plugins/metrics.client.ts` 记录首屏加载时间（NFR-006）。  
-- [ ] T318 [US3] 增补异常告警测试：`backend/tests/integration/marketplace/usage_spike_test.go` 确认 `usage.spike.detected` 与配额兜底逻辑。
+- [x] T304 [US3] 创建迁移 `backend/migrations/2025Q4_marketplace_analytics.sql` 定义 `usage_envelopes`、`usage_aggregates`、`revenue_share_reports`、`notifications` 表与 RLS 策略。  
+- [x] T305 [P] [US3] 定义模型：`backend/internal/domain/models/marketplace/usage.go`、`revenue.go`、`notification.go`。  
+- [x] T306 [P] [US3] 实现仓储：`backend/internal/domain/repository/marketplace/usage_repository.go`、`revenue_repository.go`、`notification_repository.go`。  
+- [x] T307 [US3] 编写 `backend/internal/services/marketplace/usage_ingest_service.go`，处理批量上报、重放、幂等校验，落地 `usage_envelopes`。  
+- [x] T308 [US3] 编写 `backend/internal/services/marketplace/analytics_service.go`，聚合 Usage→生成趋势、quota 检查、分润报表，并触发告警通知。  
+- [x] T309 [US3] 增强观测：在 `backend/internal/observability/marketplace/metrics.go` 补充 usage lag、revenue generation 指标，新增 `backend/internal/observability/marketplace/events.go` 发布 `usage.spike.detected`。  
+- [x] T310 [US3] 实现 HTTP Handler：`backend/internal/transport/http/admin/marketplace/analytics_handler.go` 暴露 Usage metrics、报表导出 API；注册至路由与 RBAC。  
+- [x] T311 [US3] 同步前端仪表盘：`web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/dashboard.vue` 显示趋势图、异常告警、分润报表导出。  
+- [x] T312 [P] [US3] 构建前端 stores/composables：`web-admin/app/stores/marketplaceAnalytics.ts`、`web-admin/app/composables/useUsageMetrics.ts`。  
+- [x] T313 [P] [US3] 添加前端测试：`web-admin/tests/marketplace/analytics_dashboard.spec.ts` 验证趋势渲染、告警提示、报表下载。  
+- [x] T314 [US3] 更新 `quickstart.md` 与文档，加入 Usage 上报、Dashboard 操作指南与告警说明。
+- [x] T315 [P] [US3] 在 `backend/tests/perf/marketplace/usage_load_test.go` 模拟 10K req/s 吞吐并验证 `usage_ingest_lag` 指标（NFR-003）。  
+- [x] T316 [US3] 实现 GDPR 删除链路：`backend/internal/services/marketplace/privacy_service.go`、`backend/tests/integration/marketplace/gdpr_delete_test.go`，确保 24h 内删除 Usage 数据（NFR-004）。  
+- [x] T317 [P] [US3] Dashboard 性能监控：在 `web-admin/tests/perf/marketplace/dashboard_performance.spec.ts` 与 `web-admin/app/plugins/metrics.client.ts` 记录首屏加载时间（NFR-006）。  
+- [x] T318 [US3] 增补异常告警测试：`backend/tests/integration/marketplace/usage_spike_test.go` 确认 `usage.spike.detected` 与配额兜底逻辑。
 
 **Checkpoint**：三大用户故事均独立通过测试 → 功能完整。
 

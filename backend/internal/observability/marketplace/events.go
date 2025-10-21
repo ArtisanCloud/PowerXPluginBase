@@ -12,6 +12,7 @@ import (
 const (
 	eventLicenseRenewalScheduled = "marketplace.license.renewal.scheduled"
 	eventLicenseRenewalDue       = "marketplace.license.renewal.due"
+	eventUsageSpikeDetected      = "marketplace.usage.spike.detected"
 )
 
 // EmitLicenseRenewalScheduled records when a renewal reminder is queued.
@@ -22,6 +23,27 @@ func EmitLicenseRenewalScheduled(logger *logrus.Entry, license *dbm.License, sch
 // EmitLicenseRenewalDue emits that a renewal reminder is executing.
 func EmitLicenseRenewalDue(logger *logrus.Entry, license *dbm.License, scheduledAt time.Time, channels []string) {
 	emitLicenseReminderEvent(logger, eventLicenseRenewalDue, license, scheduledAt, channels)
+}
+
+// EmitUsageSpikeDetected records a usage spike event for observability.
+func EmitUsageSpikeDetected(logger *logrus.Entry, tenantID, licenseID, metric string, delta float64) {
+	if logger == nil {
+		return
+	}
+	payload := map[string]any{
+		"event":      eventUsageSpikeDetected,
+		"tenant_id":  tenantID,
+		"license_id": licenseID,
+		"metric":     metric,
+		"delta":      delta,
+		"emitted_at": time.Now().UTC().Format(time.RFC3339),
+	}
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		logger.WithError(err).Warn("failed to marshal usage spike event payload")
+		return
+	}
+	logger.WithField("usage_event", string(raw)).Info("usage spike detected")
 }
 
 func emitLicenseReminderEvent(logger *logrus.Entry, event string, license *dbm.License, scheduledAt time.Time, channels []string) {

@@ -114,7 +114,7 @@ func marketplacePublicRBACEntries(prefix string) map[string]authx.Permission {
 		"GET:" + base + "/licenses/*":                         {Resource: "marketplace.license", Action: "read"},
 		"POST:" + base + "/licenses/*":                        {Resource: "marketplace.license", Action: "manage"},
 		"POST:" + base + "/licenses/*/offline-extend":         {Resource: "marketplace.license", Action: "manage"},
-		"POST:" + base + "/usage":                             {Resource: "marketplace.usage", Action: "observe"},
+		"POST:" + base + "/usage":                             {Resource: "marketplace.usage", Action: "ingest"},
 		"GET:" + base + "/usage/tenants/*/licenses/*/metrics": {Resource: "marketplace.usage", Action: "view"},
 		"GET:" + base + "/revenue-share/reports":              {Resource: "marketplace.revenue", Action: "read"},
 	}

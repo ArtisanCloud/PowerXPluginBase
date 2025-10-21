@@ -52,6 +52,10 @@ NUXT_PUBLIC_API_BASE_URL=http://localhost:8086/api/v1
 5. 通过 SDK 上报 Usage → `POST /marketplace/usage`
 6. 在 Vendor Dashboard 页面验证趋势图与告警
 7. 检查 `GET /marketplace/revenue-share/reports` 的月度报表
+8. 访问 Admin Console 中的 Usage & Revenue Dashboard：`/_p/com.powerx.plugins.base/admin/integration/marketplace/dashboard`
+   - 输入 Tenant / License，加载 Usage 趋势与告警
+   - 验证 `usage_spike`、`quota_exceeded` 等提醒显示，并确认分润报表数据
+9. 在浏览器 Performance 工具或 `window.__pxMetrics` 中确认 Dashboard 首屏加载时间已被记录
 
 ## 监控与告警
 - 关键指标：`license_verify_latency`, `usage_ingest_lag`, `tax_provider_errors`

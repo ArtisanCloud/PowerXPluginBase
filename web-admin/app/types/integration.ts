@@ -173,3 +173,40 @@ export interface MarketplaceChecklistRun {
   ci_pipeline_id?: string
   items?: MarketplaceChecklistItem[]
 }
+
+export interface MarketplaceUsageDataPoint {
+  timestamp: string
+  metric: string
+  value: number
+  revenue: number
+  quota_remaining?: number | null
+  window: string
+  currency?: string
+}
+
+export interface MarketplaceUsageAlert {
+  code: string
+  severity: string
+  message: string
+}
+
+export interface MarketplaceUsageDashboard {
+  series: MarketplaceUsageDataPoint[]
+  alerts: MarketplaceUsageAlert[]
+}
+
+export interface MarketplaceRevenueReport {
+  id: string
+  tenant_id: string
+  vendor_id: string
+  period_start: string
+  period_end: string
+  gross_amount: number
+  vendor_share: number
+  platform_share: number
+  fees: number
+  currency: string
+  status: string
+  generated_at: string
+  export_uri?: string | null
+}
