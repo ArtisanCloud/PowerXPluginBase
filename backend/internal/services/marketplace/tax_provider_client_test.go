@@ -44,3 +44,30 @@ func TestCreateTransactionNotImplemented(t *testing.T) {
 		t.Fatalf("expected ErrNotImplemented, got %v", err)
 	}
 }
+
+func TestAmountToMinorUnits(t *testing.T) {
+	units, err := AmountToMinorUnits("JPY", 1234)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if units != 1234 {
+		t.Fatalf("expected 1234 units for JPY, got %d", units)
+	}
+
+	units, err = AmountToMinorUnits("USD", 12.34)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if units != 1234 {
+		t.Fatalf("expected 1234 cents for USD, got %d", units)
+	}
+
+	if _, err = AmountToMinorUnits("", 10); err == nil {
+		t.Fatal("expected error for empty currency")
+	}
+
+	value := MinorUnitsToAmount("BHD", 12345)
+	if value != 12.345 {
+		t.Fatalf("expected 12.345 for BHD minor conversion, got %f", value)
+	}
+}

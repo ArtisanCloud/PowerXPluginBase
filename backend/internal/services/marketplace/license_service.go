@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -62,22 +63,25 @@ type LicenseIssueResponse struct {
 
 // IssueLicenseParams encapsulates inputs for issuing license.
 type IssueLicenseParams struct {
-	TenantID  string
-	ListingID string
-	PlanID    string
-	IssuedBy  string
-	Trial     bool
-	Metadata  map[string]any
-	ExpiresAt time.Time
+	TenantID    string
+	ListingID   string
+	PlanID      string
+	IssuedBy    string
+	Trial       bool
+	Metadata    map[string]any
+	ExpiresAt   time.Time
+	SkipBilling bool
 }
 
 // RenewLicenseParams encapsulates inputs for renewal.
 type RenewLicenseParams struct {
-	LicenseID string
-	TenantID  string
-	IssuedBy  string
-	Metadata  map[string]any
-	ExpiresAt time.Time
+	LicenseID    string
+	TenantID     string
+	IssuedBy     string
+	PlanID       string
+	RenewalToken string
+	Metadata     map[string]any
+	ExpiresAt    time.Time
 }
 
 // VerifyResult describes verification result.
@@ -118,41 +122,94 @@ func NewLicenseService(cfg *config.Config, pricingRepo *mrepo.PricingRepository,
 
 // IssueLicense issues a new license for the given plan.
 func (s *LicenseService) IssueLicense(ctx context.Context, params IssueLicenseParams) (*dbm.License, error) {
+	start := time.Now()
+	resultLabel := "success"
+	defer func() {
+		provider := ""
+		if s.taxClient != nil {
+			provider = s.taxClient.Provider()
+		}
+		marketobs.ObserveLicenseVerification(resultLabel, provider, params.TenantID, time.Since(start))
+	}()
+
 	if hasEmpty(params.TenantID, params.ListingID, params.PlanID) {
+		resultLabel = "invalid_request"
 		return nil, errors.New("tenant_id, listing_id, plan_id are required")
 	}
 
 	plan, err := s.pricingRepo.GetPlan(ctx, params.TenantID, params.PlanID)
 	if err != nil {
+		resultLabel = "plan_not_found"
 		return nil, err
 	}
+	if !strings.EqualFold(plan.ListingID, params.ListingID) {
+		resultLabel = "plan_mismatch"
+		return nil, fmt.Errorf("plan %s does not belong to listing %s", plan.ID, params.ListingID)
+	}
+	if status := strings.TrimSpace(strings.ToLower(plan.Status)); status != "" && status != "active" {
+		resultLabel = "plan_inactive"
+		return nil, fmt.Errorf("plan %s is not active", plan.ID)
+	}
 
-	billingID := ""
-	if s.billingClient != nil {
-		if id, err := s.billingClient.ChargeSubscription(ctx, params.TenantID, plan, params.Metadata); err == nil {
-			billingID = id
-		} else {
-			return nil, fmt.Errorf("billing charge failed: %w", err)
+	settlementConfig := s.cfg.IntegrationRevenueSplit()
+	settlementCurrency := strings.ToUpper(strings.TrimSpace(settlementConfig.Currency))
+	if settlementCurrency == "" {
+		settlementCurrency = strings.ToUpper(strings.TrimSpace(plan.Currency))
+	}
+	if settlementCurrency == "" {
+		settlementCurrency = "USD"
+	}
+	exchangeRate := parseExchangeRate(params.Metadata)
+	if strings.EqualFold(settlementCurrency, plan.Currency) && exchangeRate <= 0 {
+		exchangeRate = 1
+	}
+
+	existingBillingID := strings.TrimSpace(billingIDFromMeta(params.Metadata))
+	billingID := existingBillingID
+	shouldCharge := !params.SkipBilling && plan.Amount != nil && *plan.Amount > 0 && !params.Trial
+	if shouldCharge {
+		if s.billingClient == nil {
+			resultLabel = "billing_unavailable"
+			return nil, errors.New("billing client not configured")
 		}
+		id, billErr := s.billingClient.ChargeSubscription(ctx, params.TenantID, plan, params.Metadata)
+		if billErr != nil {
+			resultLabel = "billing_failed"
+			return nil, fmt.Errorf("billing charge failed: %w", billErr)
+		}
+		billingID = id
 	}
 
 	var taxResult *TaxChargeResult
-	if s.taxClient != nil && plan.Amount != nil {
-		cents := int64(*plan.Amount * 100)
+	var taxErr error
+	if shouldCharge && s.taxClient != nil {
+		amountUnits, err := AmountToMinorUnits(plan.Currency, *plan.Amount)
+		if err != nil {
+			resultLabel = "invalid_currency"
+			return nil, fmt.Errorf("calculate tax amount: %w", err)
+		}
+		itemUnits := amountUnits
 		req := &TaxChargeRequest{
-			TenantID:          params.TenantID,
-			ListingID:         params.ListingID,
-			Currency:          plan.Currency,
-			AmountCents:       cents,
-			Jurisdiction:      "",
-			ExternalReference: billingID,
+			TenantID:           params.TenantID,
+			ListingID:          params.ListingID,
+			Currency:           plan.Currency,
+			AmountMinorUnits:   amountUnits,
+			Jurisdiction:       "",
+			ExternalReference:  billingID,
+			SettlementCurrency: settlementCurrency,
+			ExchangeRate:       exchangeRate,
 			Items: []TaxLineItem{
-				{SKU: plan.PlanCode, Quantity: 1, AmountCents: cents, TaxCode: plan.PlanType},
+				{SKU: plan.PlanCode, Quantity: 1, AmountMinorUnits: itemUnits, TaxCode: plan.PlanType},
+			},
+			Metadata: map[string]string{
+				"plan_currency": plan.Currency,
 			},
 		}
 		if res, err := s.taxClient.CreateTransaction(ctx, req); err == nil {
 			taxResult = res
 		} else {
+			taxErr = err
+			marketobs.IncrementTaxProviderError(s.taxClient.Provider(), "dispatch_error")
 			s.logger.WithError(err).Warn("tax transaction failed")
 		}
 	}
@@ -184,27 +241,73 @@ func (s *LicenseService) IssueLicense(ctx context.Context, params IssueLicensePa
 		issueRes.Metadata = params.Metadata
 	}
 
-	offlineUntil := timePtr(minTime(expiry, time.Now().Add(72*time.Hour)))
-	license := &dbm.License{
-		TenantID:     params.TenantID,
-		ListingID:    params.ListingID,
-		PlanID:       params.PlanID,
-		LicenseToken: issueRes.Token,
-		Status:       statusFromTrial(params.Trial),
-		IssuedAt:     time.Now(),
-		ExpiresAt:    expiry,
-		OfflineUntil: offlineUntil,
-		IssuedBy:     stringPtr(params.IssuedBy),
-		Metadata:     toJSONMap(issueRes.Metadata),
+	issuedAt := time.Now().UTC()
+	allowance := s.offlineAllowance()
+	offlineUntil := timePtr(minTime(expiry, issuedAt.Add(allowance)))
+	lastValidated := issuedAt
+	var metadata map[string]any
+	if len(params.Metadata) > 0 {
+		metadata = make(map[string]any, len(params.Metadata))
+		for k, v := range params.Metadata {
+			metadata[k] = v
+		}
+	}
+	if issueRes.Metadata != nil {
+		if metadata == nil {
+			metadata = make(map[string]any, len(issueRes.Metadata))
+		}
+		for k, v := range issueRes.Metadata {
+			metadata[k] = v
+		}
 	}
 
+	renewalToken := uuid.NewString()
+	if metadata == nil {
+		metadata = map[string]any{}
+	}
+	if taxResult != nil {
+		metadata["tax_transaction_id"] = taxResult.ExternalTransactionID
+	}
+	if billingID != "" {
+		metadata["billing_id"] = billingID
+	}
+	metadata["settlement_currency"] = settlementCurrency
+	if exchangeRate > 0 {
+		metadata["exchange_rate"] = exchangeRate
+	}
+
+	license := &dbm.License{
+		TenantID:        params.TenantID,
+		ListingID:       params.ListingID,
+		PlanID:          params.PlanID,
+		LicenseToken:    issueRes.Token,
+		Status:          statusFromTrial(params.Trial),
+		IssuedAt:        issuedAt,
+		ExpiresAt:       expiry,
+		OfflineUntil:    offlineUntil,
+		IssuedBy:        stringPtr(params.IssuedBy),
+		RenewalToken:    stringPtr(renewalToken),
+		LastValidatedAt: &lastValidated,
+		Metadata:        toJSONMap(metadata),
+	}
+
+	eventPayload := map[string]any{
+		"plan_id": params.PlanID,
+	}
+	finalBillingID := billingID
+	if finalBillingID == "" {
+		finalBillingID = billingIDFromMeta(metadata)
+	}
+	if finalBillingID != "" {
+		eventPayload["billing_id"] = finalBillingID
+	}
+	if taxResult != nil && taxResult.ExternalTransactionID != "" {
+		eventPayload["tax_transaction_id"] = taxResult.ExternalTransactionID
+	}
 	event := &dbm.LicenseEvent{
-		TenantID:  params.TenantID,
-		EventType: dbm.LicenseEventIssued,
-		EventPayload: toJSONMap(map[string]any{
-			"plan_id":    params.PlanID,
-			"billing_id": billingID,
-		}),
+		TenantID:     params.TenantID,
+		EventType:    dbm.LicenseEventIssued,
+		EventPayload: toJSONMap(eventPayload),
 	}
 
 	if err := s.licenseRepo.CreateLicense(ctx, license, event); err != nil {
@@ -212,28 +315,82 @@ func (s *LicenseService) IssueLicense(ctx context.Context, params IssueLicensePa
 	}
 
 	if taxResult != nil {
+		chargeCurrency := strings.ToUpper(strings.TrimSpace(taxResult.Currency))
+		if chargeCurrency == "" {
+			chargeCurrency = strings.ToUpper(strings.TrimSpace(plan.Currency))
+		}
+		units := taxResult.TaxAmountMinorUnits
+		if units == 0 && taxResult.TaxAmountCents != 0 {
+			units = taxResult.TaxAmountCents
+		}
+		taxAmount := MinorUnitsToAmount(chargeCurrency, units)
+		settlement := strings.ToUpper(strings.TrimSpace(taxResult.SettlementCurrency))
+		if settlement == "" {
+			settlement = settlementCurrency
+		}
+		exRate := taxResult.ExchangeRate
+		if exRate <= 0 {
+			if strings.EqualFold(settlement, chargeCurrency) {
+				exRate = 1
+			} else if exchangeRate > 0 {
+				exRate = exchangeRate
+			}
+		}
+		var settlementAmount *float64
+		if exRate > 0 {
+			value := taxAmount * exRate
+			settlementAmount = &value
+		}
 		txn := &dbm.TaxTransaction{
 			TenantID:              params.TenantID,
 			BillingID:             billingID,
 			ExternalProvider:      s.taxClient.Provider(),
 			ExternalTransactionID: stringPtr(taxResult.ExternalTransactionID),
 			Jurisdiction:          taxResult.Jurisdiction,
-			TaxAmount:             float64(taxResult.TaxAmountCents) / 100,
-			Currency:              taxResult.Currency,
-			RawPayload:            jsonFromBytes(taxResult.RawPayload),
-			Status:                "completed",
+			TaxAmount:             taxAmount,
+			Currency:              chargeCurrency,
+			SettlementCurrency:    settlement,
+			ExchangeRate: func() *float64 {
+				if exRate > 0 {
+					return &exRate
+				}
+				return nil
+			}(),
+			TaxAmountSettlement: settlementAmount,
+			RawPayload:          jsonFromBytes(taxResult.RawPayload),
+			Status:              "completed",
+		}
+		_ = s.licenseRepo.RecordTaxTransaction(ctx, txn)
+	} else if shouldCharge && s.taxClient != nil && billingID != "" {
+		failPayload := map[string]any{}
+		if taxErr != nil {
+			failPayload["error"] = taxErr.Error()
+		}
+		txn := &dbm.TaxTransaction{
+			TenantID:           params.TenantID,
+			BillingID:          billingID,
+			ExternalProvider:   s.taxClient.Provider(),
+			Currency:           strings.ToUpper(strings.TrimSpace(plan.Currency)),
+			SettlementCurrency: settlementCurrency,
+			ExchangeRate: func() *float64 {
+				if exchangeRate > 0 {
+					val := exchangeRate
+					return &val
+				}
+				return nil
+			}(),
+			TaxAmount:  0,
+			Status:     "failed",
+			RawPayload: toJSONMap(failPayload),
 		}
 		_ = s.licenseRepo.RecordTaxTransaction(ctx, txn)
 	}
 
-	provider := ""
-	if s.taxClient != nil {
-		provider = s.taxClient.Provider()
-	}
-	marketobs.ObserveLicenseVerification("issue", provider, params.TenantID, 0)
 	if s.cache != nil {
-		s.cache.Set(ctx, params.TenantID, params.ListingID, license, time.Until(expiry))
+		ttl := licenseCacheTTL(license, allowance)
+		s.cache.Set(ctx, params.TenantID, params.ListingID, license, ttl)
 	}
+	s.emitRenewalScheduled(license)
 	return license, nil
 }
 
@@ -246,6 +403,25 @@ func (s *LicenseService) RenewLicense(ctx context.Context, params RenewLicensePa
 	license, err := s.licenseRepo.GetLicense(ctx, params.TenantID, params.LicenseID)
 	if err != nil {
 		return nil, err
+	}
+
+	planChanged := false
+	if strings.TrimSpace(params.PlanID) != "" && !strings.EqualFold(params.PlanID, license.PlanID) {
+		plan, err := s.pricingRepo.GetPlan(ctx, params.TenantID, params.PlanID)
+		if err != nil {
+			return nil, err
+		}
+		if !strings.EqualFold(plan.ListingID, license.ListingID) {
+			return nil, fmt.Errorf("plan %s does not belong to license listing %s", plan.ID, license.ListingID)
+		}
+		license.PlanID = plan.ID
+		planChanged = true
+	}
+
+	if token := strings.TrimSpace(params.RenewalToken); token != "" {
+		if license.RenewalToken != nil && token != strings.TrimSpace(*license.RenewalToken) {
+			return nil, errors.New("invalid renewal token")
+		}
 	}
 
 	expiry := params.ExpiresAt
@@ -271,10 +447,19 @@ func (s *LicenseService) RenewLicense(ctx context.Context, params RenewLicensePa
 		}
 	}
 
+	newToken := uuid.NewString()
+	validatedAt := time.Now()
+	allowance := s.offlineAllowance()
+	offlinePtr := timePtr(minTime(expiry, validatedAt.Add(allowance)))
 	fields := map[string]any{
 		"expires_at":        expiry,
 		"status":            dbm.LicenseStatusActive,
-		"last_validated_at": time.Now(),
+		"last_validated_at": validatedAt,
+		"renewal_token":     newToken,
+		"offline_until":     offlinePtr,
+	}
+	if planChanged {
+		fields["plan_id"] = license.PlanID
 	}
 	if err := s.licenseRepo.UpdateLicenseToken(ctx, params.TenantID, license.ID, fields); err != nil {
 		return nil, err
@@ -286,16 +471,34 @@ func (s *LicenseService) RenewLicense(ctx context.Context, params RenewLicensePa
 		EventType: dbm.LicenseEventRenewed,
 		EventPayload: toJSONMap(map[string]any{
 			"expires_at": expiry,
+			"plan_id":    license.PlanID,
 		}),
 	}
 	_ = s.licenseRepo.CreateEvent(ctx, event)
 
+	if planChanged {
+		license.PlanID = fields["plan_id"].(string)
+	}
+	license.ExpiresAt = expiry
+	license.Status = dbm.LicenseStatusActive
+	license.LastValidatedAt = &validatedAt
+	license.RenewalToken = &newToken
+	license.OfflineUntil = offlinePtr
 	if s.cache != nil {
-		license.ExpiresAt = expiry
-		s.cache.Set(ctx, params.TenantID, license.ListingID, license, time.Until(expiry))
+		ttl := licenseCacheTTL(license, allowance)
+		s.cache.Set(ctx, params.TenantID, license.ListingID, license, ttl)
 	}
 
+	s.emitRenewalScheduled(license)
 	return license, nil
+}
+
+// GetLicense returns a license by identifier.
+func (s *LicenseService) GetLicense(ctx context.Context, tenantID, licenseID string) (*dbm.License, error) {
+	if hasEmpty(tenantID, licenseID) {
+		return nil, errors.New("tenant_id and license_id are required")
+	}
+	return s.licenseRepo.GetLicense(ctx, tenantID, licenseID)
 }
 
 // VerifyLicense checks the cache and repository to ensure license validity.
@@ -303,6 +506,7 @@ func (s *LicenseService) VerifyLicense(ctx context.Context, tenantID, listingID 
 	if hasEmpty(tenantID, listingID) {
 		return nil, errors.New("tenant_id and listing_id are required")
 	}
+	allowance := s.offlineAllowance()
 	if s.cache != nil {
 		if cached, ok := s.cache.Get(ctx, tenantID, listingID); ok && cached != nil {
 			return &VerifyResult{License: cached, Valid: !cached.ExpiresAt.Before(time.Now())}, nil
@@ -317,7 +521,8 @@ func (s *LicenseService) VerifyLicense(ctx context.Context, tenantID, listingID 
 	}
 	valid := !license.ExpiresAt.Before(time.Now())
 	if s.cache != nil {
-		s.cache.Set(ctx, tenantID, listingID, license, freshTTL(license.ExpiresAt))
+		ttl := licenseCacheTTL(license, allowance)
+		s.cache.Set(ctx, tenantID, listingID, license, ttl)
 	}
 	return &VerifyResult{License: license, Valid: valid}, nil
 }
@@ -359,7 +564,11 @@ func (s *LicenseService) ExtendOffline(ctx context.Context, tenantID, licenseID 
 		return errors.New("tenant_id and license_id are required")
 	}
 	target := until
-	max := time.Now().Add(72 * time.Hour)
+	allowance := s.offlineAllowance()
+	if allowance <= 0 {
+		allowance = 72 * time.Hour
+	}
+	max := time.Now().Add(allowance)
 	if until.After(max) {
 		target = max
 	}
@@ -417,13 +626,100 @@ func minTime(a, b time.Time) time.Time {
 	return a
 }
 
-func freshTTL(expiry time.Time) time.Duration {
-	if expiry.IsZero() {
+func parseExchangeRate(meta map[string]any) float64 {
+	if meta == nil {
+		return 0
+	}
+	val, ok := meta["exchange_rate"]
+	if !ok {
+		return 0
+	}
+	switch v := val.(type) {
+	case float64:
+		return v
+	case float32:
+		return float64(v)
+	case int:
+		return float64(v)
+	case int64:
+		return float64(v)
+	case string:
+		f, err := strconv.ParseFloat(strings.TrimSpace(v), 64)
+		if err == nil {
+			return f
+		}
+	}
+	return 0
+}
+
+func (s *LicenseService) offlineAllowance() time.Duration {
+	if s == nil || s.cfg == nil {
+		return 72 * time.Hour
+	}
+	if window := s.cfg.LicenseOfflineAllowance(); window > 0 {
+		return window
+	}
+	return 72 * time.Hour
+}
+
+func (s *LicenseService) reminderLead() time.Duration {
+	if s == nil || s.cfg == nil {
+		return 72 * time.Hour
+	}
+	return s.cfg.LicenseReminderLead()
+}
+
+func (s *LicenseService) reminderChannels() []string {
+	if s == nil || s.cfg == nil {
+		return []string{"email"}
+	}
+	return s.cfg.LicenseReminderChannels()
+}
+
+func (s *LicenseService) emitRenewalScheduled(license *dbm.License) {
+	if s == nil || s.logger == nil || license == nil {
+		return
+	}
+	lead := s.reminderLead()
+	if lead <= 0 {
+		return
+	}
+	scheduleAt := license.ExpiresAt.Add(-lead)
+	if scheduleAt.Before(time.Now()) {
+		scheduleAt = time.Now()
+	}
+	marketobs.EmitLicenseRenewalScheduled(s.logger, license, scheduleAt, s.reminderChannels())
+}
+
+func licenseCacheTTL(license *dbm.License, allowance time.Duration) time.Duration {
+	if license == nil {
 		return time.Hour
 	}
-	ttl := time.Until(expiry)
+	target := license.ExpiresAt
+	if license.OfflineUntil != nil && !license.OfflineUntil.IsZero() && license.OfflineUntil.Before(target) {
+		target = *license.OfflineUntil
+	}
+	ttl := time.Until(target)
 	if ttl <= 0 {
 		return time.Minute
 	}
+	if allowance > 0 && ttl > allowance {
+		ttl = allowance
+	}
 	return ttl
+}
+
+func billingIDFromMeta(meta map[string]any) string {
+	if meta == nil {
+		return ""
+	}
+	if v, ok := meta["billing_id"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			return strings.TrimSpace(val)
+		case fmt.Stringer:
+			return strings.TrimSpace(val.String())
+		}
+	}
+	return ""
 }

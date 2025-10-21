@@ -179,6 +179,26 @@ frontend:
                 path: /integration/marketplace/listings
                 route: integration/marketplace/listings
                 required_policies: [marketplace.listings:read]
+              - id: plugins.base.integration.marketplace.plans
+                title: Pricing Plans
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.integration.marketplace.plans
+                  default: Pricing Plans
+                icon: i-heroicons-currency-dollar
+                path: /integration/marketplace/plans
+                route: integration/marketplace/plans
+                required_policies: [marketplace.license:manage]
+              - id: plugins.base.integration.marketplace.purchase
+                title: Tenant Purchase
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.integration.marketplace.purchase
+                  default: Tenant Purchase
+                icon: i-heroicons-shopping-cart
+                path: /integration/marketplace/purchase
+                route: integration/marketplace/purchase
+                required_policies: [marketplace.license:purchase]
               - id: plugins.base.integration.recommendation
                 title: Recommendation Experiments
                 title_i18n:
@@ -227,6 +247,13 @@ rbac:
       actions: [read, export]
     - resource: marketplace.usage
       actions: [view, observe]
+
+events:
+  produces:
+    - topic: marketplace.license.renewal.scheduled
+      description: "License 续费提醒已排程，供通知系统拉取"
+    - topic: marketplace.license.renewal.due
+      description: "续费任务触发执行事件，便于审计与监控"
 
 permissions:
   - resource: base:template

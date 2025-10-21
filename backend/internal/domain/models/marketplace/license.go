@@ -73,6 +73,9 @@ type TaxTransaction struct {
 	Jurisdiction          string            `gorm:"column:jurisdiction;type:text" json:"jurisdiction,omitempty"`
 	TaxAmount             float64           `gorm:"column:tax_amount;type:numeric(18,4);not null" json:"tax_amount"`
 	Currency              string            `gorm:"column:currency;type:text;not null" json:"currency"`
+	SettlementCurrency    string            `gorm:"column:settlement_currency;type:text" json:"settlement_currency,omitempty"`
+	ExchangeRate          *float64          `gorm:"column:exchange_rate;type:numeric(18,6)" json:"exchange_rate,omitempty"`
+	TaxAmountSettlement   *float64          `gorm:"column:tax_amount_settlement;type:numeric(18,4)" json:"tax_amount_settlement,omitempty"`
 	RawPayload            datatypes.JSONMap `gorm:"column:raw_payload;type:jsonb" json:"raw_payload"`
 	Status                string            `gorm:"column:status;type:text;not null;default:'pending'" json:"status"`
 	SyncedAt              *time.Time        `gorm:"column:synced_at;type:timestamptz" json:"synced_at,omitempty"`

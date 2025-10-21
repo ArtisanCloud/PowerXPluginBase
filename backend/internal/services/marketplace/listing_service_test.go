@@ -2,11 +2,12 @@ package marketplace
 
 import (
 	"context"
+	"fmt"
 	"testing"
-	"time"
 
 	dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
 	mrepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/marketplace"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
@@ -23,11 +24,12 @@ func (s stubVendorGuard) VendorRevoked(ctx context.Context, vendorID string) (bo
 
 func setupServiceDB(t *testing.T) *gorm.DB {
 	t.Helper()
-	db, err := gorm.Open(sqlite.Open("file:listing_service?mode=memory&cache=shared"), &gorm.Config{})
+	dsn := fmt.Sprintf("file:%s-%s?mode=memory&cache=private", t.Name(), uuid.NewString())
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	require.NoError(t, err)
 
 	stmts := []string{
-		`CREATE TABLE marketplace_listings (
+		`CREATE TABLE IF NOT EXISTS marketplace_listings (
             id TEXT PRIMARY KEY,
             tenant_id TEXT NOT NULL,
             plugin_id TEXT NOT NULL,
@@ -37,9 +39,12 @@ func setupServiceDB(t *testing.T) *gorm.DB {
             slug TEXT NOT NULL,
             summary TEXT,
             description TEXT,
-            locale TEXT,
+            cover_asset_id TEXT,
+            hero_video_asset_id TEXT,
             categories TEXT,
             tags TEXT,
+            locale TEXT,
+            version TEXT,
             ready_checklist_score INTEGER DEFAULT 0,
             recommended_weight REAL DEFAULT 0,
             published_at DATETIME,
@@ -48,14 +53,16 @@ func setupServiceDB(t *testing.T) *gorm.DB {
             audit_notes TEXT,
             branding_theme TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            deleted_at DATETIME
         );`,
-		`CREATE TABLE marketplace_listing_assets (
+		`CREATE TABLE IF NOT EXISTS marketplace_listing_assets (
             id TEXT PRIMARY KEY,
             listing_id TEXT NOT NULL,
             tenant_id TEXT NOT NULL,
             asset_type TEXT NOT NULL,
             storage_uri TEXT NOT NULL,
+            checksum TEXT,
             is_primary INTEGER DEFAULT 0,
             locale TEXT,
             weight INTEGER DEFAULT 0,
@@ -63,7 +70,7 @@ func setupServiceDB(t *testing.T) *gorm.DB {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );`,
-		`CREATE TABLE marketplace_listing_versions (
+		`CREATE TABLE IF NOT EXISTS marketplace_listing_versions (
             id TEXT PRIMARY KEY,
             listing_id TEXT NOT NULL,
             tenant_id TEXT NOT NULL,
@@ -76,7 +83,7 @@ func setupServiceDB(t *testing.T) *gorm.DB {
             reviewed_at DATETIME,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );`,
-		`CREATE TABLE marketplace_pricing_plans (
+		`CREATE TABLE IF NOT EXISTS marketplace_pricing_plans (
             id TEXT PRIMARY KEY,
             listing_id TEXT NOT NULL,
             tenant_id TEXT NOT NULL,
@@ -84,19 +91,29 @@ func setupServiceDB(t *testing.T) *gorm.DB {
             plan_type TEXT NOT NULL,
             currency TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            amount REAL,
+            billing_period TEXT,
+            trial_period_days INTEGER,
+            quota_limit REAL,
+            overage_policy TEXT,
+            feature_matrix TEXT,
+            is_default INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'active'
         );`,
-		`CREATE TABLE marketplace_plan_tiers (
+		`CREATE TABLE IF NOT EXISTS marketplace_plan_tiers (
             id TEXT PRIMARY KEY,
             plan_id TEXT NOT NULL,
             tenant_id TEXT NOT NULL,
             metric TEXT NOT NULL,
             range_from REAL NOT NULL,
             unit_amount REAL NOT NULL,
+            range_to REAL,
+            unit_name TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );`,
-		`CREATE TABLE marketplace_checklist_runs (
+		`CREATE TABLE IF NOT EXISTS marketplace_checklist_runs (
             id TEXT PRIMARY KEY,
             listing_id TEXT NOT NULL,
             tenant_id TEXT NOT NULL,
@@ -106,9 +123,10 @@ func setupServiceDB(t *testing.T) *gorm.DB {
             summary TEXT,
             started_at DATETIME,
             completed_at DATETIME,
+            ci_pipeline_id TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );`,
-		`CREATE TABLE marketplace_checklist_items (
+		`CREATE TABLE IF NOT EXISTS marketplace_checklist_items (
             id TEXT PRIMARY KEY,
             checklist_run_id TEXT NOT NULL,
             tenant_id TEXT NOT NULL,
@@ -120,6 +138,34 @@ func setupServiceDB(t *testing.T) *gorm.DB {
             auto_fix_link TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );`,
+		`CREATE TABLE IF NOT EXISTS marketplace_licenses (
+            id TEXT PRIMARY KEY,
+            tenant_id TEXT NOT NULL,
+            listing_id TEXT NOT NULL,
+            plan_id TEXT NOT NULL,
+            license_token TEXT NOT NULL,
+            status TEXT NOT NULL,
+            issued_at DATETIME NOT NULL,
+            expires_at DATETIME NOT NULL,
+            renewal_token TEXT,
+            offline_until DATETIME,
+            last_validated_at DATETIME,
+            issued_by TEXT,
+            metadata TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );`,
+		`CREATE TABLE IF NOT EXISTS marketplace_license_events (
+            id TEXT PRIMARY KEY,
+            tenant_id TEXT NOT NULL,
+            license_id TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            event_payload TEXT,
+            emitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            actor_id TEXT,
+            trace_id TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );`,
 	}
 	for _, stmt := range stmts {

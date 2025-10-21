@@ -8,6 +8,7 @@ import (
 
 	dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
 	repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -32,13 +33,22 @@ func (r *LicenseRepository) CreateLicense(ctx context.Context, license *dbm.Lice
 	if tenantID == "" {
 		return errors.New("tenant_id is required")
 	}
+	if strings.TrimSpace(license.ID) == "" {
+		license.ID = uuid.NewString()
+	}
 	return r.WithTenantTx(ctx, tenantID, func(tx *gorm.DB) error {
 		if err := tx.Create(license).Error; err != nil {
 			return err
 		}
 		if event != nil {
+			if strings.TrimSpace(event.ID) == "" {
+				event.ID = uuid.NewString()
+			}
 			event.LicenseID = license.ID
 			event.TenantID = tenantID
+			if event.EmittedAt.IsZero() {
+				event.EmittedAt = time.Now()
+			}
 			if err := tx.Create(event).Error; err != nil {
 				return err
 			}
@@ -115,6 +125,12 @@ func (r *LicenseRepository) CreateEvent(ctx context.Context, event *dbm.LicenseE
 	if tenantID == "" {
 		return errors.New("tenant_id is required")
 	}
+	if strings.TrimSpace(event.ID) == "" {
+		event.ID = uuid.NewString()
+	}
+	if event.EmittedAt.IsZero() {
+		event.EmittedAt = time.Now()
+	}
 	return r.WithTenantTx(ctx, tenantID, func(tx *gorm.DB) error {
 		return tx.Create(event).Error
 	})
@@ -155,7 +171,50 @@ func (r *LicenseRepository) RecordTaxTransaction(ctx context.Context, txn *dbm.T
 	if tenantID == "" {
 		return errors.New("tenant_id is required")
 	}
+	if strings.TrimSpace(txn.ID) == "" {
+		txn.ID = uuid.NewString()
+	}
 	return r.WithTenantTx(ctx, tenantID, func(tx *gorm.DB) error {
 		return tx.Create(txn).Error
 	})
+}
+
+// FindByBillingID searches licenses by embedded billing identifier in metadata.
+func (r *LicenseRepository) FindByBillingID(ctx context.Context, tenantID, billingID string) (*dbm.License, error) {
+	tenantID = strings.TrimSpace(tenantID)
+	billingID = strings.TrimSpace(billingID)
+	if tenantID == "" || billingID == "" {
+		return nil, errors.New("tenant_id and billing_id are required")
+	}
+	var licenses []dbm.License
+	if err := r.DB.WithContext(ctx).
+		Where("tenant_id = ?", tenantID).
+		Find(&licenses).Error; err != nil {
+		return nil, err
+	}
+	for _, license := range licenses {
+		if id, ok := license.Metadata["billing_id"].(string); ok && strings.TrimSpace(id) == billingID {
+			return &license, nil
+		}
+	}
+	return nil, gorm.ErrRecordNotFound
+}
+
+// ListExpiringWithin returns licenses that expire or leave offline grace within the window.
+func (r *LicenseRepository) ListExpiringWithin(ctx context.Context, tenantID string, window time.Duration) ([]*dbm.License, error) {
+	tenantID = strings.TrimSpace(tenantID)
+	if tenantID == "" {
+		return nil, errors.New("tenant_id is required")
+	}
+	if window <= 0 {
+		window = 24 * time.Hour
+	}
+	horizon := time.Now().Add(window)
+	var licenses []*dbm.License
+	err := r.DB.WithContext(ctx).
+		Where("tenant_id = ? AND status IN ?", tenantID, []string{dbm.LicenseStatusActive, dbm.LicenseStatusTrial}).
+		Where("(expires_at <= ?) OR (offline_until IS NOT NULL AND offline_until <= ?)", horizon, horizon).
+		Order("expires_at ASC").
+		Find(&licenses).Error
+	return licenses, err
 }

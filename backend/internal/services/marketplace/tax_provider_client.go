@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
@@ -23,29 +25,36 @@ var (
 
 // TaxChargeRequest captures the minimal context required for tax calculations.
 type TaxChargeRequest struct {
-	TenantID          string
-	ListingID         string
-	Currency          string
-	AmountCents       int64
-	Jurisdiction      string
-	ExternalReference string
-	Items             []TaxLineItem
-	Metadata          map[string]string
+	TenantID           string
+	ListingID          string
+	Currency           string
+	AmountCents        int64
+	AmountMinorUnits   int64
+	SettlementCurrency string
+	ExchangeRate       float64
+	Jurisdiction       string
+	ExternalReference  string
+	Items              []TaxLineItem
+	Metadata           map[string]string
 }
 
 // TaxLineItem describes per-item tax metadata (SKU/plan level granularity).
 type TaxLineItem struct {
-	SKU         string
-	Quantity    int
-	AmountCents int64
-	TaxCode     string
+	SKU              string
+	Quantity         int
+	AmountCents      int64
+	AmountMinorUnits int64
+	TaxCode          string
 }
 
 // TaxChargeResult captures the provider response metadata.
 type TaxChargeResult struct {
 	ExternalTransactionID string
 	TaxAmountCents        int64
+	TaxAmountMinorUnits   int64
 	Currency              string
+	SettlementCurrency    string
+	ExchangeRate          float64
 	Jurisdiction          string
 	RawPayload            []byte
 }
@@ -116,6 +125,9 @@ func (c *TaxProviderClient) CreateTransaction(ctx context.Context, req *TaxCharg
 	}
 	if ctx == nil {
 		ctx = context.Background()
+	}
+	if err := normalizeChargeRequest(req); err != nil {
+		return nil, err
 	}
 
 	attempts := len(c.retries) + 1
@@ -247,6 +259,105 @@ func errorCode(err error) string {
 	default:
 		return "unknown"
 	}
+}
+
+func normalizeChargeRequest(req *TaxChargeRequest) error {
+	if req == nil {
+		return errors.New("nil tax charge request")
+	}
+	req.Currency = strings.ToUpper(strings.TrimSpace(req.Currency))
+	if req.Currency == "" {
+		return errors.New("currency must be provided")
+	}
+	if req.AmountMinorUnits == 0 && req.AmountCents != 0 {
+		req.AmountMinorUnits = req.AmountCents
+	}
+	if req.AmountCents == 0 && req.AmountMinorUnits != 0 && currencyExponent(req.Currency) == 2 {
+		req.AmountCents = req.AmountMinorUnits
+	}
+	if req.Metadata == nil {
+		req.Metadata = map[string]string{}
+	}
+	if req.SettlementCurrency == "" {
+		req.SettlementCurrency = req.Currency
+	} else {
+		req.SettlementCurrency = strings.ToUpper(strings.TrimSpace(req.SettlementCurrency))
+	}
+	if req.ExchangeRate <= 0 {
+		if req.SettlementCurrency == req.Currency {
+			req.ExchangeRate = 1
+		}
+	}
+	for i := range req.Items {
+		req.Items[i].AmountMinorUnits = normalizeItemAmount(req.Currency, req.Items[i].AmountMinorUnits, req.Items[i].AmountCents)
+		if req.Items[i].AmountCents == 0 && req.Items[i].AmountMinorUnits != 0 && currencyExponent(req.Currency) == 2 {
+			req.Items[i].AmountCents = req.Items[i].AmountMinorUnits
+		}
+	}
+	return nil
+}
+
+func normalizeItemAmount(currency string, minorUnits, cents int64) int64 {
+	if minorUnits != 0 {
+		return minorUnits
+	}
+	if cents != 0 {
+		return cents
+	}
+	return 0
+}
+
+var currencyMinorUnitExponent = map[string]int{
+	"BHD": 3,
+	"IQD": 3,
+	"JOD": 3,
+	"KWD": 3,
+	"LYD": 3,
+	"OMR": 3,
+	"TND": 3,
+	"CLF": 4,
+	"MRO": 1,
+	"MRU": 1,
+	"DJF": 0,
+	"GNF": 0,
+	"JPY": 0,
+	"KMF": 0,
+	"KRW": 0,
+	"PYG": 0,
+	"RWF": 0,
+	"UGX": 0,
+	"VND": 0,
+	"VUV": 0,
+	"XAF": 0,
+	"XOF": 0,
+	"XPF": 0,
+}
+
+func currencyExponent(currency string) int {
+	if exp, ok := currencyMinorUnitExponent[strings.ToUpper(strings.TrimSpace(currency))]; ok {
+		return exp
+	}
+	return 2
+}
+
+// AmountToMinorUnits converts a decimal amount into integer minor units for the currency.
+func AmountToMinorUnits(currency string, amount float64) (int64, error) {
+	if currency = strings.ToUpper(strings.TrimSpace(currency)); currency == "" {
+		return 0, errors.New("currency required")
+	}
+	exp := currencyExponent(currency)
+	multiplier := math.Pow10(exp)
+	return int64(math.Round(amount * multiplier)), nil
+}
+
+// MinorUnitsToAmount converts minor units back into a decimal representation.
+func MinorUnitsToAmount(currency string, units int64) float64 {
+	exp := currencyExponent(currency)
+	multiplier := math.Pow10(exp)
+	if multiplier == 0 {
+		return 0
+	}
+	return float64(units) / multiplier
 }
 
 type stripeAdapter struct {

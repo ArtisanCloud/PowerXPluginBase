@@ -70,27 +70,27 @@
 
 ### Tests for US2
 
-- [ ] T201 [P] [US2] 在 `backend/tests/contract/marketplace/licenses_test.go` 添加 REST 合同测试（创建、查询、续订、离线扩展）。  
-- [ ] T202 [P] [US2] 在 `backend/tests/integration/marketplace/license_flow_test.go` 编写端到端测试，模拟支付成功→License 发放→续费。  
-- [ ] T203 [P] [US2] 在 `backend/internal/services/marketplace/license_service_test.go` 编写单测，覆盖额度校验、离线续期令牌生成、事件记录。
+- [X] T201 [P] [US2] 在 `backend/tests/contract/marketplace/licenses_test.go` 添加 REST 合同测试（创建、查询、续订、离线扩展）。  
+- [X] T202 [P] [US2] 在 `backend/tests/integration/marketplace/license_flow_test.go` 编写端到端测试，模拟支付成功→License 发放→续费。  
+- [X] T203 [P] [US2] 在 `backend/internal/services/marketplace/license_service_test.go` 编写单测，覆盖额度校验、离线续期令牌生成、事件记录。
 
 ### Implementation for US2
 
-- [ ] T204 [US2] 新增迁移 `backend/migrations/2025Q4_marketplace_licensing.sql`，创建 `pricing_plans`、`plan_tiers`、`licenses`、`license_events`、`tax_transactions` 并配置 RLS。  
-- [ ] T205 [P] [US2] 增补模型：`backend/internal/domain/models/marketplace/pricing.go`、`license.go` 定义计划/License 结构与约束。  
-- [ ] T206 [P] [US2] 实现仓储：`backend/internal/domain/repository/marketplace/pricing_repository.go`、`license_repository.go`，支持计划查询、License 发放与事件写入。  
-- [ ] T207 [US2] 编写 `backend/internal/services/marketplace/license_service.go`，实现购买→税费计算→调用 Billing Engine→请求 License Server→缓存 JWT→记录事件。  
-- [ ] T208 [US2] 构建税务 SaaS 适配：在 `backend/internal/services/marketplace/tax_provider_client.go` 扩展多货币结算/重试逻辑并持久化 `tax_transactions`。  
-- [ ] T209 [US2] 开发租户侧 HTTP Handler：`backend/internal/transport/http/tenant/marketplace/licenses_handler.go` 支持计划浏览、下单、续期、离线续期令牌。  
-- [ ] T210 [US2] 更新 gRPC 入口：在 `backend/internal/transport/grpc/marketplace/license_server.go` 提供 License Server 回调/验证接口并接入现有 `server.go`。  
-- [ ] T211 [US2] 添加缓存与通知：在 `backend/internal/services/marketplace/license_service.go` 整合 Redis 缓存（离线 72h）与 `backend/internal/observability/marketplace/events.go` 发布续费提醒。  
-- [ ] T212 [P] [US2] 管理前端价格计划编排：`web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/plans.vue` 提供计划编辑与发布。  
-- [ ] T213 [P] [US2] 租户购买界面：`web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/purchase.vue` 实现价格展示、支付触发、License 状态提醒。  
-- [ ] T214 [P] [US2] 前端测试：`web-admin/tests/marketplace/license_flow.spec.ts` 覆盖计划选择、支付回执、离线续期提示。  
-- [ ] T215 [US2] 更新 `plugin.yaml` 与 `backend/etc/config.example.yaml`，声明 `marketplace.license.*` RBAC、税务配置示例与 License Server 事件订阅。
-- [ ] T216 [P] [US2] 压测与指标：在 `backend/tests/perf/marketplace/license_latency_test.go` 与 `backend/internal/observability/marketplace/metrics.go` 校验 License 验证 p95 <200ms，并输出告警。  
-- [ ] T217 [US2] 处理支付/签发延迟：实现 `backend/internal/services/marketplace/license_recovery.go`，在 Billing 与 License Server 不一致时补偿；新增测试 `backend/tests/integration/marketplace/license_delay_test.go`。  
-- [ ] T218 [P] [US2] 构建续费提醒任务：`backend/internal/jobs/marketplace/license_renewal_notifier.go` 定期扫描 `offline_until`/到期记录并触发通知渠道。
+- [X] T204 [US2] 新增迁移 `backend/migrations/2025Q4_marketplace_licensing.sql`，创建 `pricing_plans`、`plan_tiers`、`licenses`、`license_events`、`tax_transactions` 并配置 RLS。  
+- [X] T205 [P] [US2] 增补模型：`backend/internal/domain/models/marketplace/pricing.go`、`license.go` 定义计划/License 结构与约束。  
+- [X] T206 [P] [US2] 实现仓储：`backend/internal/domain/repository/marketplace/pricing_repository.go`、`license_repository.go`，支持计划查询、License 发放与事件写入。  
+- [X] T207 [US2] 编写 `backend/internal/services/marketplace/license_service.go`，实现购买→税费计算→调用 Billing Engine→请求 License Server→缓存 JWT→记录事件。  
+- [X] T208 [US2] 构建税务 SaaS 适配：在 `backend/internal/services/marketplace/tax_provider_client.go` 扩展多货币结算/重试逻辑并持久化 `tax_transactions`。  
+- [X] T209 [US2] 开发租户侧 HTTP Handler：`backend/internal/transport/http/tenant/marketplace/licenses_handler.go` 支持计划浏览、下单、续期、离线续期令牌。  
+- [x] T210 [US2] 更新 gRPC 入口：在 `backend/internal/transport/grpc/marketplace/license_server.go` 提供 License Server 回调/验证接口并接入现有 `server.go`。  
+- [x] T211 [US2] 添加缓存与通知：在 `backend/internal/services/marketplace/license_service.go` 整合 Redis 缓存（离线 72h）与 `backend/internal/observability/marketplace/events.go` 发布续费提醒。  
+- [x] T212 [P] [US2] 管理前端价格计划编排：`web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/plans.vue` 提供计划编辑与发布。  
+- [x] T213 [P] [US2] 租户购买界面：`web-admin/app/pages/_p/com.powerx.plugins.base/admin/integration/marketplace/purchase.vue` 实现价格展示、支付触发、License 状态提醒。  
+- [x] T214 [P] [US2] 前端测试：`web-admin/tests/marketplace/license_flow.spec.ts` 覆盖计划选择、支付回执、离线续期提示。  
+- [x] T215 [US2] 更新 `plugin.yaml` 与 `backend/etc/config.example.yaml`，声明 `marketplace.license.*` RBAC、税务配置示例与 License Server 事件订阅。
+- [x] T216 [P] [US2] 压测与指标：在 `backend/tests/perf/marketplace/license_latency_test.go` 与 `backend/internal/observability/marketplace/metrics.go` 校验 License 验证 p95 <200ms，并输出告警。  
+- [x] T217 [US2] 处理支付/签发延迟：实现 `backend/internal/services/marketplace/license_recovery.go`，在 Billing 与 License Server 不一致时补偿；新增测试 `backend/tests/integration/marketplace/license_delay_test.go`。  
+- [x] T218 [P] [US2] 构建续费提醒任务：`backend/internal/jobs/marketplace/license_renewal_notifier.go` 定期扫描 `offline_until`/到期记录并触发通知渠道。
 
 **Checkpoint**：US1 + US2 可独立运行（提交流程 + 购买激活）。
 

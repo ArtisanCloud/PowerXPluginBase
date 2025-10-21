@@ -127,6 +127,15 @@ marketplace:
     default_weight: 0.0
     experiment_topic: "marketplace.recommendation.experiments"
     frequency_minutes: 60
+  license:
+    offline_allowance_hours: 72
+    cache:
+      provider: redis
+      redis_url: redis://localhost:6379
+      key_prefix: powerx:marketplace:licenses
+    reminder:
+      lead_hours: 72
+      channels: ["email", "in_app"]
 
 # gRPC 上游配置（连接 PowerX 核心服务）
 grpc_upstream:

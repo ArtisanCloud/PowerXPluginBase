@@ -10,10 +10,13 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
 
 	cfgpkg "github.com/ArtisanCloud/PowerXPlugin/internal/config"
+	marketplacerepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/marketplace"
 	integrationService "github.com/ArtisanCloud/PowerXPlugin/internal/services/integration"
+	marketplacesvc "github.com/ArtisanCloud/PowerXPlugin/internal/services/marketplace"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	grpcTransport "github.com/ArtisanCloud/PowerXPlugin/internal/transport/grpc"
 	integrationTransport "github.com/ArtisanCloud/PowerXPlugin/internal/transport/grpc/integration"
+	marketplaceTransport "github.com/ArtisanCloud/PowerXPlugin/internal/transport/grpc/marketplace"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -81,8 +84,28 @@ func NewGRPCServer(ctx context.Context, deps *app.Deps, c *cfgpkg.GRPCServer) (*
 	reflection.Register(s)
 
 	dispatchService := integrationService.BuildDispatchService(deps, logger.WithField("component", "integration.dispatch_factory"))
+
+	var marketplaceServer marketplaceTransport.LicenseServiceServer
+	if deps != nil && deps.DB != nil {
+		pricingRepo := marketplacerepo.NewPricingRepository(deps.DB)
+		licenseRepo := marketplacerepo.NewLicenseRepository(deps.DB)
+		licenseLogger := logger.WithField("component", "marketplace.grpc.license")
+		licenseService := marketplacesvc.NewLicenseService(
+			deps.Config,
+			pricingRepo,
+			licenseRepo,
+			deps.TaxProviderClient,
+			deps.MarketplaceBilling,
+			deps.LicenseAuthority,
+			deps.LicenseCache,
+			licenseLogger,
+		)
+		marketplaceServer = marketplaceTransport.NewLicenseServer(licenseService)
+	}
+
 	grpcTransport.Register(s, grpcTransport.Registrar{
 		Integration: integrationTransport.NewServer(dispatchService, logger.WithField("component", "integration.grpc")),
+		Marketplace: marketplaceServer,
 	})
 
 	//logger.WithField("address", lis.Addr().String()).Info("gRPC server configured")

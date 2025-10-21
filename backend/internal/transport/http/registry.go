@@ -14,6 +14,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/templates"
 	agentapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/agent"
 	integrationapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/integration"
+	tenantmarketplace "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/tenant/marketplace"
 	"github.com/gin-gonic/gin"
 )
 
@@ -83,6 +84,7 @@ func (r *Registry) RegisterMarketplaceRoutes(root *gin.RouterGroup) *gin.RouterG
 		return nil
 	}
 	group := root.Group("/marketplace")
+	tenantmarketplace.RegisterRoutes(group, r.deps)
 	return group
 }
 

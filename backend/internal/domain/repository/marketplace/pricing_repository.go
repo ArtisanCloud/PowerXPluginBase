@@ -7,6 +7,7 @@ import (
 
 	dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
 	repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -65,6 +66,9 @@ func (r *PricingRepository) CreatePlan(ctx context.Context, plan *dbm.PricingPla
 	if tenantID == "" {
 		return errors.New("tenant_id is required")
 	}
+	if strings.TrimSpace(plan.ID) == "" {
+		plan.ID = uuid.NewString()
+	}
 	return r.WithTenantTx(ctx, tenantID, func(tx *gorm.DB) error {
 		if err := tx.Create(plan).Error; err != nil {
 			return err
@@ -73,6 +77,9 @@ func (r *PricingRepository) CreatePlan(ctx context.Context, plan *dbm.PricingPla
 			return nil
 		}
 		for i := range tiers {
+			if strings.TrimSpace(tiers[i].ID) == "" {
+				tiers[i].ID = uuid.NewString()
+			}
 			tiers[i].PlanID = plan.ID
 			tiers[i].TenantID = tenantID
 		}
@@ -103,6 +110,9 @@ func (r *PricingRepository) UpdatePlan(ctx context.Context, plan *dbm.PricingPla
 			return nil
 		}
 		for i := range tiers {
+			if strings.TrimSpace(tiers[i].ID) == "" {
+				tiers[i].ID = uuid.NewString()
+			}
 			tiers[i].PlanID = plan.ID
 			tiers[i].TenantID = tenantID
 		}

@@ -8,6 +8,7 @@ import (
 
 	dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
 	repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -32,8 +33,11 @@ func (r *ChecklistRepository) CreateRun(ctx context.Context, run *dbm.ChecklistR
 		return errors.New("tenant_id is required")
 	}
 	run.TenantID = tenantID
+	if strings.TrimSpace(run.ID) == "" {
+		run.ID = uuid.NewString()
+	}
 	return r.WithTenantTx(ctx, tenantID, func(tx *gorm.DB) error {
-		if err := tx.Create(run).Error; err != nil {
+		if err := tx.Omit("Items").Create(run).Error; err != nil {
 			return err
 		}
 		if len(items) == 0 {
@@ -42,8 +46,16 @@ func (r *ChecklistRepository) CreateRun(ctx context.Context, run *dbm.ChecklistR
 		for i := range items {
 			items[i].ChecklistRunID = run.ID
 			items[i].TenantID = run.TenantID
+			if strings.TrimSpace(items[i].ID) == "" {
+				items[i].ID = uuid.NewString()
+			}
 		}
-		return tx.Create(&items).Error
+		for i := range items {
+			if err := tx.Create(&items[i]).Error; err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 }
 

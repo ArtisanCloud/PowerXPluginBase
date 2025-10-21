@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -90,17 +91,33 @@ func main() {
 		taxLogger.WithError(err).Warn("Tax provider client initialization failed")
 	}
 
+	var licenseCache marketplacesvc.LicenseCache
+	cacheCfg := cfg.LicenseCacheConfig()
+	cacheLogger := logger.WithField("component", "marketplace_license_cache")
+	if strings.EqualFold(strings.TrimSpace(cacheCfg.Provider), "redis") {
+		if lc, err := marketplacesvc.NewRedisLicenseCache(cacheCfg.RedisURL, cacheCfg.KeyPrefix, cacheLogger); err != nil {
+			cacheLogger.WithError(err).Warn("license cache initialization failed")
+		} else {
+			licenseCache = lc
+		}
+	}
+
 	deps := &app.Deps{
-		DB:                queryDB,
-		Ctx:               rootCtx,
-		PowerXClient:      pxc,
-		Config:            cfg,
-		TaxProviderClient: taxClient,
+		DB:                 queryDB,
+		Ctx:                rootCtx,
+		PowerXClient:       pxc,
+		Config:             cfg,
+		TaxProviderClient:  taxClient,
+		MarketplaceBilling: nil,
+		LicenseAuthority:   nil,
+		LicenseCache:       licenseCache,
 	}
 
 	listingRepo := marketplacerepo.NewListingRepository(queryDB)
+	licenseRepoGlobal := marketplacerepo.NewLicenseRepository(queryDB)
 	metricsProvider := recommendation.NewListingMetricsProvider(listingRepo)
 	syncJob := marketplacejobs.NewSyncJob(cfg, listingRepo, metricsProvider, logger.WithField("component", "marketplace_recommendation_sync"), listingRepo.ListTenantIDs)
+	renewalJob := marketplacejobs.NewLicenseRenewalNotifier(cfg, licenseRepoGlobal, logger.WithField("component", "marketplace_license_renewal_notifier"), listingRepo.ListTenantIDs, nil)
 
 	// 设置 gin engine 路由
 	r := router.NewRouter(cfg, deps)
@@ -133,6 +150,12 @@ func main() {
 	if cfg.Marketplace == nil || cfg.Marketplace.Recommendation.Enabled {
 		g.Go(func() error {
 			syncJob.Run(ctx)
+			return nil
+		})
+	}
+	if renewalJob != nil {
+		g.Go(func() error {
+			renewalJob.Run(ctx)
 			return nil
 		})
 	}

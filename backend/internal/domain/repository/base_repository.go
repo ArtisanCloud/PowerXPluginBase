@@ -53,9 +53,11 @@ func (r *BaseRepository[T]) BeginTenantTx(ctx context.Context, tenantID any) (*g
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	if err := tx.Exec("SET LOCAL app.tenant_id = ?", id).Error; err != nil {
-		_ = tx.Rollback()
-		return nil, err
+	if tx.Dialector != nil && tx.Dialector.Name() != "sqlite" {
+		if err := tx.Exec("SET LOCAL app.tenant_id = ?", id).Error; err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 	return tx, nil
 }

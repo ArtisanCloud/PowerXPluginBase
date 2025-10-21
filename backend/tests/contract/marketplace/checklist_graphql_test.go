@@ -2,13 +2,12 @@ package marketplace_test
 
 import (
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 )
 
 func TestReadyChecklistGraphQLContract(t *testing.T) {
-	schemaPath := filepath.Join("specs", "006-marketplace-business", "contracts", "ready-checklist.graphql")
+	schemaPath := contractPath("specs", "006-marketplace-business", "contracts", "ready-checklist.graphql")
 	data, err := os.ReadFile(schemaPath)
 	if err != nil {
 		t.Fatalf("failed to read GraphQL schema: %v", err)

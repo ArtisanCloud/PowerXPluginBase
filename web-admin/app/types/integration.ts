@@ -102,9 +102,25 @@ export interface MarketplacePricingPlan {
   overage_policy?: string
   feature_matrix?: Record<string, any>
   is_default: boolean
+  status?: string
   created_at: string
   updated_at: string
   tiers?: MarketplacePricingTier[]
+}
+
+export type MarketplaceLicenseStatus = 'trial' | 'active' | 'expired' | 'revoked' | 'suspended'
+
+export interface MarketplaceLicense {
+  id: string
+  listing_id: string
+  plan_id: string
+  status: MarketplaceLicenseStatus
+  expires_at: string
+  token: string
+  offline_until?: string | null
+  renewal_token?: string
+  settlement_currency?: string
+  exchange_rate?: number | null
 }
 
 export interface MarketplaceListing {

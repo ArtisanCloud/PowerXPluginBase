@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
 	dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
 	mrepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/marketplace"
 	marketplacesvc "github.com/ArtisanCloud/PowerXPlugin/internal/services/marketplace"
@@ -23,6 +24,7 @@ func (f *fakeVendorGuard) VendorRevoked(ctx context.Context, vendorID string) (b
 
 func setupMarketplaceDB(t *testing.T) *gorm.DB {
 	t.Helper()
+	models.ForceSchemaForTests("")
 	db, err := gorm.Open(sqlite.Open("file:marketplace_edge_cases?mode=memory&cache=shared"), &gorm.Config{})
 	require.NoError(t, err)
 	stmts := []string{
@@ -79,6 +81,36 @@ func setupMarketplaceDB(t *testing.T) *gorm.DB {
             reviewer_id TEXT,
             reviewed_at DATETIME,
             created_at DATETIME
+        );`,
+		`CREATE TABLE IF NOT EXISTS marketplace_pricing_plans (
+            id TEXT PRIMARY KEY,
+            listing_id TEXT NOT NULL,
+            tenant_id TEXT NOT NULL,
+            plan_code TEXT NOT NULL,
+            plan_type TEXT NOT NULL,
+            currency TEXT NOT NULL,
+            amount REAL,
+            billing_period TEXT,
+            trial_period_days INTEGER,
+            quota_limit REAL,
+            overage_policy TEXT,
+            feature_matrix TEXT,
+            is_default INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'active',
+            created_at DATETIME,
+            updated_at DATETIME
+        );`,
+		`CREATE TABLE IF NOT EXISTS marketplace_plan_tiers (
+            id TEXT PRIMARY KEY,
+            plan_id TEXT NOT NULL,
+            tenant_id TEXT NOT NULL,
+            metric TEXT NOT NULL,
+            range_from REAL NOT NULL,
+            range_to REAL,
+            unit_amount REAL NOT NULL,
+            unit_name TEXT,
+            created_at DATETIME,
+            updated_at DATETIME
         );`,
 	}
 	for _, stmt := range stmts {

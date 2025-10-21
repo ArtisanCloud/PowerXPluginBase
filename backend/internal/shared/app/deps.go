@@ -20,6 +20,9 @@ type Deps struct {
 	PowerXClient      *client.PowerXServiceClient
 	Config            *config.Config
 	TaxProviderClient *marketplacesvc.TaxProviderClient
+	MarketplaceBilling marketplacesvc.BillingClient
+	LicenseAuthority   marketplacesvc.LicenseAuthority
+	LicenseCache       marketplacesvc.LicenseCache
 }
 
 // RuntimeDefaults returns the configured runtime ops defaults (if any).

@@ -9,9 +9,26 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func contractPath(parts ...string) string {
+	candidates := [][]string{
+		parts,
+		append([]string{".."}, parts...),
+		append([]string{"..", ".."}, parts...),
+		append([]string{"..", "..", ".."}, parts...),
+		append([]string{"..", "..", "..", ".."}, parts...),
+	}
+	for _, pathParts := range candidates {
+		p := filepath.Join(pathParts...)
+		if _, err := os.Stat(p); err == nil {
+			return p
+		}
+	}
+	return filepath.Join(parts...)
+}
+
 func loadOpenAPI(t *testing.T) map[string]any {
 	t.Helper()
-	specPath := filepath.Join("specs", "006-marketplace-business", "contracts", "marketplace-openapi.yaml")
+	specPath := contractPath("specs", "006-marketplace-business", "contracts", "marketplace-openapi.yaml")
 	data, err := os.ReadFile(specPath)
 	if err != nil {
 		t.Fatalf("failed to read OpenAPI contract: %v", err)
@@ -85,21 +102,21 @@ func TestMarketplaceListingsContract(t *testing.T) {
 func TestMarketplaceListingStatusEndpoint(t *testing.T) {
 	spec := loadOpenAPI(t)
 	paths := spec["paths"].(map[string]any)
-	statusPath, ok := paths["/marketplace/listings/{id}/status"].(map[string]any)
+	statusPath, ok := paths["/marketplace/listings/{listingId}/status"].(map[string]any)
 	if !ok {
-		t.Fatalf("/marketplace/listings/{id}/status not documented")
+		t.Fatalf("/marketplace/listings/{listingId}/status not documented")
 	}
-	patchOp, ok := statusPath["patch"].(map[string]any)
+	patchOp, ok := statusPath["post"].(map[string]any)
 	if !ok {
-		t.Fatalf("PATCH /marketplace/listings/{id}/status operation missing")
+		t.Fatalf("POST /marketplace/listings/{listingId}/status operation missing")
 	}
 	if opID := patchOp["operationId"]; opID != "updateListingStatus" {
-		t.Fatalf("unexpected operationId for PATCH /marketplace/listings/{id}/status: %v", opID)
+		t.Fatalf("unexpected operationId for POST /marketplace/listings/{listingId}/status: %v", opID)
 	}
 }
 
 func TestMarketplaceChecklistContract(t *testing.T) {
-	schemaPath := filepath.Join("specs", "006-marketplace-business", "contracts", "ready-checklist.graphql")
+	schemaPath := contractPath("specs", "006-marketplace-business", "contracts", "ready-checklist.graphql")
 	data, err := os.ReadFile(schemaPath)
 	if err != nil {
 		t.Fatalf("failed to read GraphQL schema: %v", err)
