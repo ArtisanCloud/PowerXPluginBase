@@ -13,10 +13,17 @@ func RegisterRoutes(router *gin.RouterGroup, deps *app.Deps) {
 		return
 	}
 
-	operations := router.Group("/operations")
+	operationsGroup := router.Group("/operations")
 
-	// Placeholder groups for upcoming phases (support, incidents, SLA).
-	operations.Group("/support")
-	operations.Group("/incidents")
-	operations.Group("/sla")
+	supportHandler := NewSupportHandler(deps)
+	support := operationsGroup.Group("/support")
+	{
+		support.GET("/playbook", supportHandler.GetPlaybook)
+		support.PUT("/playbook", supportHandler.UpdatePlaybook)
+		support.POST("/channels/test", supportHandler.TestChannels)
+		support.GET("/metrics", supportHandler.GetMetrics)
+	}
+
+	operationsGroup.Group("/incidents")
+	operationsGroup.Group("/sla")
 }

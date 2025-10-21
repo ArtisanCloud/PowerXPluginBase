@@ -30,18 +30,18 @@
 
 ### Implementation for US1
 
-- [ ] T020 [US1] 创建迁移：`backend/migrations/2025Q4_operations_support.sql` 定义 `operations_support_channels`、`operations_support_tickets`、`operations_support_ticket_events`、Checklist 相关表及 RLS。  
-- [ ] T021 [US1] 建模：在 `backend/internal/domain/operations/models/` 创建 `support_channel.go`、`support_ticket.go`，声明 GORM 标签与状态机。  
-- [ ] T022 [US1] 实现仓储：在 `backend/internal/domain/operations/repository/support_repository.go` 提供渠道 CRUD、票务状态流转、事件写入接口。  
-- [ ] T023 [US1] 服务层：在 `backend/internal/services/operations/support_service.go` 封装渠道配置校验、Support Ready Checklist 更新、工单事件出站逻辑。  
-- [ ] T024 [US1] Webhook 整合：复用 `internal/services/integration/webhook_service.go`，新增 `operations.support.ticket.*` 主题与负载签名。  
-- [ ] T025 [US1] Admin API：根据 contracts 在 `backend/internal/transport/http/admin/operations/support_handler.go` 实现 `/support/playbook`、`/support/metrics`、`/support/channels/test`。  
-- [ ] T026 [US1] 路由集成：更新 `backend/internal/transport/http/admin/routes.go`、`registry.go` 注册新 handler，补充中间件校验。  
-- [ ] T027 [US1] 就绪清单：在 `backend/internal/services/admin/runtime_ops` 与 `backend/internal/transport/http/admin/runtime_ops` 中增加 Support Ready 项与 API。  
-- [ ] T028 [US1] Go 测试：编写 `internal/services/operations/support_service_test.go`、`backend/tests/integration/operations/support_flow_test.go` 覆盖渠道配置、Webhook 发送、Checklist 完成。  
-- [ ] T029 [US1] Admin UI 页面：实现 `web-admin/app/pages/_p/com.powerx.plugins.base/admin/operations/support.vue`、相关组件与 store，支持渠道配置、知识库、校验。  
-- [ ] T030 [US1] 前端测试：在 `web-admin/tests/operations/support_playbook.spec.ts` 验证表单校验、Webhook 状态提示与 Checklist 渲染。  
-- [ ] T031 [US1] 审计日志：在 `backend/internal/services/operations/support_service.go` 写入渠道变更与工单状态审计事件，补充 `support_service_audit_test.go` 覆盖日志内容。  
+- [x] T020 [US1] 创建迁移：`backend/migrations/2025Q4_operations_support.sql` 定义 `operations_support_channels`、`operations_support_tickets`、`operations_support_ticket_events`、Checklist 相关表及 RLS。  
+- [x] T021 [US1] 建模：在 `backend/internal/domain/operations/models/` 创建 `support_channel.go`、`support_ticket.go`，声明 GORM 标签与状态机。  
+- [x] T022 [US1] 实现仓储：在 `backend/internal/domain/operations/repository/support_repository.go` 提供渠道 CRUD、票务状态流转、事件写入接口。  
+- [x] T023 [US1] 服务层：在 `backend/internal/services/operations/support_service.go` 封装渠道配置校验、Support Ready Checklist 更新、工单事件出站逻辑。  
+- [x] T024 [US1] Webhook 整合：复用 `internal/services/integration/webhook_service.go`，新增 `operations.support.ticket.*` 主题与负载签名。  
+- [x] T025 [US1] Admin API：根据 contracts 在 `backend/internal/transport/http/admin/operations/support_handler.go` 实现 `/support/playbook`、`/support/metrics`、`/support/channels/test`。  
+- [x] T026 [US1] 路由集成：更新 `backend/internal/transport/http/admin/routes.go`、`registry.go` 注册新 handler，补充中间件校验。  
+- [x] T027 [US1] 就绪清单：在 `backend/internal/services/admin/runtime_ops` 与 `backend/internal/transport/http/admin/runtime_ops` 中增加 Support Ready 项与 API。  
+- [x] T028 [US1] Go 测试：编写 `internal/services/operations/support_service_test.go`、`backend/tests/integration/operations/support_flow_test.go` 覆盖渠道配置、Webhook 发送、Checklist 完成。  
+- [x] T029 [US1] Admin UI 页面：实现 `web-admin/app/pages/_p/com.powerx.plugins.base/admin/operations/support.vue`、相关组件与 store，支持渠道配置、知识库、校验。  
+- [x] T030 [US1] 前端测试：在 `web-admin/tests/operations/support_playbook.spec.ts` 验证表单校验、Webhook 状态提示与 Checklist 渲染。  
+- [x] T031 [US1] 审计日志：在 `backend/internal/services/operations/support_service.go` 写入渠道变更与工单状态审计事件，补充 `support_service_audit_test.go` 覆盖日志内容。  
 
 **Checkpoint**：Support Playbook 生效，Checklist 绿色，Webhook 可靠。
 

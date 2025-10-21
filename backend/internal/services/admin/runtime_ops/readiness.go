@@ -20,8 +20,14 @@ type ReadinessItem struct {
 	Description string    `json:"description"`
 	Blocking    bool      `json:"blocking"`
 	Completed   bool      `json:"completed"`
+	OwnerRole   string    `json:"owner_role"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
+
+const (
+	ChecklistStatusPending   = "pending"
+	ChecklistStatusCompleted = "completed"
+)
 
 // ReadinessBlueprint enumerates checklist templates keyed by readiness type.
 type ReadinessBlueprint map[ChecklistType][]ReadinessItem
@@ -36,6 +42,7 @@ func DefaultReadinessBlueprint() ReadinessBlueprint {
 				Description: "Support channels (Marketplace ticket, vendor email, emergency hotline) configured and verified",
 				Blocking:    true,
 				Completed:   false,
+				OwnerRole:   "agent",
 				UpdatedAt:   now,
 			},
 			{
@@ -43,6 +50,7 @@ func DefaultReadinessBlueprint() ReadinessBlueprint {
 				Description: "README/FAQ/Troubleshooting/Support Policy published to documentation hub",
 				Blocking:    false,
 				Completed:   false,
+				OwnerRole:   "operations",
 				UpdatedAt:   now,
 			},
 		},
@@ -52,6 +60,7 @@ func DefaultReadinessBlueprint() ReadinessBlueprint {
 				Description: "SEV-0~SEV-4 matrix and response windows approved",
 				Blocking:    true,
 				Completed:   false,
+				OwnerRole:   "manager",
 				UpdatedAt:   now,
 			},
 			{
@@ -59,6 +68,7 @@ func DefaultReadinessBlueprint() ReadinessBlueprint {
 				Description: "Support Hub, Hotline, security@powerx.io, status page notifications tested end-to-end",
 				Blocking:    true,
 				Completed:   false,
+				OwnerRole:   "liaison",
 				UpdatedAt:   now,
 			},
 		},
@@ -68,6 +78,7 @@ func DefaultReadinessBlueprint() ReadinessBlueprint {
 				Description: "Plan-level SLA/SLO/SLI targets documented and accepted by stakeholders",
 				Blocking:    true,
 				Completed:   false,
+				OwnerRole:   "manager",
 				UpdatedAt:   now,
 			},
 			{
@@ -75,6 +86,7 @@ func DefaultReadinessBlueprint() ReadinessBlueprint {
 				Description: "Daily/Monthly/Quarterly SLA aggregation jobs scheduled",
 				Blocking:    true,
 				Completed:   false,
+				OwnerRole:   "operations",
 				UpdatedAt:   now,
 			},
 		},

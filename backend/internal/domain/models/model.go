@@ -54,4 +54,8 @@ const (
 	TableMarketplaceUsageAggregates      = "marketplace_usage_aggregates"
 	TableMarketplaceRevenueReports       = "marketplace_revenue_share_reports"
 	TableMarketplaceNotifications        = "marketplace_notifications"
+	TableOperationsSupportChannels       = "operations_support_channels"
+	TableOperationsSupportTickets        = "operations_support_tickets"
+	TableOperationsSupportTicketEvents   = "operations_support_ticket_events"
+	TableOperationsReadinessItems        = "operations_readiness_checklist_items"
 )
