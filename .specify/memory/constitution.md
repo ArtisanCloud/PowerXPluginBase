@@ -106,6 +106,7 @@ rulesets:
   - UI 组件遵循 Nuxt UI 3.3.x：`UModal v-model:open`、`USwitch`（无 `UToggle`）、`color ∈ {primary,secondary,success,info,warning,error,neutral}`。
   - 共享 TypeScript 类型集中存放在 `web-admin/app/types/`，通过 `~/types/...` 引入；新增/更新类型需同步文档、生成器或脚手架规范。
   - Go 代码中的导入别名必须使用 UpperCamel 命名（例如 `runtimeOpsModel`、`securityModel`），避免 snake_case 或简写影响可读性。
+  - 前端依赖管理默认使用 **npm**；执行安装、构建、测试时请使用 `npm install`、`npm run build` 等命令，除非另有说明。
 
 ## Development Workflow & Quality Gates
 

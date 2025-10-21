@@ -1,7 +1,7 @@
 # Tasks: Support & Operations (Support Playbook, Incident Handling, SLA/SLO)
 
 **Input**: spec.md, plan.md, research.md, data-model.md, contracts/operations-openapi.yaml, quickstart.md  
-**Prerequisites**: `make dev-setup`, `pnpm install`, operations Redis/Webhook mocks running via `docker compose -f config/docker-compose.integration.yml up -d`
+**Prerequisites**: `make dev-setup`, `cd web-admin && npm install`, operations Redis/Webhook mocks running via `docker compose -f config/docker-compose.integration.yml up -d`
 
 > Format: `[ID] [P?] [Story] Description`
 
@@ -9,8 +9,8 @@
 
 ## Phase 1 — Setup (Shared Infrastructure)
 
-- [ ] T001 [P] 运行 `make dev-setup && pnpm install`，确认 Go/Nuxt 依赖、`golangci-lint` 与测试工具就绪。  
-- [ ] T002 [P] 初始化 `backend/internal/{domain,repository,services}/operations/` 与 `web-admin/app/{pages,components,stores}/operations/` 目录，添加 README 或 package 文档说明领域边界。  
+- [x] T001 [P] 运行 `(make dev-setup) && (cd web-admin && npm install)`，确认 Go/Nuxt 依赖、`golangci-lint` 与测试工具就绪。  
+- [x] T002 [P] 初始化 `backend/internal/{domain,repository,services}/operations/` 与 `web-admin/app/{pages,components,stores}/operations/` 目录，添加 README 或 package 文档说明领域边界。  
 
 ---
 
