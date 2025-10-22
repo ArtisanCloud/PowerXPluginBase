@@ -24,9 +24,10 @@ func RBACEntries(prefix string) map[string]authx.Permission {
 			Resource: "operations.incident",
 			Action:   "command",
 		},
-		// SLA transparency
-		"GET:" + base + "/sla/profiles":            {Resource: "operations.sla", Action: "read"},
-		"POST:" + base + "/sla/profiles":           {Resource: "operations.sla", Action: "manage"},
-		"POST:" + base + "/sla/profiles/recompute": {Resource: "operations.sla", Action: "command"},
-	}
+	// SLA transparency
+	"GET:" + base + "/sla/profiles":            {Resource: "operations.sla", Action: "read"},
+	"POST:" + base + "/sla/profiles":           {Resource: "operations.sla", Action: "manage"},
+	"POST:" + base + "/sla/profiles/recompute": {Resource: "operations.sla", Action: "command"},
+	"PATCH:" + base + "/sla/profiles/actuals":  {Resource: "operations.sla", Action: "command"},
+}
 }

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	oprepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/operations"
 	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+	opservice "github.com/ArtisanCloud/PowerXPlugin/internal/services/operations"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
 	adminintegration "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/integration"
@@ -15,6 +17,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/templates"
 	agentapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/agent"
 	integrationapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/integration"
+	publicmarketplace "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/public/marketplace"
 	tenantmarketplace "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/tenant/marketplace"
 	"github.com/gin-gonic/gin"
 )
@@ -87,6 +90,11 @@ func (r *Registry) RegisterMarketplaceRoutes(root *gin.RouterGroup) *gin.RouterG
 	}
 	group := root.Group("/marketplace")
 	tenantmarketplace.RegisterRoutes(group, r.deps)
+	if r.deps != nil && r.deps.DB != nil {
+		slaRepo := oprepo.NewSLARepository(r.deps.DB)
+		slaSvc := opservice.NewSLAService(slaRepo, r.deps.Config, r.deps.OperationsMetrics)
+		publicmarketplace.Register(group, publicmarketplace.NewSLAHandler(slaRepo, slaSvc))
+	}
 	return group
 }
 

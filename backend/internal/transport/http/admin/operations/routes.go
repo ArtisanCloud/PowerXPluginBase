@@ -1,6 +1,8 @@
 package operations
 
 import (
+	oprepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/operations"
+	opservice "github.com/ArtisanCloud/PowerXPlugin/internal/services/operations"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/gin-gonic/gin"
 )
@@ -24,6 +26,19 @@ func RegisterRoutes(router *gin.RouterGroup, deps *app.Deps) {
 		support.GET("/metrics", supportHandler.GetMetrics)
 	}
 
-	operationsGroup.Group("/incidents")
-	operationsGroup.Group("/sla")
+	if deps != nil && deps.DB != nil {
+		slaRepo := oprepo.NewSLARepository(deps.DB)
+		slaSvc := opservice.NewSLAService(slaRepo, deps.Config, deps.OperationsMetrics)
+		slaHandler := NewSLAHandler(slaSvc)
+
+		sla := operationsGroup.Group("/sla")
+		{
+			sla.GET("/profiles", slaHandler.GetProfiles)
+			sla.POST("/profiles", slaHandler.UpsertProfile)
+			sla.POST("/profiles/recompute", slaHandler.Recompute)
+			sla.PATCH("/profiles/actuals", slaHandler.UpdateActuals)
+		}
+	} else {
+		operationsGroup.Group("/sla")
+	}
 }

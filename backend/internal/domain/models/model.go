@@ -56,6 +56,8 @@ const (
 	TableMarketplaceNotifications        = "marketplace_notifications"
 	TableOperationsSupportChannels       = "operations_support_channels"
 	TableOperationsSupportTickets        = "operations_support_tickets"
-	TableOperationsSupportTicketEvents   = "operations_support_ticket_events"
-	TableOperationsReadinessItems        = "operations_readiness_checklist_items"
+    TableOperationsSupportTicketEvents   = "operations_support_ticket_events"
+    TableOperationsReadinessItems        = "operations_readiness_checklist_items"
+    TableOperationsSLAScores             = "operations_sla_profiles"
+    TableOperationsSLAAdjustments        = "operations_sla_adjustments"
 )
