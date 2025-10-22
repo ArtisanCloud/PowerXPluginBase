@@ -1,0 +1,520 @@
+openapi: 3.0.3
+info:
+  title: PowerX Plugin Operations API
+  version: 0.1.0
+  description: |
+    Administrative and public endpoints enabling Support Playbook configuration, Incident lifecycle management,
+    and SLA transparency for Marketplace plugins.
+servers:
+  - url: /api/v1/admin/operations
+    description: Admin console reverse-proxied by PowerX Host
+  - url: /api/v1/marketplace
+    description: Public marketplace routes
+
+security:
+  - bearerAuth: []
+
+paths:
+  /support/playbook:
+    get:
+      summary: Fetch current support playbook configuration
+      tags: [Support]
+      operationId: getSupportPlaybook
+      responses:
+        '200':
+          description: Support playbook loaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportPlaybook'
+    put:
+      summary: Upsert support playbook and channel configuration
+      tags: [Support]
+      operationId: upsertSupportPlaybook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupportPlaybook'
+      responses:
+        '200':
+          description: Playbook saved and readiness checklist re-evaluated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportPlaybook'
+  /support/channels/test:
+    post:
+      summary: Validate configured support channels via synthetic ping
+      tags: [Support]
+      operationId: testSupportChannels
+      requestBody:
+        required: false
+      responses:
+        '202':
+          description: Async validation started; results will appear in ticket events log
+  /support/metrics:
+    get:
+      summary: Retrieve aggregated support KPIs (FRT/MTTR/Resolution/CSAT)
+      tags: [Support]
+      operationId: getSupportMetrics
+      parameters:
+        - in: query
+          name: priority
+          schema:
+            type: string
+            enum: [P0, P1, P2, P3, P4]
+        - in: query
+          name: since
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: KPI summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportMetrics'
+  /incidents:
+    post:
+      summary: Declare a new incident and trigger communication workflow
+      tags: [Incident]
+      operationId: createIncident
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncidentDraft'
+      responses:
+        '201':
+          description: Incident created
+          headers:
+            Location:
+              schema:
+                type: string
+              description: Incident resource URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentRecord'
+    get:
+      summary: List incidents with filters for severity, status, labels, or timeframe
+      tags: [Incident]
+      operationId: listIncidents
+      parameters:
+        - in: query
+          name: severity
+          schema:
+            type: string
+            enum: [sev0, sev1, sev2, sev3, sev4]
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [detected, acknowledged, mitigated, monitoring, resolved, closed]
+        - in: query
+          name: label
+          schema:
+            type: string
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Incident list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IncidentRecord'
+  /incidents/{incidentId}:
+    parameters:
+      - in: path
+        name: incidentId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Retrieve incident details with timeline and checklist status
+      tags: [Incident]
+      operationId: getIncident
+      responses:
+        '200':
+          description: Incident found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentRecord'
+    patch:
+      summary: Update incident status, mitigation, or RCA data
+      tags: [Incident]
+      operationId: updateIncident
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncidentUpdate'
+      responses:
+        '200':
+          description: Incident updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentRecord'
+  /incidents/{incidentId}/timeline:
+    post:
+      summary: Append timeline entry and broadcast stakeholder update
+      tags: [Incident]
+      operationId: addIncidentTimelineEntry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncidentTimelineEntry'
+      responses:
+        '201':
+          description: Timeline entry recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentTimelineEntry'
+  /sla/profiles:
+    get:
+      summary: Fetch SLA targets and actuals for all plugin plans
+      tags: [SLA]
+      operationId: getSlaProfiles
+      responses:
+        '200':
+          description: SLA profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SlaProfile'
+    post:
+      summary: Update SLA targets / plan type for plugin
+      tags: [SLA]
+      operationId: upsertSlaProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SlaProfileUpdate'
+      responses:
+        '200':
+          description: SLA profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlaProfile'
+  /sla/profiles/recompute:
+    post:
+      summary: Trigger recomputation of SLA metrics for the current period
+      tags: [SLA]
+      operationId: recomputeSlaProfiles
+      requestBody:
+        required: false
+      responses:
+        '202':
+          description: Recalculation dispatched
+
+  /sla/{pluginId}:
+    get:
+      summary: Public SLA transparency endpoint
+      tags: [Public]
+      operationId: getPublicSla
+      parameters:
+        - in: path
+          name: pluginId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SLA summary for plugin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSlaResponse'
+        '404':
+          description: Plugin not found or no SLA data
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SupportPlaybook:
+      type: object
+      required: [channels, knowledgeBase, escalationMatrix]
+      properties:
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupportChannel'
+        knowledgeBase:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              url:
+                type: string
+        escalationMatrix:
+          type: array
+          items:
+            type: object
+            properties:
+              priority:
+                type: string
+                enum: [P0, P1, P2, P3, P4]
+              frtHours:
+                type: number
+              resolutionHours:
+                type: number
+              roles:
+                type: array
+                items:
+                  type: string
+                  enum: [agent, engineer, manager, liaison, qa]
+        checklistStatus:
+          $ref: '#/components/schemas/ChecklistSummary'
+    SupportChannel:
+      type: object
+      required: [id, channel, isEnabled]
+      properties:
+        id:
+          type: string
+          format: uuid
+        channel:
+          type: string
+          enum: [marketplace_ticket, vendor_email, in_app_feedback, emergency_hotline]
+        isEnabled:
+          type: boolean
+        serviceWindow:
+          type: object
+        escalationPath:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+    SupportMetrics:
+      type: object
+      properties:
+        frtHours:
+          type: number
+        mttrHours:
+          type: number
+        csatAverage:
+          type: number
+        resolutionRate:
+          type: number
+        sampleSize:
+          type: integer
+    IncidentDraft:
+      type: object
+      required: [severity, summary, detectionSource]
+      properties:
+        severity:
+          type: string
+          enum: [sev0, sev1, sev2, sev3, sev4]
+        detectionSource:
+          type: string
+          enum: [monitoring, support, vendor, security, dependency]
+        tenantId:
+          type: integer
+        labels:
+          type: array
+          items:
+            type: string
+        summary:
+          type: string
+        impact:
+          type: object
+        mitigation:
+          type: string
+        notifyChannels:
+          type: array
+          items:
+            type: string
+            enum: [support_hub, status_page, security_email, hotline]
+    IncidentRecord:
+      allOf:
+        - $ref: '#/components/schemas/IncidentDraft'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            status:
+              type: string
+              enum: [detected, acknowledged, mitigated, monitoring, resolved, closed]
+            detectedAt:
+              type: string
+              format: date-time
+            acknowledgedAt:
+              type: string
+              format: date-time
+            mitigatedAt:
+              type: string
+              format: date-time
+            resolvedAt:
+              type: string
+              format: date-time
+            closedAt:
+              type: string
+              format: date-time
+            rootCause:
+              type: string
+            nextUpdateAt:
+              type: string
+              format: date-time
+            timeline:
+              type: array
+              items:
+                $ref: '#/components/schemas/IncidentTimelineEntry'
+            checklistStatus:
+              $ref: '#/components/schemas/ChecklistSummary'
+    IncidentUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [acknowledged, mitigated, monitoring, resolved, closed]
+        mitigation:
+          type: string
+        rootCause:
+          type: string
+        nextUpdateAt:
+          type: string
+          format: date-time
+        labels:
+          type: array
+          items:
+            type: string
+    IncidentTimelineEntry:
+      type: object
+      required: [entryType, message, stakeholderChannel]
+      properties:
+        entryType:
+          type: string
+          enum: [announcement, update, mitigation, resolution, postmortem]
+        message:
+          type: string
+        stakeholderChannel:
+          type: string
+          enum: [support_hub, status_page, security_email, hotline]
+        authorRole:
+          type: string
+          enum: [incident_commander, liaison, security, engineering]
+        postedAt:
+          type: string
+          format: date-time
+    SlaProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        planType:
+          type: string
+          enum: [real_time, transactional, utility]
+        uptimeTarget:
+          type: number
+        uptimeActual:
+          type: number
+        responseTargetMs:
+          type: integer
+        responseActualMs:
+          type: integer
+        successTargetPct:
+          type: number
+        successActualPct:
+          type: number
+        supportFrtTargetHours:
+          type: number
+        supportFrtActualHours:
+          type: number
+        slaScore:
+          type: number
+        incentiveAppliedAt:
+          type: string
+          format: date-time
+        penaltyAppliedAt:
+          type: string
+          format: date-time
+        computedAt:
+          type: string
+          format: date-time
+    SlaProfileUpdate:
+      type: object
+      required: [planType, targets]
+      properties:
+        planType:
+          type: string
+          enum: [real_time, transactional, utility]
+        targets:
+          type: object
+          properties:
+            uptimeTarget:
+              type: number
+            responseTargetMs:
+              type: integer
+            successTargetPct:
+              type: number
+            supportFrtTargetHours:
+              type: number
+    PublicSlaResponse:
+      type: object
+      required: [pluginId, planType, uptime, responseMs, successRate, supportFrtHours, slaScore]
+      properties:
+        pluginId:
+          type: string
+        planType:
+          type: string
+        uptime:
+          type: number
+        responseMs:
+          type: integer
+        successRate:
+          type: number
+        supportFrtHours:
+          type: number
+        slaScore:
+          type: number
+        lastUpdated:
+          type: string
+          format: date-time
+    ChecklistSummary:
+      type: object
+      properties:
+        supportReady:
+          type: boolean
+        incidentReady:
+          type: boolean
+        slaReady:
+          type: boolean
+        blockingItems:
+          type: array
+          items:
+            type: string

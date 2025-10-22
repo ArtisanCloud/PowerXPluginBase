@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Go 1.24（使用 `make dev-setup` 安装依赖与 `golangci-lint`）
-- Node 20 + pnpm（`web-admin` Nuxt 4）
+- Node 20 + npm（`web-admin` Nuxt 4）
 - Postgres ≥ 13 (`powerx_plugin_base` schema) 与 Redis（幂等、License 缓存）
 - Stripe Tax / Avalara 测试账户，配置凭证写入 `.env` 或 `config.yaml`
 
@@ -35,8 +35,8 @@ make run
 ## Admin 前端
 ```bash
 cd web-admin
-pnpm install
-pnpm dev   # 本地运行，默认绑定 http://localhost:3000/_p/com.powerx.plugin.base/admin
+npm install
+npm run dev   # 本地运行，默认绑定 http://localhost:3000/_p/com.powerx.plugin.base/admin
 ```
 
 在 `.env` 中设置：

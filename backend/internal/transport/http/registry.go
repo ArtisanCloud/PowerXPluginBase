@@ -4,16 +4,20 @@ import (
 	"fmt"
 	"strings"
 
+	oprepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/operations"
 	authx "github.com/ArtisanCloud/PowerXPlugin/internal/middleware"
+	opservice "github.com/ArtisanCloud/PowerXPlugin/internal/services/operations"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
 	adminintegration "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/integration"
 	adminmarketplace "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/marketplace"
+	adminoperations "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/operations"
 	adminruntime "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/runtime_ops"
 	adminsecurity "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/security"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/templates"
 	agentapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/agent"
 	integrationapi "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/integration"
+	publicmarketplace "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/public/marketplace"
 	tenantmarketplace "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/tenant/marketplace"
 	"github.com/gin-gonic/gin"
 )
@@ -45,6 +49,7 @@ func (r *Registry) RegisterAPIRoutes(gApi *gin.RouterGroup) {
 	r.mergeRBAC(adminruntime.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminsecurity.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminintegration.RBACEntries(r.apiPrefix()))
+	r.mergeRBAC(adminoperations.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminmarketplace.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(integrationRBACEntries(r.apiPrefix()))
 	r.mergeRBAC(marketplacePublicRBACEntries(r.apiPrefix()))
@@ -85,6 +90,11 @@ func (r *Registry) RegisterMarketplaceRoutes(root *gin.RouterGroup) *gin.RouterG
 	}
 	group := root.Group("/marketplace")
 	tenantmarketplace.RegisterRoutes(group, r.deps)
+	if r.deps != nil && r.deps.DB != nil {
+		slaRepo := oprepo.NewSLARepository(r.deps.DB)
+		slaSvc := opservice.NewSLAService(slaRepo, r.deps.Config, r.deps.OperationsMetrics)
+		publicmarketplace.Register(group, publicmarketplace.NewSLAHandler(slaRepo, slaSvc))
+	}
 	return group
 }
 
@@ -117,5 +127,6 @@ func marketplacePublicRBACEntries(prefix string) map[string]authx.Permission {
 		"POST:" + base + "/usage":                             {Resource: "marketplace.usage", Action: "ingest"},
 		"GET:" + base + "/usage/tenants/*/licenses/*/metrics": {Resource: "marketplace.usage", Action: "view"},
 		"GET:" + base + "/revenue-share/reports":              {Resource: "marketplace.revenue", Action: "read"},
+		"GET:" + base + "/sla/*":                              {Resource: "marketplace.sla", Action: "read"},
 	}
 }

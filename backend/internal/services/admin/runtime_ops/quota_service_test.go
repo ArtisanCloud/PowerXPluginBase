@@ -108,3 +108,17 @@ func createRuntimeOpsTables(t *testing.T, db *gorm.DB) {
 		}
 	}
 }
+
+func TestDefaultReadinessBlueprintIncludesOperationsChecklists(t *testing.T) {
+	blueprint := DefaultReadinessBlueprint()
+	required := []ChecklistType{ChecklistSupportReady, ChecklistIncidentReady, ChecklistSLAReady}
+	for _, key := range required {
+		items, ok := blueprint[key]
+		if !ok {
+			t.Fatalf("missing readiness checklist %q", key)
+		}
+		if len(items) == 0 {
+			t.Fatalf("readiness checklist %q should contain at least one item", key)
+		}
+	}
+}

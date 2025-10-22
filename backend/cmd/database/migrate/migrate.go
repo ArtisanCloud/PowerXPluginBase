@@ -6,6 +6,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
 	marketplaceModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
+	operationsModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/operations"
 	runtimeOpsModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/runtime_ops"
 	securityModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/security"
 	templateModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/template"
@@ -33,6 +34,15 @@ func MigratePluginModels(ctx context.Context, db *gorm.DB) error {
 		&runtimeOpsModel.RuntimeAuditEvent{},
 		&runtimeOpsModel.QuotaLedger{},
 		&runtimeOpsModel.MarketplaceOverage{},
+		&operationsModel.SupportChannel{},
+		&operationsModel.SupportTicket{},
+		&operationsModel.SupportTicketEvent{},
+		&operationsModel.ReadinessChecklistItem{},
+		&operationsModel.SLAProfile{},
+		&operationsModel.SLAAdjustment{},
+		&operationsModel.Incident{},
+		&operationsModel.IncidentTimelineEntry{},
+		&operationsModel.IncidentChecklistItem{},
 		&securityModel.BaselineChecklist{},
 		&securityModel.AuditReport{},
 		&toolgrantModel.Revocation{},

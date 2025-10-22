@@ -54,6 +54,17 @@ func ResponseSuccessWithMessage(c *gin.Context, data interface{}, message string
 	c.JSON(http.StatusOK, response)
 }
 
+// ResponseCreated returns a 201 response with payload.
+func ResponseCreated(c *gin.Context, data interface{}) {
+	response := APIResponse{
+		Success:   true,
+		Data:      data,
+		Timestamp: time.Now(),
+		RequestID: getRequestID(c),
+	}
+	c.JSON(http.StatusCreated, response)
+}
+
 // ResponseError 返回错误响应
 func ResponseError(c *gin.Context, statusCode int, code, message string) {
 	response := APIResponse{

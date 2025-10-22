@@ -4,6 +4,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	adminintegration "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/integration"
 	adminmarketplace "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/marketplace"
+	adminoperations "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/operations"
 	adminruntime "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/runtime_ops"
 	adminsecurity "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/security"
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,7 @@ func RegisterAPIRoutes(rg *gin.RouterGroup, deps *app.Deps) {
 		adminruntime.RegisterRoutes(runtimeOps, deps)
 
 		adminmarketplace.RegisterRoutes(admin, deps)
+		adminoperations.RegisterRoutes(admin, deps)
 		adminintegration.RegisterRoutes(admin, deps)
 		adminsecurity.RegisterRoutes(admin, deps)
 	}

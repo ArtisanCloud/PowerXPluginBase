@@ -2,7 +2,7 @@
 # 请勿在此写入环境相关的地址、口令等敏感配置；推荐放到 backend/etc/config.yaml 或部署环境变量中。
 id: com.powerx.plugins.base
 name: Base template Plugin
-version: 0.5.0
+version: 0.6.0
 description: "PowerX 基础任务管理插件，提供任务、权限与 Agent 能力"
 corex_version: ">=0.6.0"
 security_baseline_version: "2025.10"
@@ -218,12 +218,56 @@ frontend:
                 icon: i-heroicons-chart-bar-square
                 path: /integration/insights
                 route: integration/insights
-                required_policies: [integration.webhooks:read]
+
+          - id: plugins.base.operations
+            title: 运营支持
+            title_i18n:
+              namespace: menus
+              key: menu.base.operations.title
+              default: Operations Center
+            icon: i-heroicons-lifebuoy
+            path: /operations/support
+            route: operations/support
+            order: 4
+            required_policies: [operations.support:read]
+            children:
+              - id: plugins.base.operations.support
+                title: Support Playbook
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.operations.support
+                  default: Support Playbook
+                icon: i-heroicons-book-open
+                path: /operations/support
+                route: operations/support
+                required_policies: [operations.support:read]
+              - id: plugins.base.operations.incidents
+                title: Incident Center
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.operations.incidents
+                  default: Incident Center
+                icon: i-heroicons-exclamation-triangle
+                path: /operations/incidents
+                route: operations/incidents
+                required_policies: [operations.incident:read]
+              - id: plugins.base.operations.sla
+                title: SLA Dashboard
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.operations.sla
+                  default: SLA Dashboard
+                icon: i-heroicons-chart-pie
+                path: /operations/sla
+                route: operations/sla
+                required_policies: [operations.sla:read]
 
 routes:
   basePath: /api/v1
   adminManifest: /api/v1/admin/manifest
   rbac: /api/v1/admin/rbac
+  operations:
+    admin: /api/v1/admin/operations
   marketplace:
     admin: /api/v1/admin/marketplace
     public: /api/v1/marketplace
@@ -247,6 +291,12 @@ rbac:
       actions: [read, export]
     - resource: marketplace.usage
       actions: [view, observe]
+    - resource: operations.support
+      actions: [read, manage]
+    - resource: operations.incident
+      actions: [read, command]
+    - resource: operations.sla
+      actions: [read, manage, command]
 
 events:
   produces:
@@ -272,6 +322,12 @@ permissions:
     actions: [view, observe]
   - resource: marketplace.revenue
     actions: [read, export]
+  - resource: operations.support
+    actions: [read, manage]
+  - resource: operations.incident
+    actions: [read, command]
+  - resource: operations.sla
+    actions: [read, manage, command]
 
 agents:
   - id: base.assistant
