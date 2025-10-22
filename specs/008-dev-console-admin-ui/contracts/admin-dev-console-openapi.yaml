@@ -357,6 +357,11 @@ components:
           format: date-time
         last_modified_by:
           type: string
+        validation_rules:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties: true
     ConfigField:
       type: object
       required: [name, type]
@@ -383,6 +388,8 @@ components:
           type: object
           additionalProperties: true
         comment:
+          type: string
+        tenant_id:
           type: string
       required: [values]
     AuditEventList:

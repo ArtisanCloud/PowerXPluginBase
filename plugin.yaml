@@ -344,12 +344,6 @@ permissions:
     actions: [read, export]
   - resource: operations.plugin.ops
     actions: [read, execute]
-  - resource: operations.plugin.admin
-    actions: [read, manage]
-  - resource: operations.plugin.audit
-    actions: [read, export]
-  - resource: operations.plugin.ops
-    actions: [read, execute]
 
 agents:
   - id: base.assistant

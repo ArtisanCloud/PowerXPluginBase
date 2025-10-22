@@ -45,24 +45,24 @@
 
 ### Tests for US1
 
-- [ ] T101 [P] [US1] Go service unit tests for configuration validation and change history (`backend/internal/services/admin/console/config_service_test.go`).  
-- [ ] T102 [P] [US1] HTTP handler tests covering `/config/sections` list/update flows with RBAC and validation errors (`backend/internal/transport/http/admin/console/config_handler_test.go`).  
-- [ ] T103 [P] [US1] Nuxt component/store tests for form validation and audit banner (`web-admin/tests/dev-console/configure_console.spec.ts`).
+- [x] T101 [P] [US1] Go service unit tests for configuration validation and change history (`backend/internal/services/admin/console/config_service_test.go`).  
+- [x] T102 [P] [US1] HTTP handler tests covering `/config/sections` list/update flows with RBAC and validation errors (`backend/internal/transport/http/admin/console/config_handler_test.go`).  
+- [x] T103 [P] [US1] Nuxt component/store tests for form validation and audit banner (`web-admin/tests/dev-console/configure_console.spec.ts`).
 
 ### Implementation for US1
 
-- [ ] T104 [P] [US1] Implement `AdminConsoleConfigChange` model structs and gorm tags (`backend/internal/domain/models/admin_console/config_change.go`) plus repository CRUD (`.../repository/admin_console/config_change_repository.go`).  
-- [ ] T105 [P] [US1] Build configuration schema loader & validator utilities, including section metadata registry (`backend/internal/services/admin/console/config_schema.go`).  
-- [ ] T106 [US1] Implement config service use cases for list/update, validation, audit recording (`backend/internal/services/admin/console/config_service.go`).  
-- [ ] T107 [US1] Add audit event integration: write helpers to persist `AdminConsoleAuditEvent` entries and link to config changes (`backend/internal/services/admin/console/audit_logger.go`).  
-- [ ] T108 [US1] Implement HTTP handlers and DTOs for `/config/sections` endpoints with tenant scoping (`backend/internal/transport/http/admin/console/config_handler.go`, `dto/config.go`).  
-- [ ] T109 [US1] Register routes and RBAC guard checks in `routes.go`, ensure middleware enforces `operations.plugin.admin`.  
-- [ ] T110 [P] [US1] Create Pinia store/composable for configuration state & optimistic concurrency (`web-admin/app/stores/dev-console/config.ts`, `app/composables/useDevConsoleConfig.ts`).  
-- [ ] T111 [US1] Build Nuxt page & components for configuration dashboard (`web-admin/app/pages/_p/com.powerx.plugins.base/admin/dev-console/index.vue`, `components/dev-console/ConfigSectionCard.vue`).  
-- [ ] T112 [US1] Surface audit summary UI (last modified, actor) consuming new API (`components/dev-console/AuditSummaryBanner.vue`).  
-- [ ] T113 [P] [US1] Update `contracts/admin-dev-console-openapi.yaml` examples and ensure generated types (if any) align with implementation.
-- [ ] T114 [P] [US1] Implement `AdminConsoleAuditEvent` model & repository (`backend/internal/domain/models/admin_console/audit_event.go`, `.../repository/admin_console/audit_event_repository.go`) consistent with migration schema.
-- [ ] T115 [US1] Extend config/audit services to persist and query audit events via new repository (`backend/internal/services/admin/console/audit_logger.go`, `audit_service.go`).
+- [x] T104 [P] [US1] Implement `AdminConsoleConfigChange` model structs and gorm tags (`backend/internal/domain/models/admin_console/config_change.go`) plus repository CRUD (`.../repository/admin_console/config_change_repository.go`).  
+- [x] T105 [P] [US1] Build configuration schema loader & validator utilities, including section metadata registry (`backend/internal/services/admin/console/config_schema.go`).  
+- [x] T106 [US1] Implement config service use cases for list/update, validation, audit recording (`backend/internal/services/admin/console/config_service.go`).  
+- [x] T107 [US1] Add audit event integration: write helpers to persist `AdminConsoleAuditEvent` entries and link to config changes (`backend/internal/services/admin/console/audit_logger.go`).  
+- [x] T108 [US1] Implement HTTP handlers and DTOs for `/config/sections` endpoints with tenant scoping (`backend/internal/transport/http/admin/console/config_handler.go`, `dto/config.go`).  
+- [x] T109 [US1] Register routes and RBAC guard checks in `routes.go`, ensure middleware enforces `operations.plugin.admin`.  
+- [x] T110 [P] [US1] Create Pinia store/composable for configuration state & optimistic concurrency (`web-admin/app/stores/dev-console/config.ts`, `app/composables/useDevConsoleConfig.ts`).  
+- [x] T111 [US1] Build Nuxt page & components for configuration dashboard (`web-admin/app/pages/_p/com.powerx.plugins.base/admin/dev-console/index.vue`, `components/dev-console/ConfigSectionCard.vue`).  
+- [x] T112 [US1] Surface audit summary UI (last modified, actor) consuming new API (`components/dev-console/AuditSummaryBanner.vue`).  
+- [x] T113 [P] [US1] Update `contracts/admin-dev-console-openapi.yaml` examples and ensure generated types (if any) align with implementation.
+- [x] T114 [P] [US1] Implement `AdminConsoleAuditEvent` model & repository (`backend/internal/domain/models/admin_console/audit_event.go`, `.../repository/admin_console/audit_event_repository.go`) consistent with migration schema.
+- [x] T115 [US1] Extend config/audit services to persist and query audit events via new repository (`backend/internal/services/admin/console/audit_logger.go`, `audit_service.go`).
 
 **Checkpoint**: US1 routes accessible, validation working, audits recorded, UI functional.
 

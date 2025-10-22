@@ -28,7 +28,7 @@ CREATE INDEX IF NOT EXISTS idx_admin_console_audit_diff
 CREATE TABLE IF NOT EXISTS admin_console_config_changes (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     plugin_id          TEXT NOT NULL,
-    tenant_id          TEXT NOT NULL,
+    tenant_id          TEXT,
     section_key        TEXT NOT NULL,
     change_type        TEXT NOT NULL,
     previous_snapshot  JSONB,
@@ -94,7 +94,7 @@ CREATE POLICY admin_console_audit_events_tenant_isolation
 ALTER TABLE admin_console_config_changes FORCE ROW LEVEL SECURITY;
 CREATE POLICY admin_console_config_changes_tenant_isolation
     ON admin_console_config_changes
-    USING (tenant_id = current_tenant());
+    USING (tenant_id IS NULL OR tenant_id = current_tenant());
 
 ALTER TABLE admin_console_job_runs FORCE ROW LEVEL SECURITY;
 CREATE POLICY admin_console_job_runs_tenant_isolation

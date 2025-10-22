@@ -41,8 +41,8 @@ curl -H "Authorization: Bearer <token>" \
 curl -X PUT \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
-  -d '{"values":{"webhook_url":"https://hooks.example","retry_window_minutes":30},"comment":"Align with tenant SLA"}' \
-  "http://localhost:8086/_p/com.powerx.plugins.base/api/v1/admin/dev-console/config/sections/runtime-webhooks?tenant_id=demo-tenant"
+  -d '{"values":{"audit_retention_days":200,"config_change_retention_days":120,"job_history_days":45}}' \
+  "http://localhost:8086/_p/com.powerx.plugins.base/api/v1/admin/dev-console/config/sections/admin_console.retention"
 ```
 
 ### Query audit history
@@ -63,7 +63,7 @@ curl -X POST \
 ## Frontend Testing
 ```bash
 cd web-admin
-npm run test                         # Vitest unit coverage
+npm run test tests/dev-console/configure_console.spec.ts
 npm run test:e2e -- --grep dev-console  # Playwright smoke for console flows
 ```
 

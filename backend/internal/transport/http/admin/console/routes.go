@@ -14,8 +14,11 @@ func RegisterRoutes(router *gin.RouterGroup, deps *app.Deps) *gin.RouterGroup {
 		return nil
 	}
 	group := router.Group("/dev-console")
-	// Handlers will be attached in subsequent phases.
-	_ = deps
+	handler := NewConfigHandler(deps)
+	if handler != nil {
+		group.GET("/config/sections", handler.ListSections)
+		group.PUT("/config/sections/:sectionKey", handler.UpdateSection)
+	}
 	return group
 }
 
