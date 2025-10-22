@@ -31,8 +31,8 @@
 ### Implementation for US1
 
 - [x] T020 [US1] 创建迁移：`backend/migrations/2025Q4_operations_support.sql` 定义 `operations_support_channels`、`operations_support_tickets`、`operations_support_ticket_events`、Checklist 相关表及 RLS。  
-- [x] T021 [US1] 建模：在 `backend/internal/domain/operations/models/` 创建 `support_channel.go`、`support_ticket.go`，声明 GORM 标签与状态机。  
-- [x] T022 [US1] 实现仓储：在 `backend/internal/domain/operations/repository/support_repository.go` 提供渠道 CRUD、票务状态流转、事件写入接口。  
+- [x] T021 [US1] 建模：在 `backend/internal/domain/models/operations/` 创建 `support_channel.go`、`support_ticket.go`，声明 GORM 标签与状态机。  
+- [x] T022 [US1] 实现仓储：在 `backend/internal/domain/repository/operations/support_repository.go` 提供渠道 CRUD、票务状态流转、事件写入接口。  
 - [x] T023 [US1] 服务层：在 `backend/internal/services/operations/support_service.go` 封装渠道配置校验、Support Ready Checklist 更新、工单事件出站逻辑。  
 - [x] T024 [US1] Webhook 整合：复用 `internal/services/integration/webhook_service.go`，新增 `operations.support.ticket.*` 主题与负载签名。  
 - [x] T025 [US1] Admin API：根据 contracts 在 `backend/internal/transport/http/admin/operations/support_handler.go` 实现 `/support/playbook`、`/support/metrics`、`/support/channels/test`。  
@@ -54,18 +54,18 @@
 
 ### Implementation for US2
 
-- [ ] T040 [US2] 迁移：扩展同批 SQL 或新增 `operations_incidents.sql`，建立 `operations_incidents`、`operations_incident_updates`、`operations_incident_checklist`。  
-- [ ] T041 [US2] 建模：在 `domain/operations/models/incident.go` 表达 SEV/状态流转、时间戳、标签、保密级别。  
-- [ ] T042 [US2] 仓储：`repository/incident_repository.go` 支持创建、状态更新、时间线、标签检索与分页过滤。  
-- [ ] T043 [US2] 服务层：`services/operations/incident_service.go` 实现 SEV 驱动 SLA 时钟、通报计划、事件复发处理。  
-- [ ] T044 [US2] 通知整合：新增 incident 通知通道，向 Support Hub / Hotline / security 邮箱推送（扩展 webhook service & email client）。  
-- [ ] T045 [US2] Admin API：在 `transport/http/admin/operations/incident_handler.go` 实现 `/incidents` CRUD、`/{incidentId}/timeline`，校验 SEV 响应时间。  
-- [ ] T046 [US2] 状态页同步：扩展 `transport/http/admin/runtime_ops`/外部 SDK，确保状态页数据写入（若仅触发 webhook，记录说明）。  
-- [ ] T047 [US2] Checklist：实现 Incident Ready Checklist 项与阻断逻辑（复用 readiness 服务）。  
-- [ ] T048 [US2] Go 测试：编写 `incident_service_test.go`、`tests/integration/operations/incident_flow_test.go` 覆盖 SEV 响应、时间线、RCA。  
-- [ ] T049 [US2] Admin UI：实现 `web-admin/app/pages/_p/.../operations/incidents.vue`、`IncidentTimeline.vue` 等组件，支持标签、通报计划、RCA 上传。  
-- [ ] T050 [US2] 前端测试：`web-admin/tests/operations/incident_flow.spec.ts` 验证 SEV 流程、时间线、Checklist 状态。  
-- [ ] T051 [US2] 审计日志：在 `services/operations/incident_service.go` 与通知通道记录 SEV 升级、时间线更新、RCA 提交的审计事件，新增 `incident_audit_test.go`。  
+- [X] T040 [US2] 迁移：扩展同批 SQL 或新增 `operations_incidents.sql`，建立 `operations_incidents`、`operations_incident_updates`、`operations_incident_checklist`。  
+- [X] T041 [US2] 建模：在 `domain/models/operations/incident.go` 表达 SEV/状态流转、时间戳、标签、保密级别。  
+- [X] T042 [US2] 仓储：`repository/incident_repository.go` 支持创建、状态更新、时间线、标签检索与分页过滤。  
+- [X] T043 [US2] 服务层：`services/operations/incident_service.go` 实现 SEV 驱动 SLA 时钟、通报计划、事件复发处理。  
+- [X] T044 [US2] 通知整合：新增 incident 通知通道，向 Support Hub / Hotline / security 邮箱推送（扩展 webhook service & email client）。  
+- [X] T045 [US2] Admin API：在 `transport/http/admin/operations/incident_handler.go` 实现 `/incidents` CRUD、`/{incidentId}/timeline`，校验 SEV 响应时间。  
+- [X] T046 [US2] 状态页同步：扩展 `transport/http/admin/runtime_ops`/外部 SDK，确保状态页数据写入（若仅触发 webhook，记录说明）。  
+- [X] T047 [US2] Checklist：实现 Incident Ready Checklist 项与阻断逻辑（复用 readiness 服务）。  
+- [X] T048 [US2] Go 测试：编写 `incident_service_test.go`、`tests/integration/operations/incident_flow_test.go` 覆盖 SEV 响应、时间线、RCA。  
+- [X] T049 [US2] Admin UI：实现 `web-admin/app/pages/_p/.../operations/incidents.vue`、`IncidentTimeline.vue` 等组件，支持标签、通报计划、RCA 上传。  
+- [X] T050 [US2] 前端测试：`web-admin/tests/operations/incident_flow.spec.ts` 验证 SEV 流程、时间线、Checklist 状态。  
+- [X] T051 [US2] 审计日志：在 `services/operations/incident_service.go` 与通知通道记录 SEV 升级、时间线更新、RCA 提交的审计事件，新增 `incident_audit_test.go`。  
 
 **Checkpoint**：Incident 流程闭环，通报与 RCA 达标。
 

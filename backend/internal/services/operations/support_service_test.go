@@ -7,8 +7,8 @@ import (
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	basemodels "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
-	opmodels "github.com/ArtisanCloud/PowerXPlugin/internal/domain/operations/models"
-	oprepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/operations/repository"
+	opmodels "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/operations"
+	oprepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/operations"
 	opmetrics "github.com/ArtisanCloud/PowerXPlugin/internal/observability/operations"
 	operationsvc "github.com/ArtisanCloud/PowerXPlugin/internal/services/operations"
 	"github.com/stretchr/testify/require"

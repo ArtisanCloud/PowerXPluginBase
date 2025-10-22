@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
-	opmodels "github.com/ArtisanCloud/PowerXPlugin/internal/domain/operations/models"
-	oprepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/operations/repository"
+	opmodels "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/operations"
+	oprepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/operations"
 	opmetrics "github.com/ArtisanCloud/PowerXPlugin/internal/observability/operations"
 	runtimeops "github.com/ArtisanCloud/PowerXPlugin/internal/services/admin/runtime_ops"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"

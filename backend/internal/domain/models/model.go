@@ -58,4 +58,7 @@ const (
 	TableOperationsSupportTickets        = "operations_support_tickets"
 	TableOperationsSupportTicketEvents   = "operations_support_ticket_events"
 	TableOperationsReadinessItems        = "operations_readiness_checklist_items"
+	TableOperationsIncidents             = "operations_incidents"
+	TableOperationsIncidentUpdates       = "operations_incident_updates"
+	TableOperationsIncidentChecklist     = "operations_incident_checklist"
 )

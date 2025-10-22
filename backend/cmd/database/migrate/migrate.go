@@ -6,11 +6,11 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
 	marketplaceModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
+	operationsModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/operations"
 	runtimeOpsModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/runtime_ops"
 	securityModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/security"
 	templateModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/template"
 	toolgrantModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/tool_grant"
-	operationsModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/operations/models"
 	"gorm.io/gorm"
 )
 
@@ -38,6 +38,9 @@ func MigratePluginModels(ctx context.Context, db *gorm.DB) error {
 		&operationsModel.SupportTicket{},
 		&operationsModel.SupportTicketEvent{},
 		&operationsModel.ReadinessChecklistItem{},
+		&operationsModel.Incident{},
+		&operationsModel.IncidentTimelineEntry{},
+		&operationsModel.IncidentChecklistItem{},
 		&securityModel.BaselineChecklist{},
 		&securityModel.AuditReport{},
 		&toolgrantModel.Revocation{},

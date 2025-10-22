@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	opmodels "github.com/ArtisanCloud/PowerXPlugin/internal/domain/operations/models"
+	opmodels "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/operations"
 	repository "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository"
 	"github.com/google/uuid"
 	"gorm.io/gorm"

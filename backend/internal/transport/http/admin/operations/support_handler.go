@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/contracts"
-	oprepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/operations/repository"
+	oprepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/operations"
 	operationsvc "github.com/ArtisanCloud/PowerXPlugin/internal/services/operations"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	httpmw "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/middleware"
