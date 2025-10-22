@@ -64,16 +64,15 @@ specs/007-support-and-operations/
 
 ```
 backend/
-├── internal/domain/operations/
-│   ├── models/
-│   │   ├── support_ticket.go
-│   │   ├── incident.go
-│   │   └── sla_profile.go
-│   ├── repository/
-│   │   ├── support_repository.go
-│   │   ├── incident_repository.go
-│   │   └── sla_repository.go
-│   └── dto/               # Optional response structs for public SLA
+├── internal/domain/models/operations/
+│   ├── support_ticket.go
+│   ├── incident.go
+│   └── sla_profile.go
+├── internal/domain/repository/operations/
+│   ├── support_repository.go
+│   ├── incident_repository.go
+│   └── sla_repository.go
+├── internal/domain/dto/operations/      # Optional response structs for public SLA
 ├── internal/services/operations/
 │   ├── support_service.go
 │   ├── incident_service.go
@@ -104,7 +103,8 @@ web-admin/
 │   ├── IncidentTimeline.vue
 │   └── SlaScoreCard.vue
 ├── app/stores/operations/
-│   └── useOperationsStore.ts
+│   ├── useOperationsStore.ts
+│   └── useSlaStore.ts
 └── tests/operations/
     ├── support_playbook.spec.ts
     ├── incident_flow.spec.ts

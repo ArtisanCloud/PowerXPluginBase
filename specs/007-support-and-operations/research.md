@@ -1,7 +1,7 @@
 # Research Notes — Support & Operations
 
 ## Decision 1: Establish dedicated `operations` bounded context in backend and web-admin
-- **Decision**: 新增 `backend/internal/{domain,repository,services}/operations/...` 与 `web-admin/app/pages/_p/com.powerx.plugins.base/admin/operations/...` 目录，集中实现支持与运维逻辑。
+- **Decision**: 新增 `backend/internal/domain/models/operations/**`、`backend/internal/domain/repository/operations/**`、`backend/internal/services/operations/**` 与 `web-admin/app/pages/_p/com.powerx.plugins.base/admin/operations/**` 目录，集中实现支持与运维逻辑。
 - **Rationale**: 将 Support/Incident/SLA 能力从 marketplace 与 integration 领域拆分，便于权限与发布节奏独立治理，符合宪章的 Service-Centric 分层。
 - **Alternatives considered**:
   - 复用 `integration` 目录：会导致领域职责混淆，测试覆盖难以界定。

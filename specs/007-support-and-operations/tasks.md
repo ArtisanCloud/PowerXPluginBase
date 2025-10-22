@@ -31,8 +31,8 @@
 ### Implementation for US1
 
 - [x] T020 [US1] 创建迁移：`backend/migrations/2025Q4_operations_support.sql` 定义 `operations_support_channels`、`operations_support_tickets`、`operations_support_ticket_events`、Checklist 相关表及 RLS。  
-- [x] T021 [US1] 建模：在 `backend/internal/domain/operations/models/` 创建 `support_channel.go`、`support_ticket.go`，声明 GORM 标签与状态机。  
-- [x] T022 [US1] 实现仓储：在 `backend/internal/domain/operations/repository/support_repository.go` 提供渠道 CRUD、票务状态流转、事件写入接口。  
+- [x] T021 [US1] 建模：在 `backend/internal/domain/models/operations/` 创建 `support_channel.go`、`support_ticket.go`，声明 GORM 标签与状态机。  
+- [x] T022 [US1] 实现仓储：在 `backend/internal/domain/repository/operations/support_repository.go` 提供渠道 CRUD、票务状态流转、事件写入接口。  
 - [x] T023 [US1] 服务层：在 `backend/internal/services/operations/support_service.go` 封装渠道配置校验、Support Ready Checklist 更新、工单事件出站逻辑。  
 - [x] T024 [US1] Webhook 整合：复用 `internal/services/integration/webhook_service.go`，新增 `operations.support.ticket.*` 主题与负载签名。  
 - [x] T025 [US1] Admin API：根据 contracts 在 `backend/internal/transport/http/admin/operations/support_handler.go` 实现 `/support/playbook`、`/support/metrics`、`/support/channels/test`。  
@@ -55,7 +55,7 @@
 ### Implementation for US2
 
 - [ ] T040 [US2] 迁移：扩展同批 SQL 或新增 `operations_incidents.sql`，建立 `operations_incidents`、`operations_incident_updates`、`operations_incident_checklist`。  
-- [ ] T041 [US2] 建模：在 `domain/operations/models/incident.go` 表达 SEV/状态流转、时间戳、标签、保密级别。  
+- [ ] T041 [US2] 建模：在 `domain/models/operations/incident.go` 表达 SEV/状态流转、时间戳、标签、保密级别。  
 - [ ] T042 [US2] 仓储：`repository/incident_repository.go` 支持创建、状态更新、时间线、标签检索与分页过滤。  
 - [ ] T043 [US2] 服务层：`services/operations/incident_service.go` 实现 SEV 驱动 SLA 时钟、通报计划、事件复发处理。  
 - [ ] T044 [US2] 通知整合：新增 incident 通知通道，向 Support Hub / Hotline / security 邮箱推送（扩展 webhook service & email client）。  
@@ -78,17 +78,17 @@
 
 ### Implementation for US3
 
-- [ ] T060 [US3] 迁移：创建/扩展 SQL 加入 `operations_sla_profiles`、`operations_sla_adjustments`、聚合辅助表。  
-- [ ] T061 [US3] 建模：在 `models/sla_profile.go` 定义计划类型、目标/实际指标、score 字段。  
-- [ ] T062 [US3] 仓储：`repository/sla_repository.go` 负责快照查询、调整历史记录。  
-- [ ] T063 [US3] 服务层：`services/operations/sla_service.go` 计算 Score（≥85 激励，<70 处罚）、写入调整历史、驱动 Dashboard。  
-- [ ] T064 [US3] 定时任务：实现 `services/operations/jobs/sla_recompute_job.go` & 调度入口（cmd/cron 或 existing runner），每日/月度/季度聚合支持。  
-- [ ] T065 [US3] Admin API：在 `transport/http/admin/operations/sla_handler.go` 实现 `/sla/profiles`、`/sla/profiles/recompute`。  
-- [ ] T066 [US3] 公共 API：在 `transport/http/public/marketplace/sla_handler.go` 提供 `GET /api/v1/marketplace/sla/{plugin_id}`，含缓存与 404 处理。  
-- [ ] T067 [US3] Dashboard UI：实现 `operations/sla.vue`、`SlaScoreCard.vue`，展示激励/处罚与趋势。  
-- [ ] T068 [US3] Tests：`sla_service_test.go`、`tests/integration/operations/sla_refresh_test.go` 校验计算、API 一致性与激励/处罚触发。  
-- [ ] T069 [US3] 前端测试：`web-admin/tests/operations/sla_dashboard.spec.ts` 覆盖指标显示、筛选、Badge 更新。  
-- [ ] T070 [US3] 审计日志：在 `services/operations/sla_service.go` 与 `sla_recompute_job.go` 写入 SLA 调整、激励/处罚执行的审计事件，补充 `sla_audit_test.go`。  
+- [X] T060 [US3] 迁移：创建/扩展 SQL 加入 `operations_sla_profiles`、`operations_sla_adjustments`、聚合辅助表。  
+- [X] T061 [US3] 建模：在 `models/sla_profile.go` 定义计划类型、目标/实际指标、score 字段。  
+- [X] T062 [US3] 仓储：`repository/sla_repository.go` 负责快照查询、调整历史记录。  
+- [X] T063 [US3] 服务层：`services/operations/sla_service.go` 计算 Score（≥85 激励，<70 处罚）、写入调整历史、驱动 Dashboard。  
+- [X] T064 [US3] 定时任务：实现 `services/operations/jobs/sla_recompute_job.go` & 调度入口（cmd/cron 或 existing runner），每日/月度/季度聚合支持。  
+- [X] T065 [US3] Admin API：在 `transport/http/admin/operations/sla_handler.go` 实现 `/sla/profiles`、`/sla/profiles/recompute`。  
+- [X] T066 [US3] 公共 API：在 `transport/http/public/marketplace/sla_handler.go` 提供 `GET /api/v1/marketplace/sla/{plugin_id}`，含缓存与 404 处理。  
+- [X] T067 [US3] Dashboard UI：实现 `operations/sla.vue`、`SlaScoreCard.vue`，展示激励/处罚与趋势。  
+- [X] T068 [US3] Tests：`sla_service_test.go`、`tests/integration/operations/sla_refresh_test.go` 校验计算、API 一致性与激励/处罚触发。  
+- [X] T069 [US3] 前端测试：`web-admin/tests/operations/sla_dashboard.spec.ts` 覆盖指标显示、筛选、Badge 更新。  
+- [X] T070 [US3] 审计日志：在 `services/operations/sla_service.go` 与 `sla_recompute_job.go` 写入 SLA 调整、激励/处罚执行的审计事件，补充 `sla_audit_test.go`。  
 
 **Checkpoint**：SLA 透明可查，激励/处罚自动落地。
 
