@@ -261,6 +261,16 @@ frontend:
                 path: /operations/sla
                 route: operations/sla
                 required_policies: [operations.sla:read]
+              - id: plugins.base.operations.dev_console
+                title: Dev Console
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.operations.dev_console
+                  default: Dev Console
+                icon: i-heroicons-command-line
+                path: /operations/dev-console
+                route: operations/dev-console
+                required_policies: [operations.plugin.admin:read]
 
 routes:
   basePath: /api/v1
@@ -328,6 +338,18 @@ permissions:
     actions: [read, command]
   - resource: operations.sla
     actions: [read, manage, command]
+  - resource: operations.plugin.admin
+    actions: [read, manage]
+  - resource: operations.plugin.audit
+    actions: [read, export]
+  - resource: operations.plugin.ops
+    actions: [read, execute]
+  - resource: operations.plugin.admin
+    actions: [read, manage]
+  - resource: operations.plugin.audit
+    actions: [read, export]
+  - resource: operations.plugin.ops
+    actions: [read, execute]
 
 agents:
   - id: base.assistant

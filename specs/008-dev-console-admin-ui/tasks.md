@@ -15,9 +15,9 @@
 
 **Purpose**: Ensure workspace, dependencies, and directory scaffolding align with the implementation plan.
 
-- [ ] T001 [P] Bootstrap backend/frontend deps for feature work (`make dev-setup`, `cd web-admin && npm install`) and verify Go 1.24 / Node 20 toolchains.  
-- [ ] T002 Establish admin console directory skeletons per plan (`backend/internal/domain/{models,repository}/admin_console`, `backend/internal/services/admin/console`, `backend/internal/transport/http/admin/console`, `web-admin/app/{pages,components,stores}/dev-console`).  
-- [ ] T003 [P] Configure lint/test scripts for new paths (update `Makefile`, `package.json` scripts, CI manifests) so added packages participate in `make test` / `npm run test`.
+- [x] T001 [P] Bootstrap backend/frontend deps for feature work (`make dev-setup`, `cd web-admin && npm install`) and verify Go 1.24 / Node 20 toolchains.  
+- [x] T002 Establish admin console directory skeletons per plan (`backend/internal/domain/{models,repository}/admin_console`, `backend/internal/services/admin/console`, `backend/internal/transport/http/admin/console`, `web-admin/app/{pages,components,stores}/dev-console`).  
+- [x] T003 [P] Configure lint/test scripts for new paths (update `Makefile`, `package.json` scripts, CI manifests) so added packages participate in `make test` / `npm run test`.
 
 ---
 
@@ -25,14 +25,14 @@
 
 **Purpose**: Platform & data groundwork required before any story-specific development.
 
-- [ ] T010 Create migration `backend/migrations/2025Q4_admin_console.sql` defining `admin_console_audit_events`, `admin_console_config_changes`, `admin_console_job_runs`, indexes, and RLS policies.  
-- [ ] T011 Register new models in `backend/cmd/database/migrate/migrate.go` and add table constants in `backend/internal/domain/models/model.go`.  
-- [ ] T012 [P] Extend configuration defaults: add `AdminConsole` structs in `backend/internal/config/config.go`, update `backend/etc/config.example.yaml`, and document keys in `backend/etc/README.md`.  
-- [ ] T013 Wire manifest & RBAC: update `plugin.yaml`, `backend/internal/router/router.go`, and `backend/internal/transport/http/registry.go` with `/api/v1/admin/dev-console/**` routes plus permission codes (`operations.plugin.admin`, `.audit`, `.ops`).  
-- [ ] T014 [P] Introduce admin console observability baseline (`backend/internal/observability/admin_console/metrics.go`, register in `internal/shared/app/deps.go`) for audit export counters and dashboard freshness gauges.  
-- [ ] T015 Scaffold repository/service entry points (`backend/internal/domain/repository/admin_console/repository.go`, `backend/internal/services/admin/console/service.go`) with tenant-aware constructors, leaving logic TBD.  
-- [ ] T016 Add HTTP route placeholders (`backend/internal/transport/http/admin/console/routes.go`) and ensure middleware (JWT, tenant context) applied consistently.  
-- [ ] T017 [P] Update `quickstart.md` prerequisites and smoke commands to include new admin console endpoints and migrations.
+- [x] T010 Create migration `backend/migrations/2025Q4_admin_console.sql` defining `admin_console_audit_events`, `admin_console_config_changes`, `admin_console_job_runs`, indexes, and RLS policies.  
+- [x] T011 Register new models in `backend/cmd/database/migrate/migrate.go` and add table constants in `backend/internal/domain/models/model.go`.  
+- [x] T012 [P] Extend configuration defaults: add `AdminConsole` structs in `backend/internal/config/config.go`, update `backend/etc/config.example.yaml`, and document keys in `backend/etc/README.md`.  
+- [x] T013 Wire manifest & RBAC: update `plugin.yaml`, `backend/internal/router/router.go`, and `backend/internal/transport/http/registry.go` with `/api/v1/admin/dev-console/**` routes plus permission codes (`operations.plugin.admin`, `.audit`, `.ops`).  
+- [x] T014 [P] Introduce admin console observability baseline (`backend/internal/observability/admin_console/metrics.go`, register in `internal/shared/app/deps.go`) for audit export counters and dashboard freshness gauges.  
+- [x] T015 Scaffold repository/service entry points (`backend/internal/domain/repository/admin_console/repository.go`, `backend/internal/services/admin/console/service.go`) with tenant-aware constructors, leaving logic TBD.  
+- [x] T016 Add HTTP route placeholders (`backend/internal/transport/http/admin/console/routes.go`) and ensure middleware (JWT, tenant context) applied consistently.  
+- [x] T017 [P] Update `quickstart.md` prerequisites and smoke commands to include new admin console endpoints and migrations.
 
 **Checkpoint**: Database, config, routing, and observability scaffolds ready for story work.
 

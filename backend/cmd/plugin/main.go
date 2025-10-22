@@ -19,6 +19,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/grpc/server"
 	marketplacejobs "github.com/ArtisanCloud/PowerXPlugin/internal/jobs/marketplace"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/logger"
+	adminmetrics "github.com/ArtisanCloud/PowerXPlugin/internal/observability/admin_console"
 	opsmetrics "github.com/ArtisanCloud/PowerXPlugin/internal/observability/operations"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/router"
 	agent "github.com/ArtisanCloud/PowerXPlugin/internal/services/agent"
@@ -104,15 +105,16 @@ func main() {
 	}
 
 	deps := &app.Deps{
-		DB:                 queryDB,
-		Ctx:                rootCtx,
-		PowerXClient:       pxc,
-		Config:             cfg,
-		TaxProviderClient:  taxClient,
-		MarketplaceBilling: nil,
-		LicenseAuthority:   nil,
-		LicenseCache:       licenseCache,
-		OperationsMetrics:  opsmetrics.NewMetrics(),
+		DB:                  queryDB,
+		Ctx:                 rootCtx,
+		PowerXClient:        pxc,
+		Config:              cfg,
+		TaxProviderClient:   taxClient,
+		MarketplaceBilling:  nil,
+		LicenseAuthority:    nil,
+		LicenseCache:        licenseCache,
+		OperationsMetrics:   opsmetrics.NewMetrics(),
+		AdminConsoleMetrics: adminmetrics.NewMetrics(),
 	}
 
 	listingRepo := marketplacerepo.NewListingRepository(queryDB)

@@ -63,4 +63,7 @@ const (
 	TableOperationsReadinessItems        = "operations_readiness_checklist_items"
 	TableOperationsSLAScores             = "operations_sla_profiles"
 	TableOperationsSLAAdjustments        = "operations_sla_adjustments"
+	TableAdminConsoleAuditEvents         = "admin_console_audit_events"
+	TableAdminConsoleConfigChanges       = "admin_console_config_changes"
+	TableAdminConsoleJobRuns             = "admin_console_job_runs"
 )

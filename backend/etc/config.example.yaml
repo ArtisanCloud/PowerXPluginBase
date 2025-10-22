@@ -161,6 +161,22 @@ operations:
     monthly_cron: "0 6 1 * *"
     quarterly_cron: "0 7 1 1,4,7,10 *"
 
+# Admin Console 配置
+admin_console:
+  audit_retention_days: 365
+  config_change_retention_days: 365
+  job_history_days: 45
+  export:
+    max_range_days: 31
+    default_format: csv
+  troubleshooting:
+    refresh_interval_seconds: 300
+    cache_ttl_seconds: 120
+  safe_ops:
+    lock_ttl_seconds: 120
+    max_concurrent_ops: 1
+  navigation_hidden_routes: []
+
 # gRPC 上游配置（连接 PowerX 核心服务）
 grpc_upstream:
   address: "localhost:9001" # PowerX gRPC 服务地址
