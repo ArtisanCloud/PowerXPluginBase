@@ -13,7 +13,7 @@ test-admin: ## 运行 web-admin 测试
 .PHONY: lint-admin
 lint-admin: ## 运行 web-admin Lint
 	@echo "运行 Web Admin Lint..."
-	cd $(FRONTEND_DIR) && npm run lint
+	cd $(FRONTEND_DIR) && npm run lint -- --max-warnings=0
 
 .PHONY: build-admin
 build-admin: ## 构建 web-admin 产物
