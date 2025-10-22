@@ -1,0 +1,536 @@
+openapi: 3.0.3
+info:
+  title: PowerX Plugin Admin Console API
+  version: 0.1.0
+  description: >
+    Admin endpoints surfaced under `/_p/<plugin_id>/api/v1/admin/dev-console/*` to manage plugin configuration,
+    audit history, safe operations, job runs, and troubleshooting data.
+servers:
+  - url: /_p/{plugin_id}/api/v1/admin/dev-console
+    variables:
+      plugin_id:
+        default: com.powerx.plugins.base
+security:
+  - bearerAuth: []
+paths:
+  /config/sections:
+    get:
+      summary: List configuration sections with current values and validation metadata
+      operationId: listConfigSections
+      parameters:
+        - $ref: '#/components/parameters/TenantID'
+      responses:
+        '200':
+          description: Sections loaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigSectionList'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /config/sections/{sectionKey}:
+    put:
+      summary: Update a configuration section
+      operationId: updateConfigSection
+      parameters:
+        - $ref: '#/components/parameters/SectionKey'
+        - $ref: '#/components/parameters/TenantID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigSectionInput'
+      responses:
+        '200':
+          description: Section updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigSection'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Concurrent modification detected
+  /audit/events:
+    get:
+      summary: Query admin audit events
+      operationId: listAuditEvents
+      parameters:
+        - $ref: '#/components/parameters/TenantID'
+        - in: query
+          name: action
+          schema:
+            type: string
+        - in: query
+          name: actor_id
+          schema:
+            type: string
+        - in: query
+          name: permission_code
+          schema:
+            type: string
+        - in: query
+          name: occurred_after
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: occurred_before
+          schema:
+            type: string
+            format: date-time
+        - $ref: '#/components/parameters/PageCursor'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Audit events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditEventList'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /audit/export:
+    get:
+      summary: Export audit events for a date range
+      operationId: exportAuditEvents
+      parameters:
+        - $ref: '#/components/parameters/TenantID'
+        - in: query
+          name: format
+          schema:
+            type: string
+            enum: [csv, json]
+          required: true
+        - in: query
+          name: occurred_after
+          schema:
+            type: string
+            format: date-time
+          required: true
+        - in: query
+          name: occurred_before
+          schema:
+            type: string
+            format: date-time
+          required: true
+      responses:
+        '200':
+          description: Export stream
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditEvent'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /jobs/runs:
+    get:
+      summary: List job or safe-operation runs
+      operationId: listJobRuns
+      parameters:
+        - $ref: '#/components/parameters/TenantIDOptional'
+        - in: query
+          name: status
+          schema:
+            type: string
+        - in: query
+          name: job_type
+          schema:
+            type: string
+        - $ref: '#/components/parameters/PageCursor'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Job runs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRunList'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /jobs/runs/{runId}/retry:
+    post:
+      summary: Retry a failed job run if eligible
+      operationId: retryJobRun
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/TenantIDOptional'
+      responses:
+        '202':
+          description: Retry scheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRun'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Retry already in progress
+  /safe-ops/actions:
+    post:
+      summary: Execute safe operations (replay, retry, drain, disable)
+      operationId: executeSafeOp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SafeOpRequest'
+      responses:
+        '202':
+          description: Operation accepted and tracked as a job run
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRun'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: An identical safe operation is already running for the target scope
+  /troubleshooting/summary:
+    get:
+      summary: Fetch troubleshooting dashboard data (health, quota, webhook delivery)
+      operationId: getTroubleshootingSummary
+      parameters:
+        - $ref: '#/components/parameters/TenantIDOptional'
+      responses:
+        '200':
+          description: Troubleshooting data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TroubleshootingSummary'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /webhooks/attempts:
+    get:
+      summary: Query webhook delivery attempts with filters
+      operationId: listWebhookAttempts
+      parameters:
+        - $ref: '#/components/parameters/TenantID'
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [delivered, retrying, failed, dlq]
+        - in: query
+          name: subscription_id
+          schema:
+            type: string
+        - in: query
+          name: since
+          schema:
+            type: string
+            format: date-time
+        - $ref: '#/components/parameters/PageCursor'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Webhook attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookAttemptList'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /webhooks/attempts/{attemptId}:
+    get:
+      summary: Fetch detailed webhook attempt information
+      operationId: getWebhookAttempt
+      parameters:
+        - in: path
+          name: attemptId
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/TenantID'
+      responses:
+        '200':
+          description: Attempt details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookAttempt'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TenantID:
+      name: tenant_id
+      in: query
+      required: true
+      schema:
+        type: string
+    TenantIDOptional:
+      name: tenant_id
+      in: query
+      required: false
+      schema:
+        type: string
+    SectionKey:
+      name: sectionKey
+      in: path
+      required: true
+      schema:
+        type: string
+    PageCursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+        description: Encoded pagination cursor
+    PageSize:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+  responses:
+    Forbidden:
+      description: Caller lacks required permission code
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationProblem'
+  schemas:
+    ConfigSectionList:
+      type: object
+      properties:
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConfigSection'
+        last_published_at:
+          type: string
+          format: date-time
+    ConfigSection:
+      type: object
+      required:
+        - key
+        - title
+        - fields
+        - current_values
+        - validation_rules
+      properties:
+        key:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConfigField'
+        current_values:
+          type: object
+          additionalProperties: true
+        last_modified_at:
+          type: string
+          format: date-time
+        last_modified_by:
+          type: string
+    ConfigField:
+      type: object
+      required: [name, type]
+      properties:
+        name: { type: string }
+        type: { type: string }
+        label: { type: string }
+        required: { type: boolean }
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              value: { type: string }
+              label: { type: string }
+        help_text: { type: string }
+        validation:
+          type: object
+          additionalProperties: true
+    ConfigSectionInput:
+      type: object
+      properties:
+        values:
+          type: object
+          additionalProperties: true
+        comment:
+          type: string
+      required: [values]
+    AuditEventList:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEvent'
+        next_cursor:
+          type: string
+    AuditEvent:
+      type: object
+      properties:
+        id: { type: string }
+        occurred_at: { type: string, format: date-time }
+        actor:
+          type: object
+          properties:
+            id: { type: string }
+            name: { type: string }
+            email: { type: string }
+        permission_code: { type: string }
+        action: { type: string }
+        resource_type: { type: string }
+        resource_ref: { type: string }
+        summary: { type: string }
+        diff: { type: object, additionalProperties: true }
+    JobRunList:
+      type: object
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobRun'
+        next_cursor:
+          type: string
+    JobRun:
+      type: object
+      properties:
+        id: { type: string }
+        plugin_id: { type: string }
+        tenant_id: { type: string }
+        environment: { type: string }
+        job_type: { type: string }
+        trigger_source: { type: string }
+        status: { type: string }
+        started_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time }
+        duration_ms: { type: integer }
+        message: { type: string }
+        retry_of: { type: string }
+        created_by: { type: string }
+        audit_event_id: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    SafeOpRequest:
+      type: object
+      required: [action, scope_type, scope_ref]
+      properties:
+        action:
+          type: string
+          enum: [replay, retry, drain, disable]
+        scope_type:
+          type: string
+          enum: [tenant, environment, subscription]
+        scope_ref:
+          type: string
+        target_id:
+          type: string
+          description: Identifier of the job/task/webhook payload to replay or retry
+        reason:
+          type: string
+        dry_run:
+          type: boolean
+          default: false
+    TroubleshootingSummary:
+      type: object
+      properties:
+        refreshed_at:
+          type: string
+          format: date-time
+        health:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              status: { type: string }
+              message: { type: string }
+        quota:
+          type: array
+          items:
+            type: object
+            properties:
+              capability: { type: string }
+              usage_percent: { type: number, format: float }
+              threshold_percent: { type: number, format: float }
+              window: { type: string }
+        webhook_delivery:
+          type: object
+          properties:
+            success_rate: { type: number, format: float }
+            retry_rate: { type: number, format: float }
+            dlq_rate: { type: number, format: float }
+            recent_failures:
+              type: array
+              items:
+                $ref: '#/components/schemas/WebhookAttempt'
+        guidance:
+          type: array
+          items:
+            type: object
+            properties:
+              title: { type: string }
+              description: { type: string }
+    WebhookAttemptList:
+      type: object
+      properties:
+        attempts:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookAttempt'
+        next_cursor:
+          type: string
+    WebhookAttempt:
+      type: object
+      properties:
+        id: { type: string }
+        subscription_id: { type: string }
+        tenant_id: { type: string }
+        plugin_id: { type: string }
+        status: { type: string }
+        response_code: { type: integer }
+        delivery_count: { type: integer }
+        payload_id: { type: string }
+        last_attempted_at: { type: string, format: date-time }
+        next_retry_at: { type: string, format: date-time }
+        last_error: { type: string }
+        dlq_reason: { type: string }
+    ValidationProblem:
+      type: object
+      properties:
+        message: { type: string }
+        field_errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
