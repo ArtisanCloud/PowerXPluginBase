@@ -10,7 +10,7 @@
 ## Phase 1 — Setup (Shared Infrastructure)
 
 - [x] T001 运行 `make dev-setup`（仓库根目录）确保 Go 依赖与 `golangci-lint` 就绪。  
-- [ ] T002 [P] 在 `web-admin/` 执行 `pnpm install` 安装 Nuxt 依赖与测试工具。  
+- [ ] T002 [P] 在 `web-admin/` 执行 `npm install` 安装 Nuxt 依赖与测试工具。  
 - [ ] T003 [P] 启动本地依赖：`docker compose -f config/docker-compose.integration.yml up -d` 供 Redis/Webhook mock 使用。
 
 ---
@@ -132,7 +132,7 @@
 ## Phase 6 — Polish & Cross-Cutting
 
 - [x] T901 [P] 整理 `docs/` 与 `README.md`，新增 Marketplace 商业闭环章节。  
-- [x] T902 清理临时代码/提高覆盖率：运行 `make fmt && make lint && make test && pnpm lint`.  
+- [x] T902 清理临时代码/提高覆盖率：运行 `make fmt && make lint && make test && npm run lint`.  
 - [x] T903 [P] 校验打包流程：执行 `make build && make frontend-build && make dist`，确认产物包含新增 API/UI。  
 - [x] T904 验证配置样例：审查 `backend/etc/config.example.yaml`、`config/docker-compose.integration.yml` 是否包含 Marketplace 说明。  
 - [x] T905 更新 `plugin.yaml` 版本号与 `docs/references/changelog.md`（若存在）记录新功能。
@@ -166,7 +166,7 @@
 1. **MVP（US1）**：优先实现 Listing + Checklist 流程，确保 Marketplace 基础供给侧可演示。  
 2. **商业闭环（US2）**：在 MVP 稳定后补完定价、License、税费与续费提醒，形成完整交易链路。  
 3. **分析洞察（US3）**：最后实现 Usage 聚合与分润报表，为 Vendor/Platform 提供运营视角。  
-4. 每个阶段结束运行 `make test`、`pnpm test` 与合同测试，保持可部署增量。
+4. 每个阶段结束运行 `make test`、`npm run test` 与合同测试，保持可部署增量。
 
 ---
 

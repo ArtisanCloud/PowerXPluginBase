@@ -17,7 +17,24 @@ func RegisterRoutes(router *gin.RouterGroup, deps *app.Deps) {
 
 	operationsGroup := router.Group("/operations")
 
-	supportHandler := NewSupportHandler(deps)
+	var incidentHandler *IncidentHandler
+	var supportHandler *SupportHandler
+	var incidentDispatcher opservice.IncidentDispatcher
+
+	if deps != nil {
+		incidentDispatcher = opservice.NewLoggingIncidentDispatcher(deps.RuntimeLogger(deps.Ctx, "operations.incident", nil))
+	}
+
+	if deps != nil && deps.DB != nil {
+		incidentRepo := oprepo.NewIncidentRepository(deps.DB)
+		incidentSvc := opservice.NewIncidentService(incidentRepo, deps.Config, deps.OperationsMetrics, incidentDispatcher)
+		incidentHandler = NewIncidentHandler(incidentSvc)
+
+		supportHandler = NewSupportHandler(deps)
+	} else {
+		supportHandler = NewSupportHandler(nil)
+	}
+
 	support := operationsGroup.Group("/support")
 	{
 		support.GET("/playbook", supportHandler.GetPlaybook)
@@ -40,5 +57,15 @@ func RegisterRoutes(router *gin.RouterGroup, deps *app.Deps) {
 		}
 	} else {
 		operationsGroup.Group("/sla")
+	}
+	incidents := operationsGroup.Group("/incidents")
+	{
+		if incidentHandler != nil {
+			incidents.POST("", incidentHandler.CreateIncident)
+			incidents.GET("", incidentHandler.ListIncidents)
+			incidents.GET("/:incidentId", incidentHandler.GetIncident)
+			incidents.PATCH("/:incidentId", incidentHandler.UpdateIncident)
+			incidents.POST("/:incidentId/timeline", incidentHandler.AppendTimeline)
+		}
 	}
 }

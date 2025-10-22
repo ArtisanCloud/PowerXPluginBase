@@ -182,7 +182,7 @@ GET /api/v1/admin/plugin/logs?level=error&limit=100
 
 | 原因        | 检查项                                 | 解决方式                |
 | --------- | ----------------------------------- | ------------------- |
-| 构建资源缺失    | `/web-admin/dist` 不存在               | 重新构建前端 `pnpm build` |
+| 构建资源缺失    | `/web-admin/dist` 不存在               | 重新构建前端 `npm run build` |
 | 路由代理错误    | `/__up/_p/<plugin_id>/admin` 返回 404 | 检查宿主 Gin proxy 配置   |
 | i18n 加载失败 | 缺少语言文件                              | 检查 `/app/i18n` 目录   |
 | 权限控制错误    | Token 无效                            | 重新登录或刷新 JWT         |

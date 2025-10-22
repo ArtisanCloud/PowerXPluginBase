@@ -16,7 +16,7 @@ Deliver a full Support & Operations stack for Marketplace plugins: configure mul
 **Language/Version**: Go 1.24 (backend), Node 20 + Nuxt 4.1.3 (web-admin)  
 **Primary Dependencies**: Gin HTTP router, GORM ORM, Redis (event retry cache), existing webhook_service abstraction  
 **Storage**: PostgreSQL `powerx_plugin_base` schema; new tables `operations_support_*`, `operations_incidents_*`, `operations_sla_*`; migration + RLS policies required  
-**Testing**: Go unit/service/integration tests under `internal/services/operations`, contract tests for `operations` HTTP routes, Nuxt component/e2e tests (`pnpm test operations`)  
+**Testing**: Go unit/service/integration tests under `internal/services/operations`, contract tests for `operations` HTTP routes, Nuxt component/e2e tests（`npm run test -- operations`）  
 **Target Platform**: PowerX managed plugin runtime on Linux (backend binary) with admin UI served via host proxy `/_p/com.powerx.plugins.base/admin/**`  
 **Project Type**: Hybrid backend + admin web application  
 **Performance Goals**: Admin APIs p95 < 300 ms, webhook dispatch latency < 5 s (including retry), SLA recompute job completes < 2 min for 10k tickets/month  

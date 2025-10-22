@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { useOperationsStore } from '~/app/stores/operations/useOperationsStore'
+import { useOperationsStore } from '~/stores/operations/useOperationsStore'
 
 const toast = useToast()
 const store = useOperationsStore()

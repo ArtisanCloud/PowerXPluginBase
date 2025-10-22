@@ -55,7 +55,7 @@
 ### Implementation for US2
 
 - [ ] T040 [US2] 迁移：扩展同批 SQL 或新增 `operations_incidents.sql`，建立 `operations_incidents`、`operations_incident_updates`、`operations_incident_checklist`。  
-- [ ] T041 [US2] 建模：在 `domain/models/operations/incident.go` 表达 SEV/状态流转、时间戳、标签、保密级别。  
+- [ ] T041 [US2] 建模：在 `domain/operations/models/incident.go` 表达 SEV/状态流转、时间戳、标签、保密级别。  
 - [ ] T042 [US2] 仓储：`repository/incident_repository.go` 支持创建、状态更新、时间线、标签检索与分页过滤。  
 - [ ] T043 [US2] 服务层：`services/operations/incident_service.go` 实现 SEV 驱动 SLA 时钟、通报计划、事件复发处理。  
 - [ ] T044 [US2] 通知整合：新增 incident 通知通道，向 Support Hub / Hotline / security 邮箱推送（扩展 webhook service & email client）。  
@@ -96,10 +96,10 @@
 
 ## Phase 6 — Polish & Cross-Cutting
 
-- [ ] T090 更新文档：同步 `docs/overview/marketplace_business_loop.md`、`quickstart.md`、新增操作指南，说明 Support/Incident/SLA 演练。  
-- [ ] T091 清理临时代码并运行验证：`make fmt && make lint && make test && pnpm lint && pnpm test operations`。  
-- [ ] T092 校验打包：执行 `make build && make frontend-build && make dist`，检查 dist 包含新的 operations 资源。  
-- [ ] T093 审核审计与指标：确认 audit log、metrics、Webhook 重试配置均正确，更新 `docs/references/changelog.md` 与 `plugin.yaml` 版本号。  
+- [X] T090 更新文档：同步 `docs/overview/marketplace_business_loop.md`、`quickstart.md`、新增操作指南，说明 Support/Incident/SLA 演练。  
+- [X] T091 清理临时代码并运行验证：`make fmt && make lint && make test && npm run lint && npm run test -- operations`。  
+- [X] T092 校验打包：执行 `make build && make frontend-build && make dist`，检查 dist 包含新的 operations 资源。  
+- [X] T093 审核审计与指标：确认 audit log、metrics、Webhook 重试配置均正确，更新 `docs/references/changelog.md` 与 `plugin.yaml` 版本号。  
 
 ---
 
@@ -123,7 +123,7 @@
 1. **MVP（US1）**：优先交付 Support Playbook + Webhook 流程，确保上线审核与支持渠道可用。  
 2. **Incident Lifecycle（US2）**：在支持体系稳定后补全事故响应，保障 SEV 流程与 RCA 追踪。  
 3. **SLA Transparency（US3）**：最后实现 SLA 量化与激励/处罚，完成运营闭环。  
-4. 每个阶段结束执行 `make test`、`pnpm test operations` 与合约测试，确保回归稳定。  
+4. 每个阶段结束执行 `make test`、`npm run test -- operations` 与合约测试，确保回归稳定。  
 
 ---
 

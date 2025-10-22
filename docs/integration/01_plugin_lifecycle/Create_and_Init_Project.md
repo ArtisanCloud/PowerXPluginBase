@@ -169,8 +169,8 @@ make migrate-up
 
 ```bash
 cd web-admin
-pnpm i   # 或 npm/yarn
-pnpm dev
+npm i   # 或 npm/yarn
+npm run dev
 # 本地预览后端代理路径：/_p/com.powerx.plugin.example/admin/ ...
 ```
 
@@ -189,7 +189,7 @@ make backend-build
 
 ```bash
 cd web-admin
-pnpm build
+npm run build
 # 产物目录依据 nuxt.config.ts（例如 .output/public 或 dist）
 ```
 

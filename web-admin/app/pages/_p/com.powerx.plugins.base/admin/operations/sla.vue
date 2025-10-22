@@ -50,8 +50,8 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { useToast } from '#imports'
-import SlaScoreCard from '~/app/components/operations/SlaScoreCard.vue'
-import { useSlaStore } from '~/app/stores/operations/useSlaStore'
+import SlaScoreCard from '~/components/operations/SlaScoreCard.vue'
+import { useSlaStore } from '~/stores/operations/useSlaStore'
 import type { SlaProfileUpdatePayload, SlaActualsPayload } from '~/app/types/operations'
 
 const store = useSlaStore()

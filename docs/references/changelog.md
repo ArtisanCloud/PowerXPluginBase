@@ -2,6 +2,24 @@
 
 > 仅记录与 PowerX Marketplace 商业闭环相关的可交付版本。更早的安全、协议迭代请参考 `docs/releases/` 历史记录。
 
+## v0.6.0 · Support & Operations Runbook
+
+发布日期：2025-10-22
+
+- **Support Playbook**：新增多渠道支持配置、知识库同步与 Support Ready Checklist，支持 webhook 验证与指标 `powerx_operations_support_ticket_total`。  
+- **Incident Lifecycle**：提供 `/_p/.../operations/incidents` 管理 SEV 流程、时间线、就绪清单，并写入审计 `operations_incident_updates` / `operations_sla_adjustments`。  
+- **SLA Transparency**：上线 SLA Dashboard、自动激励/处罚、公共 API `/api/v1/marketplace/sla/{plugin_id}`，并记录 `powerx_operations_sla_score` 指标。  
+- **文档与 Runbook**：更新 [Marketplace 商业闭环指南](../overview/marketplace_business_loop.md)、`quickstart.md`，并新增 [Operations Runbook](../integration/07_support_and_operations/Operations_Runbook.md)。
+
+升级提示：
+
+1. 执行 `make migrate` 以创建 `operations_incidents`、`operations_incident_updates`、`operations_sla_profiles` 等新表。  
+2. 在 `backend/etc/config.yaml` 内补充 `operations` 配置节点（支持渠道、Incident 通知、SLA cron）。  
+3. 重新构建并打包：`make build && make frontend-build && make dist`，以生成新的 Operations UI 与后端逻辑。  
+4. 若需复现运行手册，请参照 `specs/007-support-and-operations/quickstart.md` 与 Runbook 执行 Support/Incident/SLA 演练。
+
+---
+
 ## v0.5.0 · Marketplace Analytics Loop
 
 发布日期：2025-10-21

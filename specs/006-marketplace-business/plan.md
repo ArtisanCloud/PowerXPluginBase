@@ -16,7 +16,7 @@
 **Language/Version**: Go 1.24 (backend), Node 20 + Nuxt 4 (admin UI)  
 **Primary Dependencies**: Gin, GORM, Redis (幂等/缓存), Stripe Tax SDK (HTTP 客户端封装), PowerX EventBus & ToolGrant, Discovery 推荐同步任务  
 **Storage**: PostgreSQL schema `powerx_plugin_base`（新表详见 `data-model.md`），Redis 用于 License 缓存与幂等记录  
-**Testing**: `go test ./...`（含 service/repository 单元测试 + integration tenant tx）、`make test`、前端 `pnpm test` + `@nuxt/test-utils`、合同测试（OpenAPI + GraphQL）  
+**Testing**: `go test ./...`（含 service/repository 单元测试 + integration tenant tx）、`make test`、前端 `npm run test` + `@nuxt/test-utils`、合同测试（OpenAPI + GraphQL）  
 **Target Platform**: Linux 宿主（PowerX 插件运行时），前端打包至宿主反向代理  
 **Project Type**: 插件后端 + Admin 前端（Web，全栈）  
 **Performance Goals**: License 验证 API p95 < 200ms，Usage Ingest ≥10K req/s，Dashboard 首屏 <5s  

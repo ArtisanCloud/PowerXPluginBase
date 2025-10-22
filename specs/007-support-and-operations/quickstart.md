@@ -1,7 +1,7 @@
 # Quickstart — Support & Operations Playbook
 
 ## Prerequisites
-- 已执行 `make dev-setup && pnpm install`，本地环境运行 `make run` 与 `pnpm dev`。
+- 已执行 `make dev-setup && npm install`，本地环境运行 `make run` 与 `npm run dev`。
 - 确保 `config/docker-compose.integration.yml` 中的 Redis / Webhook mock 已启动（`docker compose -f config/docker-compose.integration.yml up -d`）。
 - `backend/etc/config.yaml` 追加 `operations` 配置节点（支持渠道、Webhook 签名密钥、SLA 采样周期）。
 
@@ -26,7 +26,9 @@
 
 ## 4. 审核审计与指标
 1. 在数据库查看 `operations_support_ticket_events`、`operations_incident_updates`、`operations_sla_adjustments`，确保带 `tenant_id` 与 `plugin_id` 字段。
-2. 使用 `make test` 运行支持与 incident 服务单测、集成测；前端执行 `pnpm test operations`（待新增）。
+2. 使用 `make test` 运行支持与 incident 服务单测、集成测；前端执行 `npm run test -- operations`（待新增）。
 3. 通过 `make dist` 生成发布包，核查 `dist/<version>/` 中包含新的 operations UI 构建产物。
+
+> 若需更详细的页面操作指南，请参考 `docs/integration/07_support_and_operations/Operations_Runbook.md`。
 
 > 完成以上步骤后，可在 `/specs/007-support-and-operations/tasks.md` 中拆分开发任务并推动实现。
