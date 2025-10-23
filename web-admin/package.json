@@ -12,7 +12,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "start": "node .output/server/index.mjs",
-    "lint": "eslint .",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx,.vue app tests",
     "test": "vitest run"
   },
   "dependencies": {

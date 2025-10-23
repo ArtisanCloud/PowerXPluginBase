@@ -5,6 +5,7 @@ import (
 
 	"github.com/ArtisanCloud/PowerXPlugin/internal/config"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
+	adminconsoleModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/admin_console"
 	marketplaceModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
 	operationsModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/operations"
 	runtimeOpsModel "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/runtime_ops"
@@ -47,6 +48,9 @@ func MigratePluginModels(ctx context.Context, db *gorm.DB) error {
 		&securityModel.AuditReport{},
 		&toolgrantModel.Revocation{},
 		&toolgrantModel.UsageEvent{},
+		&adminconsoleModel.AuditEvent{},
+		&adminconsoleModel.ConfigChange{},
+		&adminconsoleModel.JobRun{},
 	)
 }
 

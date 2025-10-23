@@ -14,6 +14,7 @@ import (
 	"github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
 	dbm "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/marketplace"
 	mrepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/marketplace"
+	adminmetrics "github.com/ArtisanCloud/PowerXPlugin/internal/observability/admin_console"
 	opsmetrics "github.com/ArtisanCloud/PowerXPlugin/internal/observability/operations"
 	svc "github.com/ArtisanCloud/PowerXPlugin/internal/services/marketplace"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
@@ -112,13 +113,14 @@ func setupLicenseHandlerDeps(t *testing.T) (*app.Deps, *gorm.DB) {
 	}
 
 	deps := &app.Deps{
-		DB:                 db,
-		Ctx:                context.Background(),
-		Config:             &config.Config{},
-		MarketplaceBilling: &handlerBillingStub{responseID: "bill-handler"},
-		LicenseAuthority:   &handlerAuthorityStub{issueResp: &svc.LicenseIssueResponse{Token: "handler-token", ExpiresAt: time.Now().Add(24 * time.Hour)}},
-		LicenseCache:       &handlerCacheStub{},
-		OperationsMetrics:  opsmetrics.NewMetrics(),
+		DB:                  db,
+		Ctx:                 context.Background(),
+		Config:              &config.Config{},
+		MarketplaceBilling:  &handlerBillingStub{responseID: "bill-handler"},
+		LicenseAuthority:    &handlerAuthorityStub{issueResp: &svc.LicenseIssueResponse{Token: "handler-token", ExpiresAt: time.Now().Add(24 * time.Hour)}},
+		LicenseCache:        &handlerCacheStub{},
+		OperationsMetrics:   opsmetrics.NewMetrics(),
+		AdminConsoleMetrics: adminmetrics.NewMetrics(),
 	}
 	return deps, db
 }

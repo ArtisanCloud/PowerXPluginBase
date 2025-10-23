@@ -55,6 +55,9 @@ type Config struct {
 	// Operations 配置。
 	Operations *OperationsConfig `yaml:"operations" json:"operations"`
 
+	// AdminConsole 配置。
+	AdminConsole *AdminConsoleConfig `yaml:"admin_console" json:"admin_console"`
+
 	// 向后兼容的字段（从环境变量或旧配置中填充）
 	BindAddr   string `yaml:"-" json:"bind_addr,omitempty"`
 	LogLevel   string `yaml:"-" json:"log_level,omitempty"`

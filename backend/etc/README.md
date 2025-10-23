@@ -83,6 +83,17 @@ Base 插件的配置来源按照以下优先级生效：
 
 > ✅ 建议在生产环境通过 `config/host-values.yaml` 写入敏感配置，仅在必要时才用环境变量覆盖。
 
+## Admin Console 配置
+
+`admin_console` 节点控制插件运营控制台的保留策略与刷新节奏：
+
+- `audit_retention_days` / `config_change_retention_days`：审计日志与配置历史保留天数，默认 365。
+- `job_history_days`：安全操作与任务历史保留天数，默认 45。
+- `export.max_range_days`：单次审计导出的最大时间跨度，默认 31 天；`default_format` 支持 `csv` 或 `json`。
+- `troubleshooting.refresh_interval_seconds`：故障排查仪表盘自动刷新间隔；`cache_ttl_seconds` 控制后端缓存 TTL。
+- `safe_ops.lock_ttl_seconds` / `max_concurrent_ops`：安全操作的锁超时时长及并发上限，避免重复执行。
+- `navigation_hidden_routes`：可选，填入路径以在特定环境隐藏部分控制台菜单。
+
 ## 常见错误与排查
 
 - `database DSN is required`：未在配置文件或环境变量中提供数据库连接。

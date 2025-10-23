@@ -9,6 +9,7 @@ import (
 	opservice "github.com/ArtisanCloud/PowerXPlugin/internal/services/operations"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin"
+	adminconsole "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/console"
 	adminintegration "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/integration"
 	adminmarketplace "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/marketplace"
 	adminoperations "github.com/ArtisanCloud/PowerXPlugin/internal/transport/http/admin/operations"
@@ -50,6 +51,7 @@ func (r *Registry) RegisterAPIRoutes(gApi *gin.RouterGroup) {
 	r.mergeRBAC(adminsecurity.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminintegration.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminoperations.RBACEntries(r.apiPrefix()))
+	r.mergeRBAC(adminconsole.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(adminmarketplace.RBACEntries(r.apiPrefix()))
 	r.mergeRBAC(integrationRBACEntries(r.apiPrefix()))
 	r.mergeRBAC(marketplacePublicRBACEntries(r.apiPrefix()))

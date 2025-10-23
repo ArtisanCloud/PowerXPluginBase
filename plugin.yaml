@@ -2,7 +2,7 @@
 # 请勿在此写入环境相关的地址、口令等敏感配置；推荐放到 backend/etc/config.yaml 或部署环境变量中。
 id: com.powerx.plugins.base
 name: Base template Plugin
-version: 0.6.0
+version: 0.7.0
 description: "PowerX 基础任务管理插件，提供任务、权限与 Agent 能力"
 corex_version: ">=0.6.0"
 security_baseline_version: "2025.10"
@@ -261,6 +261,16 @@ frontend:
                 path: /operations/sla
                 route: operations/sla
                 required_policies: [operations.sla:read]
+              - id: plugins.base.operations.dev_console
+                title: Dev Console
+                title_i18n:
+                  namespace: menus
+                  key: menu.base.operations.dev_console
+                  default: Dev Console
+                icon: i-heroicons-command-line
+                path: /operations/dev-console
+                route: operations/dev-console
+                required_policies: [operations.plugin.admin:read]
 
 routes:
   basePath: /api/v1
@@ -328,6 +338,12 @@ permissions:
     actions: [read, command]
   - resource: operations.sla
     actions: [read, manage, command]
+  - resource: operations.plugin.admin
+    actions: [read, manage]
+  - resource: operations.plugin.audit
+    actions: [read, export]
+  - resource: operations.plugin.ops
+    actions: [read, execute]
 
 agents:
   - id: base.assistant

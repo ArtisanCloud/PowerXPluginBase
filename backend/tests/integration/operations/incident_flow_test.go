@@ -13,6 +13,7 @@ import (
 	basemodels "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models"
 	opmodels "github.com/ArtisanCloud/PowerXPlugin/internal/domain/models/operations"
 	oprepo "github.com/ArtisanCloud/PowerXPlugin/internal/domain/repository/operations"
+	adminmetrics "github.com/ArtisanCloud/PowerXPlugin/internal/observability/admin_console"
 	opmetrics "github.com/ArtisanCloud/PowerXPlugin/internal/observability/operations"
 	operationsvc "github.com/ArtisanCloud/PowerXPlugin/internal/services/operations"
 	"github.com/ArtisanCloud/PowerXPlugin/internal/shared/app"
@@ -39,7 +40,7 @@ func setupIncidentServer(t *testing.T) (*gin.Engine, *operationsvc.IncidentServi
 	svc := operationsvc.NewIncidentService(repo, &config.Config{}, opmetrics.NewMetrics(), nil)
 
 	r := gin.New()
-	deps := &app.Deps{DB: db, Config: &config.Config{}, OperationsMetrics: opmetrics.NewMetrics()}
+	deps := &app.Deps{DB: db, Config: &config.Config{}, OperationsMetrics: opmetrics.NewMetrics(), AdminConsoleMetrics: adminmetrics.NewMetrics()}
 	adminGroup := r.Group("/admin")
 	adminops.RegisterRoutes(adminGroup, deps)
 
