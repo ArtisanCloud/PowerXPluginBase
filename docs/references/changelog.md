@@ -2,6 +2,24 @@
 
 > 仅记录与 PowerX Marketplace 商业闭环相关的可交付版本。更早的安全、协议迭代请参考 `docs/releases/` 历史记录。
 
+## v0.7.0 · Dev Console Troubleshooting
+
+发布日期：2025-10-24
+
+- **故障排查控制台**：`/_p/com.powerx.plugins.base/admin/dev-console` 新增「故障排查」页签，集成任务历史、手动安全操作、健康/配额/Webhook 诊断面板。
+- **安全操作审计**：安全操作、重试会写入 `admin_console_job_runs` 与 `admin_console_audit_events`，支持导出 CSV/JSON，并提供新的 Prometheus 指标。
+- **Webhook Drill-down**：提供 `/webhooks/attempts` 与 `/webhooks/attempts/{id}` API，配合新增索引加速租户级筛选。
+- **Runbook & Dashboard**：补充 [Admin Console Observability Guide](../observability/admin-console-dashboard.md)、[Troubleshooting Runbook](../support/admin-console-troubleshooting.md)，供值班与运维参照。
+
+升级提示：
+
+1. 执行 `make migrate` 应用 `2025Q4_admin_console.sql` 与 `2025Q4_integration_indexes.sql`，以获得新字段与索引。
+2. 重新构建后端与前端：`make build && make frontend-build`，再执行 `make release` 生成 v0.7.0 包。
+3. 更新 `plugin.yaml` 到 `0.7.0` 并确认 Manifest 中新增的 `operations.plugin.*` 权限条目。
+4. 建议导入新的 Observability Dashboard，校验指标 `powerx_admin_console_safe_op_total` 与自动刷新延迟是否正常上报。
+
+---
+
 ## v0.6.0 · Support & Operations Runbook
 
 发布日期：2025-10-22

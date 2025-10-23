@@ -54,6 +54,31 @@ npm run dev -- --port 3036 --host 0.0.0.0
 1. **直连插件 Admin 端口**：页面源码需出现 `app:{baseURL:"/_p/com.powerx.plugins.base/admin/"}`。
 2. **经 PowerX 访问**：浏览器 Network 面板中所有静态资源路径都应当是 `/_p/com.powerx.plugins.base/admin/assets/...` 且返回 200。
 
+## Dev Console 故障排查面板
+
+新版本引入 `/_p/com.powerx.plugins.base/admin/dev-console` 下的「故障排查」页签，前端约定如下：
+
+- Job Run 表格通过 `/api/v1/admin/dev-console/jobs/runs` 分页加载；过滤条件会同步到 URL 查询参数，便于复制链接给其他值班人员。
+- 安全操作表单调用 `/safe-ops/actions`。Dry Run 选项默认关闭，并在成功后自动将最新 Job Run 插入列表顶部。
+- 故障排查仪表盘使用 `/troubleshooting/summary`，默认 5 分钟自动刷新，可通过 `useDevConsoleTroubleshootStore` 的 `scheduleAutoRefresh` 修改刷新节奏。
+- Webhook 诊断面板依赖 `/webhooks/attempts` 与 `/webhooks/attempts/{id}`；若租户 ID 为空，前端直接提示填写。
+
+调试建议：
+
+```bash
+# 启动 Nuxt dev server
+npm run dev -- --port 3036
+
+# 触发 mock 操作查看前端是否刷新
+curl -X POST \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"tenant_id":"demo-tenant","action":"replay","scope_type":"tenant","scope_ref":"demo-tenant"}' \
+  "http://localhost:8086/_p/com.powerx.plugins.base/api/v1/admin/dev-console/safe-ops/actions"
+```
+
+遇到空白页时优先查看浏览器控制台是否存在跨域或 403，通常意味着权限代码缺失或代理未带上 JWT。
+
 ## 常见误区
 
 - 运行期再用 `POWERX_PROXY` 等变量修改 `app.baseURL` → 无效，HTML 中的路径已经写死。

@@ -128,11 +128,11 @@
 
 ## Phase 6 — Polish & Cross-Cutting
 
-- [ ] T900 [P] Refresh product documentation & runbooks (`docs/observability`, `docs/support`, `web-admin/README.md`) to reflect new console surfaces.  
-- [ ] T901 Harden security: double-check RBAC enforcement, add threat-model notes in `backend/docs/security/admin_console.md`.  
-- [ ] T902 [P] Performance review: benchmark audit export for 1,500 events, add index tweaks or streaming adjustments as needed.  
-- [ ] T903 Validate `quickstart.md` commands, ensure smoke scripts succeed end-to-end.  
-- [ ] T904 Prep release artifacts (`plugin.yaml` version bump, `make release`, changelog entry).
+- [x] T900 [P] Refresh product documentation & runbooks (`docs/observability`, `docs/support`, `web-admin/README.md`) to reflect new console surfaces.  
+- [x] T901 Harden security: double-check RBAC enforcement, add threat-model notes in `backend/docs/security/admin_console.md`.  
+- [x] T902 [P] Performance review: benchmark audit export for 1,500 events, add index tweaks or streaming adjustments as needed.  
+- [x] T903 Validate `quickstart.md` commands, ensure smoke scripts succeed end-to-end.  
+- [x] T904 Prep release artifacts (`plugin.yaml` version bump, `make release`, changelog entry).
 
 ---
 
