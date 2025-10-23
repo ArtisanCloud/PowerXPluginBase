@@ -103,6 +103,7 @@ rulesets:
 - **Frontend（web-admin 等）**：  
   - Nuxt 运行期基于 `runtimeConfig.public.apiBaseUrl` 适配「直连 `:8086/v1`」与「宿主反代 `/_p/<plugin-id>/api/v1`」。  
   - 打包产物**固定**在 `web-admin/.output/` 并**随发布包交付**。  
+  - `plugin.yaml → frontend.admin.menus` 记录的是插件安装时向宿主登记的菜单；该列表由开发者按需求精简，允许与本地开发时展示的调试菜单不同。诸如 `plugins.base.integration` 仅用于本地演示，不应写入 manifest，而 `plugins.base.operations` 需在交付前确认策略与入口并显式声明。
   - UI 组件遵循 Nuxt UI 3.3.x：`UModal v-model:open`、`USwitch`（无 `UToggle`）、`color ∈ {primary,secondary,success,info,warning,error,neutral}`。
   - 共享 TypeScript 类型集中存放在 `web-admin/app/types/`，通过 `~/types/...` 引入；新增/更新类型需同步文档、生成器或脚手架规范。
   - Go 代码中的导入别名必须使用 UpperCamel 命名（例如 `runtimeOpsModel`、`securityModel`），避免 snake_case 或简写影响可读性。
