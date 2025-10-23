@@ -51,6 +51,13 @@ CREATE TABLE IF NOT EXISTS admin_console_job_runs (
     job_type       TEXT NOT NULL,
     trigger_source TEXT NOT NULL,
     status         TEXT NOT NULL,
+    action         TEXT,
+    scope_type     TEXT,
+    scope_ref      TEXT,
+    target_id      TEXT,
+    reason         TEXT,
+    dry_run        BOOLEAN DEFAULT FALSE,
+    metadata       JSONB,
     started_at     TIMESTAMPTZ,
     finished_at    TIMESTAMPTZ,
     duration_ms    BIGINT GENERATED ALWAYS AS (
@@ -73,6 +80,8 @@ CREATE INDEX IF NOT EXISTS idx_admin_console_job_status_time
     ON admin_console_job_runs (status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_admin_console_job_environment_time
     ON admin_console_job_runs (plugin_id, environment, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_admin_console_job_scope_action
+    ON admin_console_job_runs (action, scope_ref);
 
 COMMIT;
 

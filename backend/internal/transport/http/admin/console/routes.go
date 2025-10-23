@@ -14,10 +14,27 @@ func RegisterRoutes(router *gin.RouterGroup, deps *app.Deps) *gin.RouterGroup {
 		return nil
 	}
 	group := router.Group("/dev-console")
-	handler := NewConfigHandler(deps)
-	if handler != nil {
-		group.GET("/config/sections", handler.ListSections)
-		group.PUT("/config/sections/:sectionKey", handler.UpdateSection)
+	configHandler := NewConfigHandler(deps)
+	if configHandler != nil {
+		group.GET("/config/sections", configHandler.ListSections)
+		group.PUT("/config/sections/:sectionKey", configHandler.UpdateSection)
+	}
+	auditHandler := NewAuditHandler(deps)
+	if auditHandler != nil {
+		group.GET("/audit/events", auditHandler.ListEvents)
+		group.GET("/audit/export", auditHandler.ExportEvents)
+	}
+	jobHandler := NewJobHandler(deps)
+	if jobHandler != nil {
+		group.GET("/jobs/runs", jobHandler.ListRuns)
+		group.POST("/jobs/runs/:runId/retry", jobHandler.RetryRun)
+		group.POST("/safe-ops/actions", jobHandler.ExecuteSafeOp)
+	}
+	troubleshootHandler := NewTroubleshootHandler(deps)
+	if troubleshootHandler != nil {
+		group.GET("/troubleshooting/summary", troubleshootHandler.Summary)
+		group.GET("/webhooks/attempts", troubleshootHandler.ListWebhookAttempts)
+		group.GET("/webhooks/attempts/:attemptId", troubleshootHandler.GetWebhookAttempt)
 	}
 	return group
 }

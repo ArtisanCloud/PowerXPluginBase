@@ -51,6 +51,13 @@ curl -H "Authorization: Bearer <token)" \
   "http://localhost:8086/_p/com.powerx.plugins.base/api/v1/admin/dev-console/audit/events?tenant_id=demo-tenant&occurred_after=2025-10-01T00:00:00Z"
 ```
 
+### Export audit history (base64 payload)
+```bash
+curl -s -H "Authorization: Bearer <token>" \
+  "http://localhost:8086/_p/com.powerx.plugins.base/api/v1/admin/dev-console/audit/export?format=csv" \
+  | jq -r '.data.content_base64' | base64 --decode > audit-events.csv
+```
+
 ### Trigger safe operation replay
 ```bash
 curl -X POST \
@@ -60,10 +67,36 @@ curl -X POST \
   "http://localhost:8086/_p/com.powerx.plugins.base/api/v1/admin/dev-console/safe-ops/actions"
 ```
 
+### List job runs for a tenant
+```bash
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:8086/_p/com.powerx.plugins.base/api/v1/admin/dev-console/jobs/runs?tenant_id=demo-tenant&status=failed"
+```
+
+### Retry a failed job run
+```bash
+curl -X POST \
+  -H "Authorization: Bearer <token>" \
+  "http://localhost:8086/_p/com.powerx.plugins.base/api/v1/admin/dev-console/jobs/runs/<run_id>/retry"
+```
+
+### Fetch troubleshooting dashboard summary
+```bash
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:8086/_p/com.powerx.plugins.base/api/v1/admin/dev-console/troubleshooting/summary?tenant_id=demo-tenant"
+```
+
+### Inspect webhook attempts
+```bash
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:8086/_p/com.powerx.plugins.base/api/v1/admin/dev-console/webhooks/attempts?tenant_id=demo-tenant&status=failed"
+```
+
 ## Frontend Testing
 ```bash
 cd web-admin
 npm run test tests/dev-console/configure_console.spec.ts
+npm run test tests/dev-console/audit_history.spec.ts
 npm run test:e2e -- --grep dev-console  # Playwright smoke for console flows
 ```
 

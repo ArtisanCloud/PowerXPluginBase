@@ -75,20 +75,20 @@
 
 ### Tests for US2
 
-- [ ] T201 [P] [US2] Repository/service tests for audit filtering & pagination (`backend/internal/services/admin/console/audit_service_test.go`).  
-- [ ] T202 [P] [US2] HTTP export tests validating CSV vs JSON output formats and permissions (`backend/internal/transport/http/admin/console/audit_handler_test.go`).  
-- [ ] T203 [P] [US2] Nuxt e2e coverage for audit filters & export flow (`web-admin/tests/dev-console/audit_history.spec.ts`).
+- [x] T201 [P] [US2] Repository/service tests for audit filtering & pagination (`backend/internal/services/admin/console/audit_service_test.go`).  
+- [x] T202 [P] [US2] HTTP export tests validating CSV vs JSON output formats and permissions (`backend/internal/transport/http/admin/console/audit_handler_test.go`).  
+- [x] T203 [P] [US2] Nuxt e2e coverage for audit filters & export flow (`web-admin/tests/dev-console/audit_history.spec.ts`).
 
 ### Implementation for US2
 
-- [ ] T204 [P] [US2] Extend audit repository queries with actor/action filters and pagination (`backend/internal/domain/repository/admin_console/audit_repository.go`).  
-- [ ] T205 [US2] Implement audit service list/export logic including CSV serializer and download manifest (`backend/internal/services/admin/console/audit_service.go`).  
-- [ ] T206 [US2] Build HTTP handlers & DTOs for `/audit/events` and `/audit/export` (format negotiation, streaming) (`backend/internal/transport/http/admin/console/audit_handler.go`).  
-- [ ] T207 [US2] Hook metrics counters (export count, filter usage) in observability module.  
-- [ ] T208 [P] [US2] Create Nuxt audit history tab with filters, pagination, and permission guard messaging (`web-admin/app/components/dev-console/AuditHistoryTable.vue`).  
-- [ ] T209 [US2] Implement export drawer/modal enabling CSV/JSON choice and download progress (`web-admin/app/components/dev-console/AuditExportDialog.vue`).  
-- [ ] T210 [US2] Update Pinia store/composable to fetch audit events and trigger exports (`web-admin/app/stores/dev-console/audit.ts`).  
-- [ ] T211 [P] [US2] Refresh quickstart troubleshooting steps documenting export endpoints and permission requirements.
+- [x] T204 [P] [US2] Extend audit repository queries with actor/action filters and pagination (`backend/internal/domain/repository/admin_console/audit_repository.go`).  
+- [x] T205 [US2] Implement audit service list/export logic including CSV serializer and download manifest (`backend/internal/services/admin/console/audit_service.go`).  
+- [x] T206 [US2] Build HTTP handlers & DTOs for `/audit/events` and `/audit/export` (format negotiation, streaming) (`backend/internal/transport/http/admin/console/audit_handler.go`).  
+- [x] T207 [US2] Hook metrics counters (export count, filter usage) in observability module.  
+- [x] T208 [P] [US2] Create Nuxt audit history tab with filters, pagination, and permission guard messaging (`web-admin/app/components/dev-console/AuditHistoryTable.vue`).  
+- [x] T209 [US2] Implement export drawer/modal enabling CSV/JSON choice and download progress (`web-admin/app/components/dev-console/AuditExportDialog.vue`).  
+- [x] T210 [US2] Update Pinia store/composable to fetch audit events and trigger exports (`web-admin/app/stores/dev-console/audit.ts`).  
+- [x] T211 [P] [US2] Refresh quickstart troubleshooting steps documenting export endpoints and permission requirements.
 
 **Checkpoint**: US1 + US2 independently demonstrable; audit exports verified.
 
@@ -101,26 +101,26 @@
 
 ### Tests for US3
 
-- [ ] T301 [P] [US3] Service tests for job run persistence, retry eligibility, and advisory lock collisions (`backend/internal/services/admin/console/job_service_test.go`).  
-- [ ] T302 [P] [US3] Service tests for troubleshooting summary aggregation across health/quota/webhook sources (`backend/internal/services/admin/console/troubleshoot_service_test.go`).  
-- [ ] T303 [P] [US3] Nuxt tests covering job retry flow and troubleshooting auto-refresh (`web-admin/tests/dev-console/troubleshoot_console.spec.ts`).
+- [x] T301 [P] [US3] Service tests for job run persistence, retry eligibility, and advisory lock collisions (`backend/internal/services/admin/console/job_service_test.go`).  
+- [x] T302 [P] [US3] Service tests for troubleshooting summary aggregation across health/quota/webhook sources (`backend/internal/services/admin/console/troubleshoot_service_test.go`).  
+- [x] T303 [P] [US3] Nuxt tests covering job retry flow and troubleshooting auto-refresh (`web-admin/tests/dev-console/troubleshoot_console.spec.ts`).
 
 ### Implementation for US3
 
-- [ ] T304 [P] [US3] Implement job run domain model & repository operations (`backend/internal/domain/models/admin_console/job_run.go`, `.../repository/admin_console/job_run_repository.go`).  
-- [ ] T305 [US3] Create safe-op execution orchestrator tying scope selection to runtime endpoints, enforcing advisory locks, and emitting audit/job run records (`backend/internal/services/admin/console/safe_ops_service.go`).  
-- [ ] T306 [US3] Add troubleshooting service aggregating health/quota/webhook diagnostics with cache + auto-refresh metadata (`backend/internal/services/admin/console/troubleshoot_service.go`).  
-- [ ] T307 [US3] Implement HTTP handlers for `/jobs/runs`, `/jobs/runs/{id}/retry`, `/safe-ops/actions`, `/troubleshooting/summary`, `/webhooks/attempts`, `/webhooks/attempts/{id}` (`backend/internal/transport/http/admin/console/troubleshoot_handler.go`, `job_handler.go`).  
-- [ ] T308 [US3] Integrate webhook attempt repository queries leveraging `integration_webhook_attempts` and prepare data projections for UI drill-downs.  
-- [ ] T309 [US3] Extend observability metrics for safe-op executions, retry successes/failures, and troubleshooting refresh lag.  
-- [ ] T310 [P] [US3] Build Nuxt job history table with retry actions and scope selector (`web-admin/app/components/dev-console/JobRunsTable.vue`).  
-- [ ] T311 [P] [US3] Create troubleshooting dashboard components for health/quota/webhook sections with manual refresh control (`web-admin/app/components/dev-console/TroubleshootingDashboard.vue`).  
-- [ ] T312 [US3] Implement Pinia store/composables for job runs, safe-ops actions, and troubleshooting data (`web-admin/app/stores/dev-console/troubleshoot.ts`, `app/composables/useSafeOps.ts`).  
-- [ ] T313 [US3] Wire UI navigation tabs and routing for audit/troubleshoot sections (`web-admin/app/pages/_p/com.powerx.plugins.base/admin/dev-console/index.vue` layout updates).  
-- [ ] T314 [P] [US3] Update contracts to reflect final payloads and retry eligibility documentation (`contracts/admin-dev-console-openapi.yaml`).  
-- [ ] T315 [US3] Implement contextual help/runbook service responses for troubleshooting sections (`backend/internal/services/admin/console/help_service.go`, `help_content.go`).  
-- [ ] T316 [P] [US3] Render troubleshooting help panels and runbook links in Nuxt UI (`web-admin/app/components/dev-console/TroubleshootingHelpPanel.vue`, page layout wiring).  
-- [ ] T317 [US3] Add migration/index updates for webhook drill-down performance (e.g., `integration_webhook_attempts` composite index) and document in migration file.
+- [x] T304 [P] [US3] Implement job run domain model & repository operations (`backend/internal/domain/models/admin_console/job_run.go`, `.../repository/admin_console/job_run_repository.go`).  
+- [x] T305 [US3] Create safe-op execution orchestrator tying scope selection to runtime endpoints, enforcing advisory locks, and emitting audit/job run records (`backend/internal/services/admin/console/safe_ops_service.go`).  
+- [x] T306 [US3] Add troubleshooting service aggregating health/quota/webhook diagnostics with cache + auto-refresh metadata (`backend/internal/services/admin/console/troubleshoot_service.go`).  
+- [x] T307 [US3] Implement HTTP handlers for `/jobs/runs`, `/jobs/runs/{id}/retry`, `/safe-ops/actions`, `/troubleshooting/summary`, `/webhooks/attempts`, `/webhooks/attempts/{id}` (`backend/internal/transport/http/admin/console/troubleshoot_handler.go`, `job_handler.go`).  
+- [x] T308 [US3] Integrate webhook attempt repository queries leveraging `integration_webhook_attempts` and prepare data projections for UI drill-downs.  
+- [x] T309 [US3] Extend observability metrics for safe-op executions, retry successes/failures, and troubleshooting refresh lag.  
+- [x] T310 [P] [US3] Build Nuxt job history table with retry actions and scope selector (`web-admin/app/components/dev-console/JobRunsTable.vue`).  
+- [x] T311 [P] [US3] Create troubleshooting dashboard components for health/quota/webhook sections with manual refresh control (`web-admin/app/components/dev-console/TroubleshootingDashboard.vue`).  
+- [x] T312 [US3] Implement Pinia store/composables for job runs, safe-ops actions, and troubleshooting data (`web-admin/app/stores/dev-console/troubleshoot.ts`, `app/composables/useSafeOps.ts`).  
+- [x] T313 [US3] Wire UI navigation tabs and routing for audit/troubleshoot sections (`web-admin/app/pages/_p/com.powerx.plugins.base/admin/dev-console/index.vue` layout updates).  
+- [x] T314 [P] [US3] Update contracts to reflect final payloads and retry eligibility documentation (`contracts/admin-dev-console-openapi.yaml`).  
+- [x] T315 [US3] Implement contextual help/runbook service responses for troubleshooting sections (`backend/internal/services/admin/console/help_service.go`, `help_content.go`).  
+- [x] T316 [P] [US3] Render troubleshooting help panels and runbook links in Nuxt UI (`web-admin/app/components/dev-console/TroubleshootingHelpPanel.vue`, page layout wiring).  
+- [x] T317 [US3] Add migration/index updates for webhook drill-down performance (e.g., `integration_webhook_attempts` composite index) and document in migration file.
 
 **Checkpoint**: Full console delivers configuration, audit, and troubleshooting capabilities; safe-ops actions audited.
 

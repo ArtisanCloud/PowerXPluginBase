@@ -15,6 +15,9 @@ CREATE INDEX IF NOT EXISTS idx_integration_webhook_attempts_status_next
 CREATE INDEX IF NOT EXISTS idx_integration_webhook_attempts_subscription
   ON integration_webhook_attempts (subscription_id, created_at DESC);
 
+CREATE INDEX IF NOT EXISTS idx_integration_webhook_attempts_created
+  ON integration_webhook_attempts (created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_integration_secrets_tenant_type
   ON integration_secrets (tenant_id, integration_type);
 

@@ -54,24 +54,31 @@ func (ConfigChange) TableName() string {
 
 // JobRun tracks safe operation executions and troubleshooting jobs.
 type JobRun struct {
-	ID             string      `gorm:"column:id;primaryKey" json:"id"`
-	PluginID       string      `gorm:"column:plugin_id;type:text;not null" json:"plugin_id"`
-	TenantID       *string     `gorm:"column:tenant_id;type:text" json:"tenant_id,omitempty"`
-	Environment    string      `gorm:"column:environment;type:text" json:"environment"`
-	JobType        string      `gorm:"column:job_type;type:text;not null" json:"job_type"`
-	TriggerSource  string      `gorm:"column:trigger_source;type:text;not null" json:"trigger_source"`
-	Status         string      `gorm:"column:status;type:text;not null" json:"status"`
-	StartedAt      *time.Time  `gorm:"column:started_at" json:"started_at,omitempty"`
-	FinishedAt     *time.Time  `gorm:"column:finished_at" json:"finished_at,omitempty"`
-	DurationMillis int64       `gorm:"column:duration_ms;type:bigint;->" json:"duration_ms"`
-	Message        *string     `gorm:"column:message;type:text" json:"message,omitempty"`
-	RetryOf        *string     `gorm:"column:retry_of;type:uuid" json:"retry_of,omitempty"`
-	AuditEventID   *string     `gorm:"column:audit_event_id;type:uuid" json:"audit_event_id,omitempty"`
-	CreatedBy      string      `gorm:"column:created_by;type:text;not null" json:"created_by"`
-	CreatedAt      time.Time   `gorm:"column:created_at;not null;default:now()" json:"created_at"`
-	UpdatedAt      time.Time   `gorm:"column:updated_at;not null;default:now()" json:"updated_at"`
-	RetryTarget    *JobRun     `gorm:"foreignKey:RetryOf" json:"retry_target,omitempty"`
-	AuditEvent     *AuditEvent `gorm:"foreignKey:AuditEventID" json:"audit_event,omitempty"`
+	ID             string         `gorm:"column:id;primaryKey" json:"id"`
+	PluginID       string         `gorm:"column:plugin_id;type:text;not null" json:"plugin_id"`
+	TenantID       *string        `gorm:"column:tenant_id;type:text" json:"tenant_id,omitempty"`
+	Environment    string         `gorm:"column:environment;type:text" json:"environment"`
+	JobType        string         `gorm:"column:job_type;type:text;not null" json:"job_type"`
+	TriggerSource  string         `gorm:"column:trigger_source;type:text;not null" json:"trigger_source"`
+	Status         string         `gorm:"column:status;type:text;not null" json:"status"`
+	Action         string         `gorm:"column:action;type:text" json:"action,omitempty"`
+	ScopeType      string         `gorm:"column:scope_type;type:text" json:"scope_type,omitempty"`
+	ScopeRef       *string        `gorm:"column:scope_ref;type:text" json:"scope_ref,omitempty"`
+	TargetID       *string        `gorm:"column:target_id;type:text" json:"target_id,omitempty"`
+	Reason         *string        `gorm:"column:reason;type:text" json:"reason,omitempty"`
+	DryRun         bool           `gorm:"column:dry_run;type:boolean" json:"dry_run"`
+	Metadata       datatypes.JSON `gorm:"column:metadata;type:jsonb" json:"metadata,omitempty"`
+	StartedAt      *time.Time     `gorm:"column:started_at" json:"started_at,omitempty"`
+	FinishedAt     *time.Time     `gorm:"column:finished_at" json:"finished_at,omitempty"`
+	DurationMillis int64          `gorm:"column:duration_ms;type:bigint;->" json:"duration_ms"`
+	Message        *string        `gorm:"column:message;type:text" json:"message,omitempty"`
+	RetryOf        *string        `gorm:"column:retry_of;type:uuid" json:"retry_of,omitempty"`
+	AuditEventID   *string        `gorm:"column:audit_event_id;type:uuid" json:"audit_event_id,omitempty"`
+	CreatedBy      string         `gorm:"column:created_by;type:text;not null" json:"created_by"`
+	CreatedAt      time.Time      `gorm:"column:created_at;not null;default:now()" json:"created_at"`
+	UpdatedAt      time.Time      `gorm:"column:updated_at;not null;default:now()" json:"updated_at"`
+	RetryTarget    *JobRun        `gorm:"foreignKey:RetryOf" json:"retry_target,omitempty"`
+	AuditEvent     *AuditEvent    `gorm:"foreignKey:AuditEventID" json:"audit_event,omitempty"`
 }
 
 // TableName implements gorm tablename interface.
