@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ChecklistSummary, IncidentTimelineEntry, TimelineCreatePayload } from '~/app/types/operations'
+import type { ChecklistSummary, IncidentTimelineEntry, TimelineCreatePayload } from '~/types/operations'
 
 const props = defineProps<{
   entries: IncidentTimelineEntry[]

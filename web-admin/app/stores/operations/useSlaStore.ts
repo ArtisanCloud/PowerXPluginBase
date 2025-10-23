@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { SlaProfile, SlaProfileUpdatePayload, SlaActualsPayload } from '~/app/types/operations'
+import type { SlaProfile, SlaProfileUpdatePayload, SlaActualsPayload } from '~/types/operations'
 
 interface SlaState {
   profiles: SlaProfile[]

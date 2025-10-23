@@ -131,17 +131,17 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { useDevConsoleConfigStore } from '~/app/stores/dev-console/config'
-import { useDevConsoleAuditStore } from '~/app/stores/dev-console/audit'
-import { useDevConsoleTroubleshootStore } from '~/app/stores/dev-console/troubleshoot'
-import type { JobRun, JobRunFilters, SafeOpPayload } from '~/app/stores/dev-console/troubleshoot'
-import ConfigSectionCard from '~/app/components/dev-console/ConfigSectionCard.vue'
-import AuditHistoryTable from '~/app/components/dev-console/AuditHistoryTable.vue'
-import AuditExportDialog from '~/app/components/dev-console/AuditExportDialog.vue'
-import JobRunsTable from '~/app/components/dev-console/JobRunsTable.vue'
-import TroubleshootingDashboard from '~/app/components/dev-console/TroubleshootingDashboard.vue'
-import TroubleshootingHelpPanel from '~/app/components/dev-console/TroubleshootingHelpPanel.vue'
-import { useSafeOps } from '~/app/composables/useSafeOps'
+import { useDevConsoleConfigStore } from '~/stores/dev-console/config'
+import { useDevConsoleAuditStore } from '~/stores/dev-console/audit'
+import { useDevConsoleTroubleshootStore } from '~/stores/dev-console/troubleshoot'
+import type { JobRun, JobRunFilters, SafeOpPayload } from '~/stores/dev-console/troubleshoot'
+import ConfigSectionCard from '~/components/dev-console/ConfigSectionCard.vue'
+import AuditHistoryTable from '~/components/dev-console/AuditHistoryTable.vue'
+import AuditExportDialog from '~/components/dev-console/AuditExportDialog.vue'
+import JobRunsTable from '~/components/dev-console/JobRunsTable.vue'
+import TroubleshootingDashboard from '~/components/dev-console/TroubleshootingDashboard.vue'
+import TroubleshootingHelpPanel from '~/components/dev-console/TroubleshootingHelpPanel.vue'
+import { useSafeOps } from '~/composables/useSafeOps'
 
 const tabs = [
   { label: '配置管理', value: 'config', icon: 'i-heroicons-adjustments-horizontal' },

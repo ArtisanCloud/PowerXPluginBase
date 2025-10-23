@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AuditEvent, AuditFilters } from '~/app/stores/dev-console/audit'
+import type { AuditEvent, AuditFilters } from '~/stores/dev-console/audit'
 
 const props = defineProps<{
   events: AuditEvent[]

@@ -5,7 +5,7 @@ import type {
   IncidentDraftPayload,
   IncidentUpdatePayload,
   TimelineCreatePayload,
-} from '~/app/types/operations'
+} from '~/types/operations'
 
 interface IncidentsState {
   incidents: IncidentRecord[]

@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ConfigField, ConfigSection } from '~/app/stores/dev-console/config'
+import type { ConfigField, ConfigSection } from '~/stores/dev-console/config'
 import AuditSummaryBanner from './AuditSummaryBanner.vue'
 
 const props = defineProps<{

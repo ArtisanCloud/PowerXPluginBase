@@ -2,8 +2,16 @@
 
 # 基础变量
 APP_NAME := powerx-plugin-base
-VERSION := 0.4.0
 PLUGIN_ID := com.powerx.plugins.base
+
+PLUGIN_MANIFEST ?= plugin.yaml
+DEFAULT_VERSION := 0.4.0
+_MANIFEST_VERSION := $(strip $(shell awk -F': *' '/^version:/ {print $$2; exit}' $(PLUGIN_MANIFEST) 2>/dev/null))
+ifeq ($(_MANIFEST_VERSION),)
+VERSION ?= $(DEFAULT_VERSION)
+else
+VERSION ?= $(_MANIFEST_VERSION)
+endif
 
 GO_MODULE := github.com/powerx-plugins/base
 BACKEND_DIR := backend

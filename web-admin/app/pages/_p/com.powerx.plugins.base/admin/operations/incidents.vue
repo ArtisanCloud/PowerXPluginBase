@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import { useToast } from '#imports'
 import { useIncidentsStore } from '~/stores/operations/useIncidentsStore'
-import type { IncidentUpdatePayload, TimelineCreatePayload, IncidentDraftPayload } from '~/app/types/operations'
+import type { IncidentUpdatePayload, TimelineCreatePayload, IncidentDraftPayload } from '~/types/operations'
 import IncidentTimeline from '~/components/operations/IncidentTimeline.vue'
 
 const store = useIncidentsStore()

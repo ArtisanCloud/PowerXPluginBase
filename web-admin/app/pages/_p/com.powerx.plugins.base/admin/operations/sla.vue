@@ -52,7 +52,7 @@ import { reactive } from 'vue'
 import { useToast } from '#imports'
 import SlaScoreCard from '~/components/operations/SlaScoreCard.vue'
 import { useSlaStore } from '~/stores/operations/useSlaStore'
-import type { SlaProfileUpdatePayload, SlaActualsPayload } from '~/app/types/operations'
+import type { SlaProfileUpdatePayload, SlaActualsPayload } from '~/types/operations'
 
 const store = useSlaStore()
 const toast = useToast()

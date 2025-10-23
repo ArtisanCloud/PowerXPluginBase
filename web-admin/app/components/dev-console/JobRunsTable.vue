@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import type { JobRun, JobRunFilters } from '~/app/stores/dev-console/troubleshoot'
+import type { JobRun, JobRunFilters } from '~/stores/dev-console/troubleshoot'
 
 const props = defineProps<{
   runs: JobRun[]

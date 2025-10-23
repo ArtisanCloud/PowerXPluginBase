@@ -7,4 +7,4 @@ Pinia stores supporting the Dev Console should be defined here. Suggested slices
 - job run timelines and troubleshooting metrics
 
 Keep store APIs focused on fetching via `/api/v1/admin/dev-console/**` endpoints and exposing derived
-state for components. Co-locate related composables under `~/app/composables/`.
+state for components. Co-locate related composables under `~/composables/`.

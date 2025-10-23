@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import metricsPlugin from "~/app/plugins/metrics.client"
+import metricsPlugin from "~/plugins/metrics.client"
 
 describe("Marketplace dashboard performance metrics", () => {
   const hooks: Record<string, Array<() => void>> = {}

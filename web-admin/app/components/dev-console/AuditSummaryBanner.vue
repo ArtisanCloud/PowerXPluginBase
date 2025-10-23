@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ConfigSection } from '~/app/stores/dev-console/config'
+import type { ConfigSection } from '~/stores/dev-console/config'
 
 const props = defineProps<{ section: ConfigSection }>()
 

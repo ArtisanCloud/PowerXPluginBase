@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 
-import type { SafeOpPayload, JobRun } from '~/app/stores/dev-console/troubleshoot'
-import { useDevConsoleTroubleshootStore } from '~/app/stores/dev-console/troubleshoot'
+import type { SafeOpPayload, JobRun } from '~/stores/dev-console/troubleshoot'
+import { useDevConsoleTroubleshootStore } from '~/stores/dev-console/troubleshoot'
 
 export function useSafeOps() {
   const store = useDevConsoleTroubleshootStore()

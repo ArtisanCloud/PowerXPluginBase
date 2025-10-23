@@ -88,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TroubleshootingSummary } from '~/app/stores/dev-console/troubleshoot'
+import type { TroubleshootingSummary } from '~/stores/dev-console/troubleshoot'
 
 const props = defineProps<{
   summary: TroubleshootingSummary | null

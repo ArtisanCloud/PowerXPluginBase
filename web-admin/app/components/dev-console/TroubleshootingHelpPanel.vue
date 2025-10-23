@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import type { GuidanceItem } from '~/app/stores/dev-console/troubleshoot'
+import type { GuidanceItem } from '~/stores/dev-console/troubleshoot'
 
 defineProps<{ items: GuidanceItem[] }>()
 </script>

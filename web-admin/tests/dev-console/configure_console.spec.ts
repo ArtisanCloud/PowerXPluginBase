@@ -1,7 +1,7 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
-import { useDevConsoleConfigStore } from '../../app/stores/dev-console/config'
+import { useDevConsoleConfigStore } from '~/stores/dev-console/config'
 
 describe('dev console config store', () => {
   beforeEach(() => {

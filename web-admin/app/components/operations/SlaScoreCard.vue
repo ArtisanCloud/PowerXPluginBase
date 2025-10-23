@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SlaProfile } from '~/app/types/operations'
+import type { SlaProfile } from '~/types/operations'
 
 const props = defineProps<{ profile: SlaProfile }>()
 
