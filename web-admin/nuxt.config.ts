@@ -91,7 +91,15 @@ export default defineNuxtConfig({
       "/**": {
         headers: {
           "X-Frame-Options": "SAMEORIGIN",
-          "Content-Security-Policy": `default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ${INSIDE_POWERX ? pluginApiBase : localApiBase}; font-src 'self' data:; frame-ancestors 'self';`,
+          "Content-Security-Policy": [
+            "default-src 'self'",
+            "img-src 'self' data:",
+            "style-src 'self' 'unsafe-inline'",
+            `script-src ${INSIDE_POWERX ? "'self' 'unsafe-inline'" : "'self' 'unsafe-inline' 'unsafe-eval'"}`,
+            `connect-src ${INSIDE_POWERX ? "'self'" : `'self' ${localApiBase} ws:`}`,
+            "font-src 'self' data:",
+            "frame-ancestors 'self'"
+          ].join("; ") + ";",
           "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
           "Referrer-Policy": "no-referrer",
         },
